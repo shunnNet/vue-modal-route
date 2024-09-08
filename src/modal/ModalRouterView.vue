@@ -1,30 +1,22 @@
 <script setup lang="ts">
-import { PropType } from 'vue'
+import { inject } from 'vue'
 import ModalRoute from './ModalRoute.vue'
+import { matchedRouteKey } from 'vue-router'
 
 defineProps({
-  name: {
-    type: String as PropType<string>,
-    default: 'default',
-  },
-  // route: {
-  //   type: Object as PropType<RouteLocationNormalizedLoaded>,
-  //   default: () => null,
-  // },
   modalData: {
     type: Object,
     default: () => ({}),
   },
 })
+const matchedRoute = inject(matchedRouteKey)
 </script>
 <template>
-  <RouterView
-    v-slot="{Component }"
-    :name="name"
-  >
+  <RouterView v-slot="{ Component }">
     <ModalRoute
       :component="Component"
       :modal-data="modalData"
+      :parent="matchedRoute"
     />
   </RouterView>
 </template>

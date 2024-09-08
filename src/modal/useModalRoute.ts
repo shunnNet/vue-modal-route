@@ -1,29 +1,8 @@
-import { computed, reactive, Ref, ref, RendererElement, RendererNode, VNode } from 'vue'
-import { Router, useRoute, useRouter, RouteLocationRaw } from 'vue-router'
+import { computed, reactive, Ref, ref, RendererElement, RendererNode, toValue, VNode } from 'vue'
+import { useRoute, useRouter, RouteLocationRaw } from 'vue-router'
 import { useModalRouteContext } from './modalRouteContext'
+import { Rejection } from './rejection'
 
-class Rejection {
-  mode: 'replace' | 'push' = 'replace'
-  router: Router
-  route: RouteLocationRaw
-  constructor(
-    mode: 'replace' | 'push' = 'replace',
-    router: Router,
-    route: RouteLocationRaw,
-  ) {
-    this.mode = mode
-    this.route = route
-    this.router = router
-  }
-
-  run() {
-    return this.router[this.mode](this.route)
-  }
-
-  static isRejection(value: any): value is Rejection {
-    return value instanceof Rejection
-  }
-}
 export type TComponent = VNode<RendererNode, RendererElement, {
   [key: string]: any
 }>
@@ -37,24 +16,14 @@ type TModalMap = Record<string, {
   _getModalData: () => Promise<void>
 }>
 
-type TModalData = Record<string, {
-  getModalData: (data: Record<string, any>, reject: TCreateRejection) => Record<string, any> | Rejection
-  mode: 'beforeVisible' | 'afterVisible'
-}>
-
-type TCreateRejection = (
-  mode?: 'replace' | 'push',
-  route?: RouteLocationRaw,
-) => Rejection
-
-export const defineModalDatas = (modalDatas: TModalData) => modalDatas
+export const defineModalDatas = (modalDatas: any) => modalDatas
 
 // TODO: cancel getModalData when visiblity changed
-export const useModalRoute = () => {
+export const useModalRoute = (parentRoute: any) => {
   const route = useRoute()
   const router = useRouter()
   const componentMap: TModalMap = reactive({})
-  const { pop, backToParent, getModalRoute } = useModalRouteContext()
+  const { pop } = useModalRouteContext()
 
   const setVisible = async (name: string, visible: boolean, _visible: Ref<boolean>) => {
     if (visible) {
@@ -67,10 +36,11 @@ export const useModalRoute = () => {
       // handle visible when router.push is failed
       // TODO: handle push/replace failed
       // TODO: allow set mode ?
-      await backToParent(name)
+      await router.replace({ name: toValue(parentRoute).name })
       _visible.value = false
     }
   }
+
   const setComponent = (name: string, component: TComponent, modalData: any) => {
     if (componentMap[name]) {
       componentMap[name]._component = component
@@ -78,35 +48,26 @@ export const useModalRoute = () => {
     else {
       const _visible = ref(false)
       const visible = computed({
-        get: () => route.name === name && _visible.value,
+        get: () => {
+          return route.name === name && _visible.value
+        },
         set: value => setVisible(name, value, _visible),
       })
       const getModalData = typeof modalData === 'function'
         ? { getModalData: modalData, mode: 'beforeVisible' }
         : modalData
-
       const data = ref({})
       const loading = ref(false)
 
       const _getModalData = async () => {
         const modal = componentMap[name]
 
-        const parentRoute = getModalRoute(name).parent
         const createRejection = (
           mode: 'replace' | 'push' = 'replace',
-          route: RouteLocationRaw = parentRoute,
+          route: RouteLocationRaw = toValue(parentRoute),
         ) => new Rejection(mode, router, route)
 
-        if (modal.getModalData?.mode === 'beforeVisible') {
-          const response = await modal.getModalData.getModalData(pop(name), createRejection)
-          if (Rejection.isRejection(response)) {
-            response.run()
-            return
-          }
-          data.value = response
-          modal._visible = true
-        }
-        else if (modal.getModalData?.mode === 'afterVisible') {
+        if (modal.getModalData?.mode === 'afterVisible') {
           modal._visible = true
           loading.value = true
           const response = await modal.getModalData.getModalData(pop(name), createRejection)
@@ -118,6 +79,15 @@ export const useModalRoute = () => {
           }
           data.value = response
           loading.value = false
+        }
+        else {
+          const response = await modal.getModalData.getModalData(pop(name), createRejection)
+          if (Rejection.isRejection(response)) {
+            response.run()
+            return
+          }
+          data.value = response
+          modal._visible = true
         }
       }
 

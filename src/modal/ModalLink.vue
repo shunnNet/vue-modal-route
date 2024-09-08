@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { RouterLink, useLink } from 'vue-router'
-import { computed, inject } from 'vue'
 import { useModalRouteContext } from './modalRouteContext'
 
 const props = defineProps({

@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { PropType, watch } from 'vue'
-import { TComponent, useModalRoute } from '~/modal/useModalRoute'
-
-const { setComponent, componentMap } = useModalRoute()
+import { PropType, toRef, watch } from 'vue'
+import { TComponent, useModalRoute } from './useModalRoute'
 
 const props = defineProps({
   component: {
@@ -13,7 +11,13 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  parent: {
+    type: Object,
+    default: null,
+  },
 })
+const { setComponent, componentMap } = useModalRoute(toRef(() => props.parent))
+
 if (props.component?.type.__route_modal_name) {
   const name = props.component.type.__route_modal_name as string
   console.log(name)
@@ -29,6 +33,7 @@ watch(() => props.component, (val) => {
   if (val) {
     const name = val.type.__route_modal_name as string
     setComponent(name, val, props.modalData[name])
+    console.log(val, name, props.modalData[name], componentMap[name].data)
   }
 })
 
@@ -43,6 +48,7 @@ watch(() => props.component, (val) => {
     :loading="componentMap[name].loading"
   >
     <div>
+      {{ componentMap[name] }}
       {{ name }}: {{ new Date().toLocaleTimeString() }}
     </div>
   </component>

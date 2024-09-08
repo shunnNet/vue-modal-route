@@ -1,19 +1,10 @@
-import { createWebHistory, createRouter, RouteRecordRaw } from 'vue-router'
+import { createWebHistory, createRouter } from 'vue-router'
 import PageIndex from '~/pages/index.vue'
 import ModalA from './pages/ModalA.vue'
 import ModalB from './pages/ModalB.vue'
-import { ElDialog } from 'element-plus'
-import { h, inject } from 'vue'
-// import ModalRoute from './ModalRoute.vue'
+import { createModalRouteContext, defineHashModalRoute, defineModalRoute } from './modal'
+import HashModalA from './pages/HashModalA.vue'
 
-const sleep = () => new Promise(resolve => setTimeout(resolve, 1000))
-const defineModalRoute = (route: RouteRecordRaw & { name: string }) => {
-  route.meta = {
-    modal: true,
-  }
-  route.component.__route_modal_name = route.name
-  return route
-}
 export const router = createRouter({
   routes: [
     {
@@ -33,7 +24,21 @@ export const router = createRouter({
         }),
       ],
     },
-    { name: 'WithChildren', path: '/with-children', children: [] },
+    {
+      name: 'Test',
+      path: '/test',
+      component: () => import('./pages/test.vue'),
+    },
   ],
   history: createWebHistory(),
 })
+
+const globalModalRoutes = defineHashModalRoute([
+  defineModalRoute({
+    name: 'hash-modal-a',
+    path: 'hash-a',
+    component: HashModalA,
+  }),
+])
+
+export const modalRouteContext = createModalRouteContext(globalModalRoutes)
