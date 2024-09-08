@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { RouterLink, useLink } from 'vue-router'
-import { useModalRouteContext } from './modalRouteContext'
+import { modalRouteContextKey, useModalRoute } from './modalRouteContext'
+import { inject } from 'vue'
+import { ensureInjection } from './helpers'
 
 const props = defineProps({
   // @ts-expect-error library bug
@@ -27,7 +29,12 @@ const {
   // function to navigate to the link
   navigate,
 } = useLink(props)
-const { push } = useModalRouteContext()
+
+const { push } = ensureInjection(
+  modalRouteContextKey,
+  'ModalRoute must be used inside a ModalRoute component',
+)
+
 const onClick = () => {
   push(props.to.name, props.data)
   navigate()

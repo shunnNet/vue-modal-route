@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
-import { ElDialog } from 'element-plus'
+import { onMounted, onUnmounted } from 'vue'
+import { ElButton, ElDialog } from 'element-plus'
 
 const visible = defineModel({
   type: Boolean,
@@ -27,6 +27,8 @@ onMounted(() => {
 onUnmounted(() => {
   // console.log('Modal A Unmounted !')
 })
+
+defineEmits(['trigger'])
 </script>
 <template>
   <ElDialog
@@ -35,6 +37,13 @@ onUnmounted(() => {
   >
     <div v-loading="loading">
       {{ message }}
+
+      <ElButton
+        type="primary"
+        @click="$emit('trigger')"
+      >
+        Call Event
+      </ElButton>
     </div>
   </ElDialog>
 </template>

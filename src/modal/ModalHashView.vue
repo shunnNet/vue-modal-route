@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { computed, provide } from 'vue'
 import { useRoute, viewDepthKey } from 'vue-router'
-import ModalRoute from './ModalRoute.vue'
-
-defineProps({
-  modalData: {
-    type: Object,
-    default: () => ({}),
-  },
-})
-
+import ModalRoute from './ModalRoute'
 const routes = useRoute()
 const hashRouteDepth = computed(() => {
   return routes.matched?.findIndex(r => r?.meta?.modalHashRoot === true)
@@ -25,7 +17,6 @@ const parent = computed(() => {
   <RouterView v-slot="{ Component }">
     <ModalRoute
       :component="Component"
-      :modal-data="modalData"
       :parent="parent"
     />
   </RouterView>

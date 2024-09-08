@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { defineModalDatas } from './modal'
+import { useModalRoute } from './modal'
 import ModalHashView from './modal/ModalHashView.vue'
 import ModalLink from './modal/ModalLink.vue'
 
-const modalData = defineModalDatas({
-  'hash-modal-a': {
-    getModalData(data) {
+const { setupModal } = useModalRoute()
+setupModal('hash-modal-a', {
+  props: {
+    handler(data) {
       console.log('hash-modal-a', data)
       return {
         message: 'Hello from hash modal a',
@@ -13,7 +14,6 @@ const modalData = defineModalDatas({
       }
     },
   },
-
 })
 </script>
 <template>
@@ -39,7 +39,7 @@ const modalData = defineModalDatas({
   </div>
 
   <RouterView />
-  <ModalHashView :modal-data="modalData" />
+  <ModalHashView />
 </template>
 <style>
 .nav {

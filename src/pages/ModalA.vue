@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { ElDialog } from 'element-plus'
-import { useModalRoute } from '~/modal/useModalRoute'
 
 const visible = defineModel({
   type: Boolean,
@@ -36,6 +35,12 @@ onUnmounted(() => {
   >
     <div v-loading="loading">
       {{ message }}
+      <hr>
+      <div>
+        <slot>
+          Default slot
+        </slot>
+      </div>
     </div>
   </ElDialog>
 </template>

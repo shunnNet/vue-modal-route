@@ -1,7 +1,7 @@
 import { inject, InjectionKey, provide } from 'vue'
 import { Rejection } from './rejection'
 import { TCreateRejection } from './types'
-import { useModalRouteContext } from './modalRouteContext'
+import { useModalRoute } from './modalRouteContext'
 import { useRouter } from 'vue-router'
 
 export type TSetupModalOptions = {
@@ -19,7 +19,7 @@ const usePathModalKey: TUsePathModalKey = Symbol('usePathModal')
 export const usePathModal = () => {
   const ctx: TPathModalContext = {}
   const router = useRouter()
-  const { push } = useModalRouteContext()
+  const { push } = useModalRoute()
 
   const setupModal = (name: string, options: TSetupModalOptions = {}) => {
     ctx[name] = options

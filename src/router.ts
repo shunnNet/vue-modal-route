@@ -41,4 +41,4 @@ const globalModalRoutes = defineHashModalRoute([
   }),
 ])
 
-export const modalRouteContext = createModalRouteContext(globalModalRoutes)
+export const modalRouteContext = createModalRouteContext(router, globalModalRoutes)

@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ElButton, ElDivider, ElLoading } from 'element-plus'
 import ModalLink from '~/modal/ModalLink.vue'
-import { useOpenModal, ModalRouterView, defineModalDatas } from '~/modal'
+import { ModalRouterView, useModalRoute } from '~/modal'
 
-const { openModal } = useOpenModal()
+const { openModal, setupModal } = useModalRoute()
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-const modalData = defineModalDatas({
-  ModalA: {
-    async getModalData(data) {
+
+setupModal('ModalA', {
+  props: {
+    async handler(data) {
       const loading = ElLoading.service({ fullscreen: true })
       await sleep(2000)
       loading.close()
@@ -19,18 +20,19 @@ const modalData = defineModalDatas({
     },
     mode: 'beforeVisible',
   },
-  ModalB: {
-    async getModalData(data) {
-      console.log(data)
-      await sleep(2000)
-      return {
-        message: 'Hello Modal B from index',
-      }
-    },
-    mode: 'afterVisible',
+  slots: {
+    default: () => 'Injected default slot',
   },
 })
 
+setupModal('ModalB', {
+  props: {
+    message: 'Hello Modal B from index',
+    onTrigger() {
+      console.log('Triggered from index')
+    },
+  },
+})
 </script>
 <template>
   <div>
@@ -52,7 +54,7 @@ const modalData = defineModalDatas({
       Open By ModalLink
     </ModalLink>
     <RouterView />
-    <ModalRouterView :modal-data="modalData" />
+    <ModalRouterView />
   </div>
 </template>
 <style></style>

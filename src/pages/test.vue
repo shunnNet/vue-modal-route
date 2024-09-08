@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ElButton } from 'element-plus'
-import { useModalRouteContext } from '~/modal/modalRouteContext'
+import { useModalRoute } from '~/modal/modalRouteContext'
 
-const { openGlobalModal } = useModalRouteContext()
+const { openGlobalModal } = useModalRoute()
 
 </script>
 <template>
