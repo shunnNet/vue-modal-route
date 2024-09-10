@@ -15,12 +15,10 @@ const parent = computed(() => {
 </script>
 <template>
   <RouterView v-slot="{ Component }">
-    <pre>
-      {{ parent }}
-    </pre>
     <ModalRoute
       :components="[Component]"
       :parent="parent"
+      modal-type="hash"
     />
   </RouterView>
 </template>

@@ -21,5 +21,6 @@ const parent = computed(() => {
   <ModalRoute
     :components="componentsBeRendered"
     :parent="parent"
+    modal-type="query"
   />
 </template>

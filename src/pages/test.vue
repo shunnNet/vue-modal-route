@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ElButton } from 'element-plus'
 import { useModalRoute } from '~/modal/modalRouteContext'
-import QueryModalView from '~/modal/QueryModalView.vue'
+import { ModalQueryView } from '~/modal'
 
 const { openModal } = useModalRoute()
 
@@ -16,6 +16,6 @@ const { openModal } = useModalRoute()
       openModal
     </ElButton>
   </div>
-  <QueryModalView />
+  <ModalQueryView />
 </template>
 <style></style>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ElButton, ElDivider, ElLoading } from 'element-plus'
 import ModalLink from '~/modal/ModalLink.vue'
-import { ModalRouterView, useModalRoute } from '~/modal'
+import { ModalPathView, useModalRoute } from '~/modal'
 import { useRoute, useRouter } from 'vue-router'
 
 const { openModal, setupModal } = useModalRoute()
@@ -65,7 +65,7 @@ setupModal('ModalB', {
       openModal hash-modal-a
     </ElButton>
     <RouterView />
-    <ModalRouterView />
+    <ModalPathView />
   </div>
 </template>
 <style></style>

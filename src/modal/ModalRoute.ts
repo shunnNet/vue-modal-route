@@ -1,4 +1,4 @@
-import { Component, defineComponent, h, inject, PropType, toRef, watch } from 'vue'
+import { defineComponent, h, PropType, toRef, watch } from 'vue'
 import { TComponent, setupModalRoute } from './setupModalRoute'
 import { matchedRouteKey } from 'vue-router'
 import { ensureInjection } from './helpers'
@@ -14,6 +14,10 @@ export default defineComponent({
       type: Object,
       default: null,
     },
+    modalType: {
+      type: String as PropType<'path' | 'hash' | 'query'>,
+      required: true,
+    },
   },
 
   setup(props) {
@@ -22,14 +26,13 @@ export default defineComponent({
     const { getModalItemUnsafe } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
 
     const setupModalIfExist = (cmp: TComponent, name?: string) => {
-      console.log(cmp, name)
       if (!cmp) {
         return
       }
       const _name = name || matchedRoute.value?.name as string
       const modal = getModalItemUnsafe(_name)
-      if (modal) {
-        console.log(name, modal)
+
+      if (modal && modal.type === props.modalType) {
         setModal(_name, cmp)
       }
     }
@@ -41,7 +44,6 @@ export default defineComponent({
     )
 
     watch(() => props.components, (val) => {
-      console.log('watch', val)
       if (!val.length) {
         return
       }

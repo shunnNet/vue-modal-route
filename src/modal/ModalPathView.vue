@@ -11,6 +11,7 @@ const matchedRoute = inject(matchedRouteKey)
     <ModalRoute
       :components="[Component]"
       :parent="matchedRoute"
+      modal-type="path"
     />
   </RouterView>
 </template>
