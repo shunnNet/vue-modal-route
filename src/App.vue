@@ -15,6 +15,7 @@ setupModal('hash-modal-a', {
     },
   },
 })
+const { openModal } = useModalRoute()
 </script>
 <template>
   <div>
@@ -35,6 +36,9 @@ setupModal('hash-modal-a', {
       <ModalLink :to="{ name: 'ModalB' }">
         Modal B
       </ModalLink>
+      <ElButton @click="openModal('query-modal-a', null)">
+        Query Modal A
+      </ElButton>
     </nav>
   </div>
 

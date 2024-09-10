@@ -1,9 +1,16 @@
-import { InjectionKey } from 'vue'
-import { NavigationFailure, RouteLocationRaw, RouteRecordSingleViewWithChildren } from 'vue-router'
+import { Component, InjectionKey } from 'vue'
+import { NavigationFailure, RouteLocationRaw, RouteRecordRaw, RouteRecordSingleViewWithChildren } from 'vue-router'
 import { Rejection } from './rejection'
 
 export type TModalMapItem = {
+  name: string
   data: Record<string, any> | null
+  type: 'hash' | 'query' | 'path' | string
+  _inuse: boolean
+  /**
+   * Does state in history
+   */
+  _stateMounted: boolean
   options: {
     props?: {
       handler: (
@@ -28,12 +35,16 @@ export type TModalRouteContext = {
   pop: TModalMapPop
   store: Record<string, TModalMapItem>
   getModalItem: (name: string) => TModalMapItem
+  _setupModal: (name: string, options: TModalMapItem['options']) => void
+  _unsetModal: (name: string) => void
   hashRoutes: RouteRecordSingleViewWithChildren
-  setupModal: (name: string, options: TModalMapItem['options']) => {
-    open: (data: Record<string, any>) => void
-  }
-  unsetModal: (name: string) => void
+  queryRoutes: TModalQueryRoute[]
+  setModalStateMounted: (name: string, isMounted: boolean) => void
   openModal: (name: string, data: Record<string, any>) => void
+  closeModal: (name: string) => void
+  setupModal: (name: string, options: TModalMapItem['options']) => void
+  modalExists: (name: string) => boolean
+  isModalActive: (name: string) => boolean
 }
 
 export type TModalRouteContextKey = InjectionKey<TModalRouteContext>
@@ -47,3 +58,7 @@ export type TModalData = Record<string, {
   getModalData?: (data: Record<string, any>, reject: TCreateRejection) => Record<string, any> | Rejection
   mode?: 'beforeVisible' | 'afterVisible'
 }>
+
+export type TModalPathRoute = RouteRecordRaw & { name: string }
+export type TModalHashRoute = RouteRecordRaw & { name: string }
+export type TModalQueryRoute = { name: string, component: Component }

@@ -4,11 +4,12 @@ import ModalRoute from './ModalRoute'
 import { matchedRouteKey } from 'vue-router'
 
 const matchedRoute = inject(matchedRouteKey)
+
 </script>
 <template>
   <RouterView v-slot="{ Component }">
     <ModalRoute
-      :component="Component"
+      :components="[Component]"
       :parent="matchedRoute"
     />
   </RouterView>

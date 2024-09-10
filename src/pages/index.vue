@@ -2,10 +2,15 @@
 import { ElButton, ElDivider, ElLoading } from 'element-plus'
 import ModalLink from '~/modal/ModalLink.vue'
 import { ModalRouterView, useModalRoute } from '~/modal'
+import { useRoute, useRouter } from 'vue-router'
 
 const { openModal, setupModal } = useModalRoute()
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
+const router = useRouter()
+const route = useRoute()
+console.log(router.currentRoute.value)
+console.log(router.getRoutes())
 setupModal('ModalA', {
   props: {
     async handler(data) {
@@ -53,8 +58,14 @@ setupModal('ModalB', {
     >
       Open By ModalLink
     </ModalLink>
+    <ElButton
+      type="success"
+      @click="openModal('hash-modal-a', null)"
+    >
+      openModal hash-modal-a
+    </ElButton>
     <RouterView />
-    <ModalRouterView />
+    <!-- <ModalRouterView /> -->
   </div>
 </template>
 <style></style>

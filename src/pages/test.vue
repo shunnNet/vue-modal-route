@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ElButton } from 'element-plus'
 import { useModalRoute } from '~/modal/modalRouteContext'
+import QueryModalView from '~/modal/QueryModalView.vue'
 
-const { openGlobalModal } = useModalRoute()
+const { openModal } = useModalRoute()
 
 </script>
 <template>
@@ -10,10 +11,11 @@ const { openGlobalModal } = useModalRoute()
     <h1>test page</h1>
     <ElButton
       type="success"
-      @click="openGlobalModal('hash-modal-a')"
+      @click="openModal('hash-modal-a', null)"
     >
-      openGlobalModal
+      openModal
     </ElButton>
   </div>
+  <QueryModalView />
 </template>
 <style></style>

@@ -2,8 +2,10 @@ import { createWebHistory, createRouter } from 'vue-router'
 import PageIndex from '~/pages/index.vue'
 import ModalA from './pages/ModalA.vue'
 import ModalB from './pages/ModalB.vue'
-import { createModalRouteContext, defineHashModalRoute, defineModalRoute } from './modal'
+import { createModalRouteContext } from './modal'
 import HashModalA from './pages/HashModalA.vue'
+import QueryModalA from './pages/QueryModalA.vue'
+import QueryModalB from './pages/QueryModalB.vue'
 
 export const router = createRouter({
   routes: [
@@ -12,16 +14,23 @@ export const router = createRouter({
       path: '/',
       component: PageIndex,
       children: [
-        defineModalRoute({
+        {
           name: 'ModalA',
           path: 'modal-a',
           component: ModalA,
-        }),
-        defineModalRoute({
+          meta: {
+            modal: true,
+          },
+        },
+
+        {
           name: 'ModalB',
           path: 'modal-b',
           component: ModalB,
-        }),
+          meta: {
+            modal: true,
+          },
+        },
       ],
     },
     {
@@ -33,12 +42,28 @@ export const router = createRouter({
   history: createWebHistory(),
 })
 
-const globalModalRoutes = defineHashModalRoute([
-  defineModalRoute({
-    name: 'hash-modal-a',
-    path: 'hash-a',
-    component: HashModalA,
-  }),
-])
+export const modalRoute = createModalRouteContext({
+  router,
+  query: [
+    {
+      name: 'query-modal-a',
+      component: QueryModalA,
+    },
+    {
+      name: 'query-modal-b',
+      component: QueryModalB,
+    },
+  ],
+  hash: [
+    {
+      name: 'hash-modal-a',
+      // TODO: make path no effect
+      path: 'hash-modal-a',
+      component: HashModalA,
+      meta: {
+        modal: true,
+      },
+    },
+  ],
 
-export const modalRouteContext = createModalRouteContext(router, globalModalRoutes)
+})

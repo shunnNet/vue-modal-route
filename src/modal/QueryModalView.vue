@@ -1,0 +1,26 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import ModalRoute from './ModalRoute'
+import { useRoute } from 'vue-router'
+import { ensureInjection } from './helpers'
+import { modalRouteContextKey, useModalRoute } from './modalRouteContext'
+
+const route = useRoute()
+const ctx = ensureInjection(modalRouteContextKey, 'useModalRoute must be used inside a ModalRoute component')
+const { isModalActive } = useModalRoute()
+
+const componentsBeRendered = computed(
+  () => ctx.queryRoutes.filter((modal) => {
+    return isModalActive(modal.name)
+  }).map(modal => modal.component),
+)
+const parent = computed(() => {
+  return route.matched.at(-1)
+})
+</script>
+<template>
+  <ModalRoute
+    :components="componentsBeRendered"
+    :parent="parent"
+  />
+</template>

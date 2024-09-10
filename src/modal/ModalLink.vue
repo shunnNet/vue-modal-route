@@ -4,45 +4,45 @@ import { modalRouteContextKey, useModalRoute } from './modalRouteContext'
 import { inject } from 'vue'
 import { ensureInjection } from './helpers'
 
+// ts-expect-error library bug
+// ...RouterLink.props,
+
 const props = defineProps({
-  // @ts-expect-error library bug
-  ...RouterLink.props,
-  inactiveClass: String,
   data: {
     type: Object,
     default: () => null,
+  },
+  to: {
+    type: Object,
+    required: true,
   },
   // name: {
   //   type: String,
   //   required: true,
   // },
 })
-const {
-  // the resolved route object
-  route,
-  // the href to use in a link
-  href,
-  // boolean ref indicating if the link is active
-  isActive,
-  // boolean ref indicating if the link is exactly active
-  isExactActive,
-  // function to navigate to the link
-  navigate,
-} = useLink(props)
+// const {
+//   // the resolved route object
+//   route,
+//   // the href to use in a link
+//   href,
+//   // boolean ref indicating if the link is active
+//   isActive,
+//   // boolean ref indicating if the link is exactly active
+//   isExactActive,
+//   // function to navigate to the link
+//   navigate,
+// } = useLink(props)
 
-const { push } = ensureInjection(
-  modalRouteContextKey,
-  'ModalRoute must be used inside a ModalRoute component',
-)
+const { openModal } = useModalRoute()
 
 const onClick = () => {
-  push(props.to.name, props.data)
-  navigate()
+  openModal(props.to.name, props.data)
 }
 </script>
 <template>
+  <!-- :href="href" -->
   <a
-    :href="href"
     @click.prevent="onClick"
   ><slot /></a>
 </template>

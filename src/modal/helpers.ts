@@ -1,24 +1,6 @@
-import { inject, InjectionKey } from 'vue'
+import { Component, inject, InjectionKey, markRaw } from 'vue'
 import { RouteRecordRaw, RouteRecordSingleViewWithChildren } from 'vue-router'
-
-export const defineModalRoute = (route: RouteRecordRaw & { name: string }) => {
-  route.meta = {
-    modal: true,
-  }
-  route.component.__route_modal_name = route.name
-  return route
-}
-
-export const defineHashModalRoute = (routes: (RouteRecordRaw & { name: string })[]) => {
-  return {
-    name: 'modal-hash-root',
-    path: '#',
-    meta: {
-      modalHashRoot: true,
-    },
-    children: routes,
-  } satisfies RouteRecordSingleViewWithChildren
-}
+import { TModalPathRoute } from './types'
 
 export const ensureInjection = <T = unknown>(injectKey: string | InjectionKey<T>, errorMsg: string) => {
   const injection = inject(injectKey)
@@ -33,3 +15,22 @@ export const ensureInjection = <T = unknown>(injectKey: string | InjectionKey<T>
 export const isPlainObject = (value: unknown): value is Record<string, any> => {
   return !!value && typeof value === 'object' && !Array.isArray(value)
 }
+
+/**
+ * Checks if a value is null or undefined.
+ *
+ * @param v - The value to check.
+ * @returns True if the value is null or undefined, false otherwise.
+ */
+export const isNullish = (v: any) => v === null || v === undefined
+
+/**
+ * Ensures that the input value is converted to an array.
+ * If the input value is nullish (undefined or null), an empty array is returned.
+ * If the input value is already an array, it is returned as is.
+ * If the input value is not an array, it is wrapped in an array and returned.
+ *
+ * @param v - The value to ensure as an array.
+ * @returns An array containing the input value or a wrapped version of it.
+ */
+export const ensureArray = <T>(v: T | T[]) => isNullish(v) ? [] : Array.isArray(v) ? v : [v]
