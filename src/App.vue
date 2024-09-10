@@ -23,6 +23,9 @@ const { openModal } = useModalRoute()
       <RouterLink :to="{ name: 'Index' }">
         Index
       </RouterLink>
+      <RouterLink :to="{ name: 'Test' }">
+        Test
+      </RouterLink>
 
       <ModalLink :to="{ name: 'ModalA' }">
         Modal A (Will be rejected)

@@ -31,7 +31,6 @@ const createQueryRoutes = () => {
 
   const addRoutes = (newRoutes: TModalQueryRoute[]) => {
     newRoutes.forEach((aRoute) => {
-      aRoute.component.__route_modal_name = aRoute.name
       aRoute.component = markRaw(aRoute.component)
       routes.push(aRoute)
     })
@@ -204,7 +203,6 @@ export const createModalRouteContext = (options: {
         return
       }
       registerModalRoute(aRoute.name as string, 'hash')
-      aRoute.component!.__route_modal_name = aRoute.name
       if (aRoute.children?.length) {
         registerHashRoutes(aRoute.children)
       }
@@ -222,9 +220,7 @@ export const createModalRouteContext = (options: {
     return routes
   }
   function registerPathModalRoute(aRoute: RouteRecordNormalized) {
-    registerModalRoute(aRoute.name, 'path')
-    console.log(aRoute.name)
-    aRoute.components!.default.__route_modal_name = aRoute.name
+    registerModalRoute(aRoute.name as string, 'path')
     return aRoute
   }
   function setModalStateMounted(name: string, isMounted: boolean) {
@@ -314,6 +310,7 @@ export const createModalRouteContext = (options: {
     setModalStateMounted,
     modalExists,
     isModalActive,
+    getModalItemUnsafe,
   } satisfies TModalRouteContext
 
   return {

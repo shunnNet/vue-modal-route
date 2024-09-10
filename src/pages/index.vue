@@ -65,7 +65,7 @@ setupModal('ModalB', {
       openModal hash-modal-a
     </ElButton>
     <RouterView />
-    <!-- <ModalRouterView /> -->
+    <ModalRouterView />
   </div>
 </template>
 <style></style>

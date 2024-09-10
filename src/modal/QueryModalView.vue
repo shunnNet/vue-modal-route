@@ -10,9 +10,8 @@ const ctx = ensureInjection(modalRouteContextKey, 'useModalRoute must be used in
 const { isModalActive } = useModalRoute()
 
 const componentsBeRendered = computed(
-  () => ctx.queryRoutes.filter((modal) => {
-    return isModalActive(modal.name)
-  }).map(modal => modal.component),
+  () => ctx.queryRoutes
+    .flatMap(modal => isModalActive(modal.name) ? [{ modalName: modal.name, component: modal.component }] : []),
 )
 const parent = computed(() => {
   return route.matched.at(-1)

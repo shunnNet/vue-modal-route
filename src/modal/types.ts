@@ -45,6 +45,7 @@ export type TModalRouteContext = {
   setupModal: (name: string, options: TModalMapItem['options']) => void
   modalExists: (name: string) => boolean
   isModalActive: (name: string) => boolean
+  getModalItemUnsafe: (name: string) => TModalMapItem | undefined
 }
 
 export type TModalRouteContextKey = InjectionKey<TModalRouteContext>
