@@ -17,6 +17,7 @@ defineProps({
     default: '',
   },
 })
+const emit = defineEmits(['close'])
 const onBeforeClose = (done: any) => {
   // console.log('Modal A Before Close !')
   done()
@@ -28,6 +29,10 @@ onMounted(() => {
 onUnmounted(() => {
   // console.log('Modal A Unmounted !')
 })
+const closeWithReturn = () => {
+  // console.log('Close with return !')
+  emit('close', { message: 'Return from Modal A' })
+}
 </script>
 <template>
   <ElDialog
@@ -43,6 +48,9 @@ onUnmounted(() => {
         </slot>
       </div>
     </div>
+    <ElButton @click="closeWithReturn">
+      closeWithReturn
+    </ElButton>
     <ModalPathView />
   </ElDialog>
 </template>

@@ -1,4 +1,4 @@
-import { inject, markRaw, onScopeDispose, reactive, ref } from 'vue'
+import { computed, inject, markRaw, onScopeDispose, reactive, ref } from 'vue'
 import { TModalHashRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TModalRouteContextKey } from './types'
 import {
   Router,
@@ -323,6 +323,8 @@ export const createModalRoute = (options: {
       direct: _options.direct,
       propInitiated: false,
       _manualLocked: false,
+      returnValue: null,
+      _openPromise: null,
       ...('direct' in meta ? { direct: meta.direct } : {}),
     }
   }
@@ -368,16 +370,18 @@ export const createModalRoute = (options: {
     return name in store
   }
 
-  function setupModal(name: string, options: TModalMapItem['options']) {
+  function setupModal<ReturnValue = any>(name: string, options: TModalMapItem['options']) {
     _setupModal(name, options)
     onScopeDispose(() => {
       _unsetModal(name)
     })
+    const returnValue = useModalReturnValue<ReturnValue>(name)
 
     return {
       open: (data: any) => openModal(name, data),
       close: () => closeModal(name),
       unlock: () => unlockModal(name),
+      returnValue,
     }
   }
   function getModalLocked(name: string) {
@@ -386,9 +390,9 @@ export const createModalRoute = (options: {
 
   function isModalActive(name: string) {
     const modal = getModalItem(name)
-    if (modal.options?.manual) {
-      console.log('get modal locked', name)
-      return !getModalLocked(name)
+    const locked = getModalLocked(name)
+    if (modal.options?.manual && locked) {
+      return false
     }
     if (['path', 'hash'].includes(modal.type)) {
       return currentRoute.value.matched.some(route => route.name === name)
@@ -419,8 +423,12 @@ export const createModalRoute = (options: {
     }
     setModalStateMounted(name, true)
     modal.propInitiated = false
+
+    store[name]._openPromise = defer()
+
+    return store[name]._openPromise
   }
-  function closeModal(name: string) {
+  function closeModal(name: string, returnValue?: any) {
     const modal = getModalItem(name)
 
     if (['path', 'hash'].includes(modal.type)) {
@@ -469,6 +477,8 @@ export const createModalRoute = (options: {
     }
 
     setModalStateMounted(name, false)
+    setModalReturnValue(name, returnValue)
+    store[name]._openPromise?._resolve?.(returnValue)
   }
   function setModalLock(name: string, lock: boolean) {
     if (modalExists(name)) {
@@ -477,6 +487,13 @@ export const createModalRoute = (options: {
   }
   function unlockModal(name: string) {
     setModalLock(name, false)
+  }
+
+  function setModalReturnValue(name: string, value: any) {
+    store[name].returnValue = value
+  }
+  function useModalReturnValue<T>(name: string) {
+    return computed(() => store[name].returnValue as T)
   }
 
   const modalRouteContext = {
@@ -497,6 +514,8 @@ export const createModalRoute = (options: {
     isModalActive,
     unlockModal,
     getModalItemUnsafe,
+    setModalReturnValue,
+    useModalReturnValue,
   } satisfies TModalRouteContext
 
   return {

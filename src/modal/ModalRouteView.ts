@@ -130,6 +130,7 @@ export default defineComponent({
 
   setup(props) {
     const { setModal, componentMap } = setupModalRoute()
+    const { closeModal } = useModalRoute()
     const matchedRoute = ensureInjection(matchedRouteKey, 'ModalRoute component must be used inside a router view')
     const { getModalItemUnsafe } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
 
@@ -168,6 +169,10 @@ export default defineComponent({
           'modelValue': modal.active,
           'onUpdate:modelValue': (value: boolean) => modal.active = value,
           'loading': modal.loading,
+          'onClose': ($event: any) => {
+            modal.props?.onClose?.($event)
+            closeModal(name, $event)
+          },
         }, modal.slots)
       })
     }

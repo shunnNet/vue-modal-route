@@ -1,6 +1,7 @@
-import { Component, InjectionKey, Ref } from 'vue'
+import { Component, ComputedRef, InjectionKey, Ref } from 'vue'
 import { NavigationFailure, RouteLocationRaw, RouteRecordRaw, RouteRecordSingleViewWithChildren } from 'vue-router'
 import { Rejection } from './rejection'
+import { TDefer } from './helpers'
 
 export type TModalMapItem = {
   name: string
@@ -18,6 +19,8 @@ export type TModalMapItem = {
 
   propInitiated: boolean
   _manualLocked: boolean
+  returnValue: unknown
+  _openPromise: TDefer<unknown> | null
 
   options: {
     props?: {
@@ -49,16 +52,19 @@ export type TModalRouteContext = {
   queryRoutes: TModalQueryRoute[]
   setModalStateMounted: (name: string, isMounted: boolean) => void
   openModal: (name: string, data?: Record<string, any>) => void
-  closeModal: (name: string) => void
+  closeModal: (name: string, returnValue: unknown) => void
   setupModal: (name: string, options: TModalMapItem['options']) => {
     open: (data?: Record<string, any>) => void
     close: () => void
     unlock: () => void
+    returnValue: Ref<unknown>
   }
   modalExists: (name: string) => boolean
   isModalActive: (name: string) => boolean
   getModalItemUnsafe: (name: string) => TModalMapItem | undefined
   unlockModal: (name: string) => void
+  setModalReturnValue: (name: string, value: unknown) => void
+  useModalReturnValue: <T>(name: string) => ComputedRef<T>
 }
 
 export type TModalRouteContextKey = InjectionKey<TModalRouteContext>

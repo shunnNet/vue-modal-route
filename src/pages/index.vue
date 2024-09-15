@@ -12,7 +12,7 @@ const router = useRouter()
 // console.log(router.currentRoute.value)
 // console.log(router.getRoutes())
 const messageRef = ref('From ref message')
-const { unlock } = setupModal('ModalA', {
+const { unlock, returnValue } = setupModal('ModalA', {
   props: {
     handler(data) {
       return {
@@ -39,6 +39,10 @@ setupModal('ModalB', {
 const pushSelf = () => {
   router.push('#')
 }
+const openAndGetReturn = async () => {
+  const data = await openModal('ModalA', { message: 'Open By OpenModal function' })
+  console.log('ReturnValue:', data)
+}
 setTimeout(() => {
   unlock()
 }, 2000)
@@ -46,10 +50,14 @@ setTimeout(() => {
 <template>
   <div>
     <div>
+      <div>
+        ReturnValue: {{ returnValue }}
+      </div>
+
       <ElDivider />
       <ElButton
         type="primary"
-        @click="openModal('ModalA', { message: 'Open By OpenModal function'})"
+        @click="openAndGetReturn"
       >
         Open By OpenModal function
       </ElButton>
