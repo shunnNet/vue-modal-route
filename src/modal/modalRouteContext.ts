@@ -313,8 +313,12 @@ export const createModalRouteContext = (options: {
 
   function registerHashRoutes(routes: RouteRecordRaw[]) {
     routes.map((aRoute) => {
-      if (!(aRoute.meta?.modal && aRoute.name)) {
+      if (!aRoute.meta?.modal) {
         return
+      }
+      if (!aRoute.name) {
+        console.error('Modal route must have a name', aRoute)
+        throw new Error('Modal route must have a name')
       }
       registerModalRoute(aRoute.name as string, 'hash', aRoute.meta)
       if (aRoute.children?.length) {
@@ -328,6 +332,10 @@ export const createModalRouteContext = (options: {
   function registerQueryRoutes(routeOrRouteList: TModalQueryRoute | TModalQueryRoute[]) {
     const routes = ensureArray(routeOrRouteList)
     routes.forEach((aRoute) => {
+      if (!aRoute.name) {
+        console.error('Modal route must have a name', aRoute)
+        throw new Error('Modal route must have a name')
+      }
       registerModalRoute(aRoute.name, 'query', aRoute.meta)
     })
     query.addRoutes(routes)
@@ -365,7 +373,10 @@ export const createModalRouteContext = (options: {
     }
     return false
   }
-  async function openModal(name: string, data: any = null) {
+  async function openModal(
+    name: string,
+    data: any = null,
+  ) {
     const modal = getModalItem(name)
     if (modal.type === 'path') {
       push(name, data)
