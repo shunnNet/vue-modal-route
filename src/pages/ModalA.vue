@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 import { ElDialog } from 'element-plus'
+import ModalPathView from '~/modal/ModalPathView.vue'
 
 const visible = defineModel({
   type: Boolean,
@@ -42,6 +43,7 @@ onUnmounted(() => {
         </slot>
       </div>
     </div>
+    <ModalPathView />
   </ElDialog>
 </template>
 <style></style>

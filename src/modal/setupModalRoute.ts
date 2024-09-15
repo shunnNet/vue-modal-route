@@ -18,11 +18,9 @@ type TModalMap = Record<string, {
   slots: Record<string, any>
 }>
 
-// TODO: cancel getModalProps when visiblity changed
 export const setupModalRoute = (
   parentRoute: any,
 ) => {
-  // TODO: enhance error message
   const { pop, getModalItem } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
   const { closeModal, isModalActive } = useModalRoute()
 
@@ -113,7 +111,7 @@ export const setupModalRoute = (
             response.run()
             return
           }
-          console.log('response', response)
+          // console.log('response', response)
           props.value = response || {}
           setActive(true)
         }

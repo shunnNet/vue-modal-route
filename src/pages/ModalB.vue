@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 import { ElButton, ElDialog } from 'element-plus'
+import { useModalRoute } from '~/modal'
 
 const visible = defineModel({
   type: Boolean,
@@ -29,6 +30,8 @@ onUnmounted(() => {
 })
 
 defineEmits(['trigger'])
+
+const { openModal } = useModalRoute()
 </script>
 <template>
   <ElDialog
@@ -43,6 +46,9 @@ defineEmits(['trigger'])
         @click="$emit('trigger')"
       >
         Call Event
+      </ElButton>
+      <ElButton @click="openModal('ModalA', { message: 'from modal B'})">
+        OpenModalA
       </ElButton>
     </div>
   </ElDialog>

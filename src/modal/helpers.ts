@@ -34,3 +34,30 @@ export const isNullish = (v: any) => v === null || v === undefined
  * @returns An array containing the input value or a wrapped version of it.
  */
 export const ensureArray = <T>(v: T | T[]) => isNullish(v) ? [] : Array.isArray(v) ? v : [v]
+
+export type TDefer<T = any> = Promise<T> & {
+  _resolve: (value: T) => void
+  _reject: (reason?: any) => void
+}
+export const defer = <T = any>() => {
+  let resolve: (value: T) => void
+  let reject: (reason?: any) => void
+  const promise = new Promise<T>((_resolve, _reject) => {
+    resolve = _resolve
+    reject = _reject
+  }) as TDefer<T>
+  promise._resolve = resolve!
+  promise._reject = reject!
+  return promise
+}
+
+export function once(fn: CallableFunction) {
+  let called = false
+  return (...args: any[]) => {
+    if (called) {
+      return
+    }
+    called = true
+    return fn(...args)
+  }
+}

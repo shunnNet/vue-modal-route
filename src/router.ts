@@ -7,6 +7,8 @@ import HashModalA from './pages/HashModalA.vue'
 import QueryModalA from './pages/QueryModalA.vue'
 import QueryModalB from './pages/QueryModalB.vue'
 
+const routerHistory = createWebHistory()
+
 export const router = createRouter({
   routes: [
     {
@@ -21,16 +23,18 @@ export const router = createRouter({
           meta: {
             modal: true,
           },
+          children: [
+            {
+              name: 'ModalB',
+              path: 'modal-b',
+              component: ModalB,
+              meta: {
+                modal: true,
+              },
+            },
+          ],
         },
 
-        {
-          name: 'ModalB',
-          path: 'modal-b',
-          component: ModalB,
-          meta: {
-            modal: true,
-          },
-        },
       ],
     },
     {
@@ -39,11 +43,12 @@ export const router = createRouter({
       component: () => import('./pages/test.vue'),
     },
   ],
-  history: createWebHistory(),
+  history: routerHistory,
 })
 
 export const modalRoute = createModalRouteContext({
   router,
+  routerHistory,
   query: [
     {
       name: 'query-modal-a',

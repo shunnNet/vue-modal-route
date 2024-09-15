@@ -9,14 +9,14 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 const router = useRouter()
 const route = useRoute()
-console.log(router.currentRoute.value)
-console.log(router.getRoutes())
+// console.log(router.currentRoute.value)
+// console.log(router.getRoutes())
 setupModal('ModalA', {
   props: {
     async handler(data) {
-      const loading = ElLoading.service({ fullscreen: true })
-      await sleep(2000)
-      loading.close()
+      // const loading = ElLoading.service({ fullscreen: true })
+      // await sleep(2000)
+      // loading.close()
 
       return {
         message: 'Hello Modal A from index',
@@ -38,6 +38,9 @@ setupModal('ModalB', {
     },
   },
 })
+const pushSelf = () => {
+  router.push('#')
+}
 </script>
 <template>
   <div>
@@ -63,6 +66,12 @@ setupModal('ModalB', {
       @click="openModal('hash-modal-a', null)"
     >
       openModal hash-modal-a
+    </ElButton>
+    <ElButton
+      type="success"
+      @click="pushSelf()"
+    >
+      Push
     </ElButton>
     <RouterView />
     <ModalPathView />

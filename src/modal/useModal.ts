@@ -1,7 +1,7 @@
 import { inject, InjectionKey, provide } from 'vue'
 import { Rejection } from './rejection'
 import { TCreateRejection } from './types'
-import { useModalRoute } from './modalRouteContext'
+import { useModalRouteContext } from './modalRouteContext'
 import { useRouter } from 'vue-router'
 
 export type TSetupModalOptions = {
@@ -19,7 +19,7 @@ const usePathModalKey: TUsePathModalKey = Symbol('usePathModal')
 export const usePathModal = () => {
   const ctx: TPathModalContext = {}
   const router = useRouter()
-  const { push } = useModalRoute()
+  const { push } = useModalRouteContext()
 
   const setupModal = (name: string, options: TSetupModalOptions = {}) => {
     ctx[name] = options
@@ -27,7 +27,6 @@ export const usePathModal = () => {
       open: (data: any = null) => openModal(name, data),
     }
   }
-  // TODO: Should data be restored when previous page?
   const openModal = (name: string, data: any = null) => {
     console.log('openModal', name, data)
 
