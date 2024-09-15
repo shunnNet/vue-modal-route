@@ -47,8 +47,10 @@ export const createModalRouteContext = (options: {
   routerHistory: RouterHistory
   query: TModalQueryRoute[]
   hash: TModalHashRoute[]
+  direct?: boolean
 }) => {
   const _options = {
+    direct: false,
     ...options,
     query: ensureArray(options.query),
     hash: ensureArray(options.hash),
@@ -91,9 +93,13 @@ export const createModalRouteContext = (options: {
       registerPathModalRoute(route)
     }
   })
+  const getQueryModals = (query: Record<string, any>) => {
+    return Object.keys(query).filter(queryKey => modalExists(queryKey))
+  }
   const pendingModal: any = null
   const findModalBaseRoute = (route: any) => {
     const toModalBaseIndex = route.matched.findIndex((r: any) => r.meta.modal || r.meta.modalHashRoot) - 1
+    // TODO: align index when query modals exist
     const toModalBaseRoute = toModalBaseIndex < 0 ? null : route.matched[toModalBaseIndex]
 
     return {
@@ -115,6 +121,7 @@ export const createModalRouteContext = (options: {
     const { index: toModalBaseIndex, route: toModalBaseRoute } = findModalBaseRoute(to)
     console.log('direction', direction)
     console.log('isInitNavigation', isInitNavigation, from.name)
+    const isModalRoute = !!currentModalRoute || !!queryModals.length
 
     return {
       direction,
@@ -123,10 +130,12 @@ export const createModalRouteContext = (options: {
       toModalBaseIndex,
       currentModalRoute,
       queryModals,
+      isModalRoute,
     }
   }
   router.afterEach(async (to, from) => {
     const { isInitNavigation, direction, currentModalRoute, queryModals } = getNavigationInfo(to, from)
+    // TODO: handle direct property
     if (isInitNavigation && (currentModalRoute || queryModals.length)) {
       routerHistory.replace(to.fullPath, {
         initModal: true,
@@ -177,6 +186,25 @@ export const createModalRouteContext = (options: {
   })
 
   router.beforeEach((to, from, next) => {
+    const { isInitNavigation, toModalBaseRoute, isModalRoute, queryModals } = getNavigationInfo(to, from)
+    console.log('direct', getModalItemUnsafe(to.name as string)?.direct)
+    if (
+      // not work with query modals
+      !getModalItemUnsafe(to.name as string)?.direct
+      && (isModalRoute || queryModals.length)
+      && isInitNavigation
+    ) {
+      if (queryModals.length) {
+        const _next = {
+          ...to,
+          query: {},
+        }
+        return next(_next)
+      }
+      else {
+        return next(toModalBaseRoute)
+      }
+    }
     // Ensure modal state correct when navigate witout using openModal/closeModal
     // let shouldReplace = false
 
@@ -266,6 +294,7 @@ export const createModalRouteContext = (options: {
   function registerModalRoute(
     name: string,
     type: TModalMapItem['type'],
+    meta: Record<string, any> = {},
   ) {
     if (store[name]) {
       throw new Error(`Modal route ${name} has already been defined`)
@@ -277,6 +306,8 @@ export const createModalRouteContext = (options: {
       type,
       _inuse: false,
       _stateMounted: false,
+      direct: _options.direct,
+      ...('direct' in meta ? { direct: meta.direct } : {}),
     }
   }
 
@@ -285,7 +316,7 @@ export const createModalRouteContext = (options: {
       if (!(aRoute.meta?.modal && aRoute.name)) {
         return
       }
-      registerModalRoute(aRoute.name as string, 'hash')
+      registerModalRoute(aRoute.name as string, 'hash', aRoute.meta)
       if (aRoute.children?.length) {
         registerHashRoutes(aRoute.children)
       }
@@ -297,13 +328,13 @@ export const createModalRouteContext = (options: {
   function registerQueryRoutes(routeOrRouteList: TModalQueryRoute | TModalQueryRoute[]) {
     const routes = ensureArray(routeOrRouteList)
     routes.forEach((aRoute) => {
-      registerModalRoute(aRoute.name, 'query')
+      registerModalRoute(aRoute.name, 'query', aRoute.meta)
     })
     query.addRoutes(routes)
     return routes
   }
   function registerPathModalRoute(aRoute: RouteRecordNormalized) {
-    registerModalRoute(aRoute.name as string, 'path')
+    registerModalRoute(aRoute.name as string, 'path', aRoute.meta)
     return aRoute
   }
   function setModalStateMounted(name: string, isMounted: boolean) {
