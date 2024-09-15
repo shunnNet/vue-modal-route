@@ -47,7 +47,7 @@ export const router = createRouter({
 })
 
 export const modalRoute = createModalRoute({
-  // direct: true,
+  direct: true,
   router,
   routerHistory,
   query: [

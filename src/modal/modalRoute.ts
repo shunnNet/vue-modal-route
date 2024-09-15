@@ -1,6 +1,12 @@
-import { markRaw, onScopeDispose, reactive } from 'vue'
+import { inject, markRaw, onScopeDispose, reactive, ref } from 'vue'
 import { TModalHashRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TModalRouteContextKey } from './types'
-import { Router, RouteRecordNormalized, RouteRecordRaw, createRouterMatcher, RouterHistory, RouteLocationGeneric, stringifyQuery } from 'vue-router'
+import {
+  Router,
+  RouteRecordNormalized,
+  RouteRecordRaw, createRouterMatcher, RouterHistory, RouteLocationGeneric, stringifyQuery,
+  matchedRouteKey,
+  useRouter,
+} from 'vue-router'
 import { ensureArray, ensureInjection, defer, TDefer } from './helpers'
 
 const createHashRoutes = () => {
@@ -272,14 +278,21 @@ export const createModalRoute = (options: {
   function push(name: string, data: Record<string, any>) {
     ensureModalItem(name).data = data
   }
-  function pop(name: string) {
-    const modal = ensureModalItem(name)
-    const { data } = modal
-    modal.data = null
-    return data
+  // function pop(name: string) {
+  //   const modal = ensureModalItem(name)
+  //   const { data } = modal
+  //   modal.data = null
+  //   return data
+  // }
+  function get(name: string) {
+    console.log(name)
+    return ensureModalItem(name).data
   }
   function _setupModal(name: string, options: TModalMapItem['options']) {
     ensureModalItem(name).options = options
+    if (options?.manual) {
+      setModalLock(name, true)
+    }
   }
   function _unsetModal(name: string) {
     const modal = ensureModalItem(name)
@@ -308,6 +321,8 @@ export const createModalRoute = (options: {
       _inuse: false,
       _stateMounted: false,
       direct: _options.direct,
+      propInitiated: false,
+      _manualLocked: false,
       ...('direct' in meta ? { direct: meta.direct } : {}),
     }
   }
@@ -358,14 +373,23 @@ export const createModalRoute = (options: {
     onScopeDispose(() => {
       _unsetModal(name)
     })
+
     return {
       open: (data: any) => openModal(name, data),
       close: () => closeModal(name),
+      unlock: () => unlockModal(name),
     }
+  }
+  function getModalLocked(name: string) {
+    return store[name]._manualLocked
   }
 
   function isModalActive(name: string) {
     const modal = getModalItem(name)
+    if (modal.options?.manual) {
+      console.log('get modal locked', name)
+      return !getModalLocked(name)
+    }
     if (['path', 'hash'].includes(modal.type)) {
       return currentRoute.value.matched.some(route => route.name === name)
     }
@@ -376,23 +400,25 @@ export const createModalRoute = (options: {
   }
   async function openModal(
     name: string,
-    data: any = null,
+    data?: any,
   ) {
     const modal = getModalItem(name)
+    const _data = data || null
     if (modal.type === 'path') {
-      push(name, data)
+      push(name, _data)
       router.push({ name })
     }
     else if (modal.type === 'hash') {
       router.addRoute(currentRoute.value.name as string, hash.routes)
-      push(name, data)
+      push(name, _data)
       router.push({ name })
     }
     else if (modal.type === 'query') {
-      push(name, data)
+      push(name, _data)
       router.push({ query: { ...currentRoute.value.query, [name]: '' } })
     }
     setModalStateMounted(name, true)
+    modal.propInitiated = false
   }
   function closeModal(name: string) {
     const modal = getModalItem(name)
@@ -444,11 +470,20 @@ export const createModalRoute = (options: {
 
     setModalStateMounted(name, false)
   }
+  function setModalLock(name: string, lock: boolean) {
+    if (modalExists(name)) {
+      store[name]._manualLocked = lock
+    }
+  }
+  function unlockModal(name: string) {
+    setModalLock(name, false)
+  }
 
   const modalRouteContext = {
     store,
     push,
-    pop,
+    // pop,
+    get,
     _setupModal,
     _unsetModal,
     setupModal,
@@ -460,6 +495,7 @@ export const createModalRoute = (options: {
     setModalStateMounted,
     modalExists,
     isModalActive,
+    unlockModal,
     getModalItemUnsafe,
   } satisfies TModalRouteContext
 
@@ -467,6 +503,14 @@ export const createModalRoute = (options: {
     install(app: any) {
       app.provide(modalRouteContextKey, modalRouteContext)
     },
+  }
+}
+
+export const useModalRejection = () => {
+  const matchedRoute = inject(matchedRouteKey)
+  const router = useRouter()
+  return () => {
+    router.replace(matchedRoute!.value as RouteRecordNormalized)
   }
 }
 

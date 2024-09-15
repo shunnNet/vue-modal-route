@@ -1,4 +1,4 @@
-import { Component, InjectionKey } from 'vue'
+import { Component, InjectionKey, Ref } from 'vue'
 import { NavigationFailure, RouteLocationRaw, RouteRecordRaw, RouteRecordSingleViewWithChildren } from 'vue-router'
 import { Rejection } from './rejection'
 
@@ -15,19 +15,22 @@ export type TModalMapItem = {
    * Allow enter when init navigation
    */
   direct?: boolean
+
+  propInitiated: boolean
+  _manualLocked: boolean
+
   options: {
     props?: {
       handler: (
-        data: Record<string, any> | null,
-        reject: TCreateRejection
+        data: Record<string, any> | null
       ) => Record<string, any> | Rejection
-      mode?: 'beforeVisible' | 'afterVisible'
     } | Record<string, any>
     slots?: Record<string, any>
+    manual?: boolean
   } | null
 }
 export type TModalMapPush = (name: string, data: Record<string, any>) => void
-export type TModalMapPop = (name: string) => TModalMapItem['data']
+export type TModalMapGet = (name: string) => TModalMapItem['data']
 export type TModalMapBackToParent = (
   name: string,
   mode?: 'push' | 'replace'
@@ -36,7 +39,8 @@ export type TModalMapBackToParent = (
 
 export type TModalRouteContext = {
   push: TModalMapPush
-  pop: TModalMapPop
+  // pop: TModalMapGet
+  get: TModalMapGet
   store: Record<string, TModalMapItem>
   getModalItem: (name: string) => TModalMapItem
   _setupModal: (name: string, options: TModalMapItem['options']) => void
@@ -44,12 +48,17 @@ export type TModalRouteContext = {
   hashRoutes: RouteRecordSingleViewWithChildren
   queryRoutes: TModalQueryRoute[]
   setModalStateMounted: (name: string, isMounted: boolean) => void
-  openModal: (name: string, data: Record<string, any>) => void
+  openModal: (name: string, data?: Record<string, any>) => void
   closeModal: (name: string) => void
-  setupModal: (name: string, options: TModalMapItem['options']) => void
+  setupModal: (name: string, options: TModalMapItem['options']) => {
+    open: (data?: Record<string, any>) => void
+    close: () => void
+    unlock: () => void
+  }
   modalExists: (name: string) => boolean
   isModalActive: (name: string) => boolean
   getModalItemUnsafe: (name: string) => TModalMapItem | undefined
+  unlockModal: (name: string) => void
 }
 
 export type TModalRouteContextKey = InjectionKey<TModalRouteContext>
@@ -60,8 +69,7 @@ export type TCreateRejection = (
 ) => Rejection
 
 export type TModalData = Record<string, {
-  getModalData?: (data: Record<string, any>, reject: TCreateRejection) => Record<string, any> | Rejection
-  mode?: 'beforeVisible' | 'afterVisible'
+  getModalData?: (data: Record<string, any>) => Record<string, any>
 }>
 
 export type TModalPathRoute = RouteRecordRaw & { name: string }

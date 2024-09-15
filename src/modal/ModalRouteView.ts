@@ -1,9 +1,7 @@
-import { defineComponent, h, PropType, toRef, watch, Component, computed, reactive, ref, RendererElement, RendererNode, toValue, VNode } from 'vue'
+import { defineComponent, h, PropType, watch, Component, computed, reactive, ref, RendererElement, RendererNode, VNode } from 'vue'
 import { matchedRouteKey } from 'vue-router'
 import { ensureInjection, isPlainObject } from './helpers'
 import { modalRouteContextKey, useModalRoute } from './modalRoute'
-import { Rejection } from './rejection'
-import { useRouter, RouteLocationRaw } from 'vue-router'
 
 export type TComponent = VNode<RendererNode, RendererElement, {
   [key: string]: any
@@ -14,18 +12,15 @@ type TModalMap = Record<string, {
   props: Record<string, any>
   loading: boolean
   setActive: (value: boolean) => Promise<void>
-  _getModalProps: () => Promise<void>
+  _getModalProps: () => void
   _active: boolean
   slots: Record<string, any>
 }>
 
-const setupModalRoute = (
-  parentRoute: any,
-) => {
-  const { pop, getModalItem } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
+const setupModalRoute = () => {
+  const { get, getModalItem } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
   const { closeModal, isModalActive } = useModalRoute()
 
-  const router = useRouter()
   const componentMap: TModalMap = reactive({})
 
   const createActive = (
@@ -56,11 +51,11 @@ const setupModalRoute = (
   }
 
   const setModal = (name: string, component: TComponent) => {
+    const modalItem = getModalItem(name)
     if (componentMap[name]) {
       componentMap[name]._component = component
     }
     else {
-      const modalItem = getModalItem(name)
       const { active, setActive, _active } = createActive(
         () => isModalActive(name),
         async () => closeModal(name),
@@ -71,11 +66,6 @@ const setupModalRoute = (
         }
       })
 
-      const createRejection = (
-        mode: 'replace' | 'push' = 'replace',
-        route: RouteLocationRaw = toValue(parentRoute),
-      ) => new Rejection(mode, router, route)
-
       const getProps = typeof modalItem?.options?.props?.handler === 'function'
         ? modalItem.options.props.handler
         : isPlainObject(modalItem?.options?.props)
@@ -84,37 +74,19 @@ const setupModalRoute = (
 
       const propsOption = {
         get: getProps
-          ? () => getProps(pop(name), createRejection)
-          : () => pop(name),
-        mode: modalItem?.options?.props?.mode || 'beforeVisible',
+          ? () => getProps(get(name))
+          : () => get(name),
       }
 
       const props = ref({})
       const loading = ref(false)
 
-      const _getModalProps = async () => {
-        if (propsOption?.mode === 'afterVisible') {
-          setActive(true)
-          loading.value = true
-          const response = await propsOption.get()
-          if (Rejection.isRejection(response)) {
-            setActive(false)
-            loading.value = false
-            response.run()
-            return
-          }
+      const _getModalProps = () => {
+        setActive(true)
+        if (!modalItem.propInitiated) {
+          const response = propsOption.get()
           props.value = response || {}
-          loading.value = false
-        }
-        else {
-          const response = await propsOption.get()
-          if (Rejection.isRejection(response)) {
-            response.run()
-            return
-          }
-          console.log('response', response)
-          props.value = response || {}
-          setActive(true)
+          modalItem.propInitiated = true
         }
       }
 
@@ -134,7 +106,6 @@ const setupModalRoute = (
         _active: _active as unknown as boolean,
       }
     }
-
     componentMap[name]._getModalProps()
   }
 
@@ -158,7 +129,7 @@ export default defineComponent({
   },
 
   setup(props) {
-    const { setModal, componentMap } = setupModalRoute(toRef(() => props.parent))
+    const { setModal, componentMap } = setupModalRoute()
     const matchedRoute = ensureInjection(matchedRouteKey, 'ModalRoute component must be used inside a router view')
     const { getModalItemUnsafe } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
 

@@ -1,30 +1,28 @@
 <script setup lang="ts">
 import { ElButton, ElDivider, ElLoading } from 'element-plus'
 import ModalLink from '~/modal/ModalLink.vue'
-import { ModalPathView, useModalRoute } from '~/modal'
+import { ModalPathView, useModalRoute, useModalRejection } from '~/modal'
 import { useRoute, useRouter } from 'vue-router'
+import { ref } from 'vue'
 
 const { openModal, setupModal } = useModalRoute()
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+const rejectModal = useModalRejection()
 
 const router = useRouter()
-const route = useRoute()
 // console.log(router.currentRoute.value)
 // console.log(router.getRoutes())
-setupModal('ModalA', {
+const messageRef = ref('From ref message')
+const { unlock } = setupModal('ModalA', {
   props: {
-    async handler(data) {
-      // const loading = ElLoading.service({ fullscreen: true })
-      // await sleep(2000)
-      // loading.close()
-
+    handler(data) {
       return {
-        message: 'Hello Modal A from index',
+        message: messageRef,
         ...data ?? {},
       }
     },
-    mode: 'beforeVisible',
+
   },
+  manual: true,
   slots: {
     default: () => 'Injected default slot',
   },
@@ -41,6 +39,9 @@ setupModal('ModalB', {
 const pushSelf = () => {
   router.push('#')
 }
+setTimeout(() => {
+  unlock()
+}, 2000)
 </script>
 <template>
   <div>
@@ -52,11 +53,17 @@ const pushSelf = () => {
       >
         Open By OpenModal function
       </ElButton>
+      <ElButton
+        type="primary"
+        @click="openModal('ModalA', { })"
+      >
+        Open By OpenModal function (no data)
+      </ElButton>
     </div>
 
     <ElDivider />
     <ModalLink
-      :to="{ name: 'ModalA'}"
+      name="ModalA"
       :data="{ message: 'Open By ModalLink'}"
     >
       Open By ModalLink
