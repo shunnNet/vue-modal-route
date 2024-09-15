@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, provide } from 'vue'
 import { useRoute, viewDepthKey } from 'vue-router'
-import ModalRoute from './ModalRoute'
+import ModalRoute from './ModalRouteView'
 const routes = useRoute()
 const hashRouteDepth = computed(() => {
   return routes.matched?.findIndex(r => r?.meta?.modalHashRoot === true)

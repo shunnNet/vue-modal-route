@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { inject } from 'vue'
-import ModalRoute from './ModalRoute'
+import ModalRoute from './ModalRouteView'
 import { matchedRouteKey } from 'vue-router'
 
 const matchedRoute = inject(matchedRouteKey)

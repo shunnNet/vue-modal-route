@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import ModalRoute from './ModalRoute'
+import ModalRoute from './ModalRouteView'
 import { useRoute } from 'vue-router'
 import { ensureInjection } from './helpers'
 import { modalRouteContextKey, useModalRoute } from './modalRouteContext'
