@@ -1,6 +1,5 @@
 export * from './modalRouteContext'
 export * from './types'
-export * from './setupModalRoute'
 export * from './helpers'
 
 export { default as ModalRoute } from './ModalRoute'
