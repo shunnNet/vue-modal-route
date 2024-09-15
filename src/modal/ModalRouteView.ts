@@ -1,7 +1,7 @@
 import { defineComponent, h, PropType, toRef, watch, Component, computed, reactive, ref, RendererElement, RendererNode, toValue, VNode } from 'vue'
 import { matchedRouteKey } from 'vue-router'
 import { ensureInjection, isPlainObject } from './helpers'
-import { modalRouteContextKey, useModalRoute } from './modalRouteContext'
+import { modalRouteContextKey, useModalRoute } from './modalRoute'
 import { Rejection } from './rejection'
 import { useRouter, RouteLocationRaw } from 'vue-router'
 

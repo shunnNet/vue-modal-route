@@ -42,7 +42,8 @@ const createQueryRoutes = () => {
 let position = 0
 
 export const modalRouteContextKey: TModalRouteContextKey = Symbol('modalRouteContext')
-export const createModalRouteContext = (options: {
+
+export const createModalRoute = (options: {
   router: Router
   routerHistory: RouterHistory
   query: TModalQueryRoute[]

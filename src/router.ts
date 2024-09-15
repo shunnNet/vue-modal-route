@@ -2,7 +2,7 @@ import { createWebHistory, createRouter } from 'vue-router'
 import PageIndex from '~/pages/index.vue'
 import ModalA from './pages/ModalA.vue'
 import ModalB from './pages/ModalB.vue'
-import { createModalRouteContext } from './modal'
+import { createModalRoute } from './modal'
 import HashModalA from './pages/HashModalA.vue'
 import QueryModalA from './pages/QueryModalA.vue'
 import QueryModalB from './pages/QueryModalB.vue'
@@ -46,7 +46,8 @@ export const router = createRouter({
   history: routerHistory,
 })
 
-export const modalRoute = createModalRouteContext({
+export const modalRoute = createModalRoute({
+  // direct: true,
   router,
   routerHistory,
   query: [

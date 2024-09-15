@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton } from 'element-plus'
-import { useModalRoute } from '~/modal/modalRouteContext'
+import { useModalRoute } from '~/modal'
 import { ModalQueryView } from '~/modal'
 
 const { openModal } = useModalRoute()

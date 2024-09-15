@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import ModalRoute from './ModalRouteView'
 import { useRoute } from 'vue-router'
 import { ensureInjection } from './helpers'
-import { modalRouteContextKey, useModalRoute } from './modalRouteContext'
+import { modalRouteContextKey, useModalRoute } from './modalRoute'
 
 const route = useRoute()
 const ctx = ensureInjection(modalRouteContextKey, 'useModalRoute must be used inside a ModalRoute component')

@@ -1,4 +1,4 @@
-export * from './modalRouteContext'
+export * from './modalRoute'
 export * from './types'
 export * from './helpers'
 
