@@ -11,6 +11,10 @@ export type TModalMapItem = {
    * Does state in history
    */
   _stateMounted: boolean
+  /**
+   * Allow enter when init navigation
+   */
+  direct?: boolean
   options: {
     props?: {
       handler: (
@@ -62,4 +66,4 @@ export type TModalData = Record<string, {
 
 export type TModalPathRoute = RouteRecordRaw & { name: string }
 export type TModalHashRoute = RouteRecordRaw & { name: string }
-export type TModalQueryRoute = { name: string, component: Component }
+export type TModalQueryRoute = { name: string, component: Component, meta?: Record<string, any> }
