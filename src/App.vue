@@ -27,19 +27,19 @@ const { openModal } = useModalRoute()
         Test
       </RouterLink>
 
-      <ModalLink :to="{ name: 'ModalA' }">
+      <ModalLink :name="'ModalA'">
         Modal A (Will be rejected)
       </ModalLink>
       <ModalLink
-        :to="{ name: 'ModalA'}"
+        :name="'ModalA'"
         :data="{ message: 'Hello from link' }"
       >
         Modal A with Data
       </ModalLink>
-      <ModalLink :to="{ name: 'ModalB' }">
+      <ModalLink :name="'ModalB'">
         Modal B
       </ModalLink>
-      <ElButton @click="openModal('query-modal-a', null)">
+      <ElButton @click="openModal('query-modal-a', {})">
         Query Modal A
       </ElButton>
     </nav>

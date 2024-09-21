@@ -169,7 +169,7 @@ export default defineComponent({
           'modelValue': modal.active,
           'onUpdate:modelValue': (value: boolean) => modal.active = value,
           'loading': modal.loading,
-          'onClose': ($event: any) => {
+          'onReturn': ($event: any) => {
             modal.props?.onClose?.($event)
             closeModal(name, $event)
           },

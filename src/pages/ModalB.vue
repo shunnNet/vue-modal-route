@@ -31,7 +31,7 @@ onUnmounted(() => {
 
 defineEmits(['trigger'])
 
-const { openModal } = useModalRoute()
+const { openModal, closeModal } = useModalRoute()
 </script>
 <template>
   <ElDialog
@@ -50,6 +50,17 @@ const { openModal } = useModalRoute()
       <ElButton @click="openModal('ModalA', { message: 'from modal B'})">
         OpenModalA
       </ElButton>
+      <ElButton
+        type="danger"
+        @click="closeModal('ModalA', {})"
+      >
+        Close ModalA
+      </ElButton>
+      <div>
+        <RouterLink :to="{ query: { 'something': 'yes'}}">
+          Add Query Something
+        </RouterLink>
+      </div>
     </div>
   </ElDialog>
 </template>

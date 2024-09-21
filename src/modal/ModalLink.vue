@@ -9,10 +9,10 @@ const props = defineProps({
     type: Object,
     default: () => null,
   },
-  // name: {
-  //   type: String,
-  //   required: true,
-  // },
+  name: {
+    type: String,
+    required: true,
+  },
 })
 const { openModal } = useModalRoute()
 

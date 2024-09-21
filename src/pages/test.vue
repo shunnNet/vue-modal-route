@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ElButton } from 'element-plus'
 import { useModalRoute } from '~/modal'
-import { ModalQueryView } from '~/modal'
+import { ModalQueryView, ModalPathView } from '~/modal'
 
 const { openModal } = useModalRoute()
 
@@ -11,11 +11,18 @@ const { openModal } = useModalRoute()
     <h1>test page</h1>
     <ElButton
       type="success"
-      @click="openModal('hash-modal-a', null)"
+      @click="openModal('hash-modal-a')"
     >
-      openModal
+      open hash modal a
+    </ElButton>
+    <ElButton
+      type="warning"
+      @click="openModal('ModalE')"
+    >
+      open Path Modal E
     </ElButton>
   </div>
   <ModalQueryView />
+  <ModalPathView />
 </template>
 <style></style>

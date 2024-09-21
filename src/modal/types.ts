@@ -1,4 +1,4 @@
-import { Component, ComputedRef, InjectionKey, Ref } from 'vue'
+import { Component, InjectionKey } from 'vue'
 import { NavigationFailure, RouteLocationRaw, RouteRecordRaw, RouteRecordSingleViewWithChildren } from 'vue-router'
 import { Rejection } from './rejection'
 import { TDefer } from './helpers'
@@ -7,11 +7,7 @@ export type TModalMapItem = {
   name: string
   data: Record<string, any> | null
   type: 'hash' | 'query' | 'path' | string
-  _inuse: boolean
-  /**
-   * Does state in history
-   */
-  _stateMounted: boolean
+
   /**
    * Allow enter when init navigation
    */
@@ -21,6 +17,11 @@ export type TModalMapItem = {
   _manualLocked: boolean
   returnValue: unknown
   _openPromise: TDefer<unknown> | null
+  _openPosition: number
+  isActive: (name: string) => boolean
+  open: (name: string, data: Record<string, any>) => void
+  close: (name: string, returnValue: unknown) => void
+  findBase: () => { path: string } & Record<string, any>
 
   options: {
     props?: {
@@ -48,23 +49,14 @@ export type TModalRouteContext = {
   getModalItem: (name: string) => TModalMapItem
   _setupModal: (name: string, options: TModalMapItem['options']) => void
   _unsetModal: (name: string) => void
-  hashRoutes: RouteRecordSingleViewWithChildren
   queryRoutes: TModalQueryRoute[]
-  setModalStateMounted: (name: string, isMounted: boolean) => void
   openModal: (name: string, data?: Record<string, any>) => void
-  closeModal: (name: string, returnValue: unknown) => void
-  setupModal: (name: string, options: TModalMapItem['options']) => {
-    open: (data?: Record<string, any>) => void
-    close: () => void
-    unlock: () => void
-    returnValue: Ref<unknown>
-  }
+  closeModal: (name: string, returnValue?: unknown) => void
   modalExists: (name: string) => boolean
   isModalActive: (name: string) => boolean
   getModalItemUnsafe: (name: string) => TModalMapItem | undefined
   unlockModal: (name: string) => void
   setModalReturnValue: (name: string, value: unknown) => void
-  useModalReturnValue: <T>(name: string) => ComputedRef<T>
 }
 
 export type TModalRouteContextKey = InjectionKey<TModalRouteContext>

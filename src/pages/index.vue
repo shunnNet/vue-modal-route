@@ -22,7 +22,7 @@ const { unlock, returnValue } = setupModal('ModalA', {
     },
 
   },
-  manual: true,
+  // manual: true,
   slots: {
     default: () => 'Injected default slot',
   },
@@ -44,7 +44,7 @@ const openAndGetReturn = async () => {
   console.log('ReturnValue:', data)
 }
 setTimeout(() => {
-  unlock()
+  // unlock()
 }, 2000)
 </script>
 <template>

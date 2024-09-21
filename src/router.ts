@@ -1,4 +1,4 @@
-import { createWebHistory, createRouter } from 'vue-router'
+import { createWebHistory, createRouter, RouterHistory, HistoryState } from 'vue-router'
 import PageIndex from '~/pages/index.vue'
 import ModalA from './pages/ModalA.vue'
 import ModalB from './pages/ModalB.vue'
@@ -6,8 +6,34 @@ import { createModalRoute } from './modal'
 import HashModalA from './pages/HashModalA.vue'
 import QueryModalA from './pages/QueryModalA.vue'
 import QueryModalB from './pages/QueryModalB.vue'
+import ModalE from './pages/ModalE.vue'
 
-const routerHistory = createWebHistory()
+const createWebModalHistory: () => RouterHistory = () => {
+  const webHistory = createWebHistory()
+  const _replace = webHistory.replace
+  const _push = webHistory.push
+
+  const push: RouterHistory['push'] = (path: string, data?: HistoryState) => {
+    const _data = {
+      vmr: window.history.state?.vmr ?? {},
+      ...(data ?? {}),
+    }
+    _push(path, _data)
+  }
+
+  const replace: RouterHistory['replace'] = (path: string, data?: HistoryState) => {
+    const _data = {
+      vmr: window.history.state?.vmr ?? {},
+      ...(data ?? {}),
+    }
+    _replace(path, _data)
+  }
+  // TODO: Why ?
+  webHistory.push = push
+  webHistory.replace = replace
+  return webHistory
+}
+const routerHistory = createWebModalHistory()
 
 export const router = createRouter({
   routes: [
@@ -28,6 +54,7 @@ export const router = createRouter({
               name: 'ModalB',
               path: 'modal-b',
               component: ModalB,
+
               meta: {
                 modal: true,
               },
@@ -41,6 +68,16 @@ export const router = createRouter({
       name: 'Test',
       path: '/test',
       component: () => import('./pages/test.vue'),
+      children: [
+        {
+          name: 'ModalE',
+          path: 'modal-e',
+          component: ModalE,
+          meta: {
+            modal: true,
+          },
+        },
+      ],
     },
   ],
   history: routerHistory,

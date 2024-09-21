@@ -1,6 +1,6 @@
-import { Component, inject, InjectionKey, markRaw } from 'vue'
-import { RouteRecordRaw, RouteRecordSingleViewWithChildren } from 'vue-router'
-import { TModalPathRoute } from './types'
+import { inject, InjectionKey } from 'vue'
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 export const ensureInjection = <T = unknown>(injectKey: string | InjectionKey<T>, errorMsg: string) => {
   const injection = inject(injectKey)
@@ -61,3 +61,29 @@ export function once(fn: CallableFunction) {
     return fn(...args)
   }
 }
+
+export function createCallbacks() {
+  const callbacks: Array<() => any> = []
+
+  function addCallback(cb: () => any) {
+    callbacks.push(cb)
+    return () => {
+      const index = callbacks.indexOf(cb)
+      if (index > -1) {
+        callbacks.splice(index, 1)
+      }
+    }
+  }
+
+  function run(...params: any[]) {
+    return callbacks.map(cb => cb(...params))
+  }
+
+  return {
+    callbacks,
+    addCallback,
+    runCallback: run,
+  }
+}
+
+export const noop = () => { }
