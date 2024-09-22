@@ -12,6 +12,7 @@ export const createPathRoutes = (
 
   function openModal(name: string, data: Record<string, any> = {}) {
     store.push(name, data)
+    console.log('openModal', name)
     router.push({ name })
   }
   function findBase(name: string) {

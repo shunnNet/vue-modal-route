@@ -79,6 +79,21 @@ export const router = createRouter({
         },
       ],
     },
+    {
+      name: 'PathHashA',
+      path: '/path-hash-a',
+      component: () => import('./pages/path-hash/path-hash-a.vue'),
+      children: [
+        {
+          name: 'ModalPH1',
+          path: 'modal-ph1',
+          component: () => import('./pages/path-hash/ModalPH1.vue'),
+          meta: {
+            modal: true,
+          },
+        },
+      ],
+    },
   ],
   history: routerHistory,
 })

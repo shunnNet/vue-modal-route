@@ -3,12 +3,19 @@ import { ElButton, ElDivider, ElLoading } from 'element-plus'
 import ModalLink from '~/modal/ModalLink.vue'
 import { ModalPathView, useModalRoute, useModalRejection } from '~/modal'
 import { useRoute, useRouter } from 'vue-router'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 const { openModal, setupModal } = useModalRoute()
 const rejectModal = useModalRejection()
 
 const router = useRouter()
+const route = useRoute()
+onMounted(() => {
+  console.log(route.query)
+  Object.keys(route.query).forEach((key) => {
+    console.log(key, route.query[key])
+  })
+})
 // console.log(router.currentRoute.value)
 // console.log(router.getRoutes())
 const messageRef = ref('From ref message')

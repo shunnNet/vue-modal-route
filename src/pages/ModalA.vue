@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 import { ElDialog } from 'element-plus'
-import ModalPathView from '~/modal/ModalPathView.vue'
+import { useModalRoute, ModalPathView } from '~/modal'
 
 const visible = defineModel({
   type: Boolean,
@@ -31,8 +31,9 @@ onUnmounted(() => {
 })
 const closeWithReturn = () => {
   // console.log('Close with return !')
-  emit('close', { message: 'Return from Modal A' })
+  emit('return', { message: 'Return from Modal A' })
 }
+const { openModal } = useModalRoute()
 </script>
 <template>
   <ElDialog
@@ -51,6 +52,13 @@ const closeWithReturn = () => {
     <ElButton @click="closeWithReturn">
       closeWithReturn
     </ElButton>
+    <ElButton
+      type="success"
+      @click="openModal('ModalB' )"
+    >
+      Open Modal B
+    </ElButton>
+
     <ModalPathView />
   </ElDialog>
 </template>

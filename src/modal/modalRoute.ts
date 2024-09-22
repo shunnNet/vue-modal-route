@@ -6,6 +6,7 @@ import {
   RouterHistory,
   matchedRouteKey,
   useRouter,
+  stringifyQuery,
 } from 'vue-router'
 import { ensureArray, ensureInjection, noop } from './helpers'
 import { createHashRoutes } from './hash'
@@ -59,7 +60,7 @@ export const createModalRoute = (options: {
   })
 
   const { registerHashRoutes } = createHashRoutes(store, router)
-  const { registerQueryRoutes, routes: queryRoutes, getQueryModalsFromQuery } = createQueryRoutes(store, router)
+  const { registerQueryRoutes, routes: queryRoutes, getQueryModalsFromQuery, mQName } = createQueryRoutes(store, router)
   const { registerPathModalRoute } = createPathRoutes(store, router)
   const {
     modalMap,
@@ -104,6 +105,7 @@ export const createModalRoute = (options: {
     paths.forEach((aPath, i) => {
       const _path = aPath.path
       const currentState = routerHistory.state
+      console.log('currentState', { ...currentState })
       const _vmr = { ...(currentState.vmr as Record<string, any> ?? {}) }
       if (modalExists(aPath.name as string)) {
         _vmr[aPath.name as string] = currentState.position as number + (i === 0 ? -1 : 0)
@@ -123,22 +125,24 @@ export const createModalRoute = (options: {
     }
   }
 
-  // Not allow forward navigation without using openModal
+  // Not allow forward open without using openModal
   router.beforeEach((to) => {
     const ctx = context.get()
+
     const toOpenModal = to.matched.some(
       r => r.meta.modal || !!getQueryModalsFromQuery(to.query).length,
     ) || to.hash.startsWith('#modal')
-    console.log('direction', ctx.direction)
+
     if (
       ctx.direction === 'forward'
       && toOpenModal
       && !ctx.openByOpenModal
     ) {
-      console.log('Not allow forward navigation without using openModal', to.name)
+      console.log('Not allow forward open without using openModal', to.name)
       return false
     }
   })
+
   // Remove vmr when modal not exists in next route
   router.afterEach((to, _, failure) => {
     if (failure) {
@@ -147,8 +151,12 @@ export const createModalRoute = (options: {
     const vmr = {
       ...(routerHistory.state.vmr ?? {}) as Record<string, number>,
     }
+    const toQueryModals = getQueryModalsFromQuery(to.query).map(m => m.name)
     Object.keys(vmr).forEach((modalName) => {
-      if (!to.matched.some(r => r.name === modalName)) {
+      if (
+        !to.matched.some(r => r.name === modalName)
+        && !toQueryModals.includes(modalName)
+      ) {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete vmr[modalName]
       }
@@ -174,55 +182,41 @@ export const createModalRoute = (options: {
       const backSteps = basePosition - (routerHistory.state.position as number)
       console.log(`go ${backSteps} steps back to base position`, basePosition)
       await goPromise(backSteps, false)
-      const fromBase = getModalItem(firstNotExistModal.name as string).findBase()
-      const firstToModal = to.matched.find(r => r.meta.modal && !from.matched.some(r2 => r2.name === r.name))
-      console.log('firstToModal', firstToModal)
-
-      if (firstToModal) {
-        const toModal = getModalItem(firstToModal.name as string)
-        const toBase = toModal.findBase()
-        const toBaseIndex = to.matched.findIndex(r => r.name === toBase.name)
-
-        padSteps(
-          [
-            { name: fromBase.name, path: fromBase.path },
-            ...to.matched.slice(toBaseIndex).filter(r => !r.meta.modalHashRoot) as { name: string, path: string }[],
-          ],
-          { go: false },
-        )
-        setPosition(routerHistory.state.position as number)
-      }
     }
-    else {
-      console.log('base position not found')
-      const firstToModal = to.matched.find(r => r.meta.modal && !from.matched.some(r2 => r2.name === r.name))
-      if (firstToModal) {
-        const toModal = getModalItem(firstToModal.name as string)
-        const toBase = toModal.findBase()
-        const toBaseIndex = to.matched.findIndex(r => r.name === toBase.name)
-        padSteps(
-          [
-            { name: '', path: '/' },
-            ...to.matched.slice(toBaseIndex).filter(r => !r.meta.modalHashRoot) as { name: string, path: string }[],
-          ],
-          { go: false },
-        )
-        setPosition(routerHistory.state.position as number)
-      }
+    const base = basePosition !== undefined
+      ? getModalItem(firstNotExistModal.name as string).findBase()
+      : { name: '', path: '/' }
+
+    const firstToModal = to.matched.find(r => r.meta.modal && !from.matched.some(r2 => r2.name === r.name))
+
+    if (firstToModal) {
+      const toModal = getModalItem(firstToModal.name as string)
+      const toBase = toModal.findBase()
+      const toBaseIndex = to.matched.findIndex(r => r.name === toBase.name)
+
+      padSteps(
+        [
+          { name: base.name, path: base.path },
+          ...to.matched.slice(toBaseIndex).filter(r => !r.meta.modalHashRoot) as { name: string, path: string }[],
+        ],
+        { go: false },
+      )
+      setPosition(routerHistory.state.position as number)
     }
-    // const modal = getModalItem(firstNotExistModal.name as string)
-    // modal.findBase()
   })
+
   // setup modal base position when open modal
   router.afterEach(async (to, from, failure) => {
     const ctx = context.get()
     if (!ctx.openByOpenModal || failure) {
       return
     }
+    // Only handle OpenModal()
 
     // if previous route in current matched
     const index = to.matched.findIndex(r => r.name === from.name)
-    if (index !== -1) {
+    if (index !== -1 && to.name !== from.name) {
+      console.log('found from route in to matched')
       padSteps(
         to.matched
           .slice(index + 1)
@@ -234,6 +228,31 @@ export const createModalRoute = (options: {
     }
     // do nothing if from route not in to matched
     // basePosition will be set when closeModal instead
+
+    // Query: only extract new modal
+    const fromQueryModals = getQueryModalsFromQuery(from.query).map(m => m.name)
+    const toQueryModals = getQueryModalsFromQuery(to.query).map(m => m.name)
+
+    const newQueryModals = toQueryModals.filter(m => !fromQueryModals.includes(m))
+    const newQuery = { ...to.query }
+    console.log(from)
+    newQueryModals.forEach((m) => {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete newQuery[m]
+    })
+    console.log(newQueryModals)
+    if (newQueryModals.length) {
+      padSteps(
+        newQueryModals.map((m) => {
+          newQuery[mQName(m)] = ''
+          return {
+            name: m,
+            path: to.path + '?' + stringifyQuery(newQuery),
+          }
+        }),
+        { go: false },
+      )
+    }
   })
 
   function isModalActive(name: string) {
@@ -258,6 +277,7 @@ export const createModalRoute = (options: {
     const vmr = routerHistory.state.vmr as Record<string, number>
     const basePosition = vmr[name]
 
+    console.log('close modal', name, 'basePosition', basePosition)
     if (basePosition !== undefined) {
       if (basePosition === routerHistory.state.position) {
         // Do nothing if base position is current position

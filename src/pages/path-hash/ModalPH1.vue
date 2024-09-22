@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
-import { ElButton, ElDialog } from 'element-plus'
+import { ElDialog } from 'element-plus'
 import { useModalRoute } from '~/modal'
+
+const { openModal } = useModalRoute()
 
 const visible = defineModel({
   type: Boolean,
@@ -14,38 +16,38 @@ defineProps({
   },
   message: {
     type: String,
-    default: 'default message',
+    default: '',
   },
 })
+const emit = defineEmits(['return'])
 const onBeforeClose = (done: any) => {
   // console.log('Modal A Before Close !')
   done()
 }
 onMounted(() => {
-  console.log('Query Modal B Mounted !')
-  console.log(visible.value)
+  // console.log('Modal A Mounted !')
 })
 
 onUnmounted(() => {
   // console.log('Modal A Unmounted !')
 })
-const { closeModal } = useModalRoute()
+const closeWithReturn = () => {
+  // console.log('Close with return !')
+  emit('return', { message: 'Return from ModalPH1' })
+}
 </script>
 <template>
-  <ElDrawer
+  <ElDialog
     v-model="visible"
-    title="Query Modal B"
     :before-close="onBeforeClose"
   >
-    <div v-loading="loading">
-      {{ message }}
-    </div>
+    Modal PH 1
     <ElButton
-      type="warning"
-      @click="closeModal('query-modal-a')"
+      type="success"
+      @click="openModal('hash-modal-a')"
     >
-      Close Query A
+      open hash modal a
     </ElButton>
-  </ElDrawer>
+  </ElDialog>
 </template>
 <style></style>

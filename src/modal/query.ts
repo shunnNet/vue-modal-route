@@ -10,18 +10,11 @@ export const createQueryRoutes = (
 ) => {
   const _routes: TModalQueryRoute[] = []
   const currentRoute = router.currentRoute
-
-  const addRoutes = (newRoutes: TModalQueryRoute[]) => {
-    newRoutes.forEach((aRoute) => {
-      aRoute.component = markRaw(aRoute.component)
-      _routes.push(aRoute)
-    })
-  }
-  const defineActive = (name: string) => name in currentRoute.value.query
-  function findBase(_: string) {
-    // TODO: temporary solution
-    return { ...currentRoute.value, query: {} }
-  }
+  const mqprefix = 'm-'
+  const mQName = (name: string) => `${mqprefix}${name}`
+  const mQuery = (name: string, value: any = '') => ({ [mQName(name)]: value })
+  // const isMQuery = (name: string) => name.startsWith(mqprefix)
+  const getNameFromMQuery = (name: string) => name.startsWith(mqprefix) ? name.slice(mqprefix.length) : ''
 
   function registerQueryRoutes(routeOrRouteList: TModalQueryRoute | TModalQueryRoute[]) {
     const routes = ensureArray(routeOrRouteList)
@@ -32,7 +25,7 @@ export const createQueryRoutes = (
       }
       store.registerModal(aRoute.name, 'query', {
         ...aRoute.meta,
-        isActive: defineActive,
+        isActive,
         open: openModal,
         findBase,
       })
@@ -41,29 +34,55 @@ export const createQueryRoutes = (
     return routes
   }
 
+  const addRoutes = (newRoutes: TModalQueryRoute[]) => {
+    newRoutes.forEach((aRoute) => {
+      aRoute.component = markRaw(aRoute.component)
+      _routes.push(aRoute)
+    })
+  }
+
   function openModal(name: string, data: Record<string, any> = {}) {
+    // TODO: check if modal is already open in store level
     store.push(name, data)
-    router.push({ query: { ...currentRoute.value.query, [name]: '' } })
+    router.push({
+      query: {
+        ...currentRoute.value.query,
+        ...mQuery(name),
+      },
+    })
+  }
+
+  const isActive = (name: string) => mQName(name) in currentRoute.value.query
+
+  function findBase(name: string) {
+    const currentModalNames = getQueryModalsFromQuery(currentRoute.value.query).map(m => m.name)
+    const index = currentModalNames.indexOf(name)
+    if (index > -1) {
+      const baseQueryNames = currentModalNames.slice(0, index)
+      const newQuery = baseQueryNames.reduce((acc, name) => {
+        return { ...acc, ...mQuery(name) }
+      }, {})
+      return { ...currentRoute.value, query: newQuery }
+    }
+    else {
+      return null
+    }
   }
 
   function getQueryModalsFromQuery(query: Record<string, any>) {
     return Object.keys(query).flatMap((name) => {
-      const modal = store.getModalItemUnsafe(name)
+      const _name = getNameFromMQuery(name)
+      const modal = store.getModalItemUnsafe(_name)
       return modal ? [modal] : []
     })
   }
-
-  function getActiveQueryModals() {
-    return getQueryModalsFromQuery(currentRoute.value.query)
-      .filter(modal => modal.isActive(modal.name))
-  }
-
   return {
     routes: _routes,
     addRoutes,
     registerQueryRoutes,
     openModal,
-    getActiveQueryModals,
     getQueryModalsFromQuery,
+    mQName,
+    mQuery,
   }
 }

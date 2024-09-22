@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 import { ElDialog } from 'element-plus'
+import { useModalRoute } from '~/modal'
 
 const visible = defineModel({
   type: Boolean,
@@ -28,6 +29,7 @@ onMounted(() => {
 onUnmounted(() => {
   // console.log('Modal A Unmounted !')
 })
+const { closeModal } = useModalRoute()
 </script>
 <template>
   <ElDialog
@@ -37,6 +39,12 @@ onUnmounted(() => {
     <div v-loading="loading">
       {{ message }}
     </div>
+    <ElButton
+      type="warning"
+      @click="closeModal('ModalPH1')"
+    >
+      Close Modal PH1
+    </ElButton>
   </ElDialog>
 </template>
 <style></style>
