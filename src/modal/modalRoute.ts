@@ -39,10 +39,11 @@ export const createModalRoute = (options: {
   const currentRoute = _options.router.currentRoute
   const store = createModalStore()
   const {
-    goPromise,
+    goHistory,
     context,
     getNavigationInfo,
-    setPosition,
+    pushHistory,
+    replaceHistory,
   } = useModalHistory({ router, routerHistory })
 
   // TODO: find some time to makes me better
@@ -112,16 +113,14 @@ export const createModalRoute = (options: {
       }
       const state = { vmr: _vmr }
       if (i === 0) {
-        routerHistory.replace(_path, state)
-        console.log('replace', _path, state)
+        replaceHistory(_path, state)
       }
       else {
-        routerHistory.push(_path, state)
-        console.log('push', _path, state)
+        pushHistory(_path, state)
       }
     })
     if (_options.go) {
-      await goPromise(1 - paths.length, _options.triggerListener)
+      await goHistory(1 - paths.length, _options.triggerListener)
     }
   }
 
@@ -162,7 +161,7 @@ export const createModalRoute = (options: {
       }
     })
     console.log('replace vmr', to.fullPath, vmr)
-    routerHistory.replace(to.fullPath, { vmr })
+    replaceHistory(to.fullPath, { vmr })
   })
   router.afterEach(async (to, from, failure) => {
     if (failure) {
@@ -181,7 +180,7 @@ export const createModalRoute = (options: {
     if (basePosition !== undefined) {
       const backSteps = basePosition - (routerHistory.state.position as number)
       console.log(`go ${backSteps} steps back to base position`, basePosition)
-      await goPromise(backSteps, false)
+      await goHistory(backSteps, false)
     }
     const base = basePosition !== undefined
       ? getModalItem(firstNotExistModal.name as string).findBase()
@@ -201,7 +200,6 @@ export const createModalRoute = (options: {
         ],
         { go: false },
       )
-      setPosition(routerHistory.state.position as number)
     }
   })
 
@@ -223,7 +221,6 @@ export const createModalRoute = (options: {
           .filter(r => !r.meta.modalHashRoot) as { name: string, path: string }[],
         { go: false },
       )
-      setPosition(routerHistory.state.position as number)
       return
     }
     // do nothing if from route not in to matched
@@ -304,7 +301,6 @@ export const createModalRoute = (options: {
             matched.slice(rootBaseIndex) as { name: string, path: string }[],
             { go: false },
           )
-          setPosition(routerHistory.state.position as number)
           console.log('go back to base route', baseRoute.name)
           router.go(1 - matched.slice(baseIndex).length)
         }
@@ -314,9 +310,9 @@ export const createModalRoute = (options: {
       }
       else {
         console.log('go back to \'/\', and pad steps to closing modal')
-        routerHistory.replace('/')
-        routerHistory.push(currentRoute.value.fullPath)
-        routerHistory.go(-1)
+        replaceHistory('/')
+        pushHistory(currentRoute.value.fullPath)
+        goHistory(-1)
       }
     }
     modal.close(name, returnValue)

@@ -1,4 +1,4 @@
-import { RouteLocationNormalizedGeneric, Router, RouterHistory, START_LOCATION } from 'vue-router'
+import { HistoryState, RouteLocationNormalizedGeneric, Router, RouterHistory, START_LOCATION } from 'vue-router'
 import { defer, TDefer } from './helpers'
 import { createContext } from './context'
 
@@ -13,26 +13,27 @@ export const useModalHistory = (options: {
   }
   const router = _options.router
   const routerHistory = _options.routerHistory
-  const position = { value: 0 }
   const initPosition = { value: history.state.position ?? 0 }
 
-  // ex: forward
-  // history.state.position change
-  // router popstate handler called
-  // afterEach called (lots of async functions (so its always call before macro task like popstate))
-  // popstate called
-  // popstate called (again, when failed to navigate)
-  // we still need afterEach part to update the position when push or replace is called
-  router.afterEach(() => {
-    position.value = history.state.position as number
+  const position = { value: 0 }
+  router.afterEach((_to, _from, failure) => {
+    if (!failure) {
+      position.value = history.state.position as number
+    }
   })
-  // position is correct in afterEach if successful navigation, but not if blocked by a guard
-  // Although router run afterEach hook after playbacks the history by routerHistory.go
-  // the .go() is a asynchronous, so the state still wrong when afterEach is called
-  // to check the correct state we need to listen to popstate event in this case
-  window.addEventListener('popstate', (e) => {
-    position.value = e.state.position
-  })
+  const pushHistory: RouterHistory['push'] = (to: string, data?: HistoryState) => {
+    const r = routerHistory.push(to, data)
+    position.value = routerHistory.state.position as number
+    console.log('push', to, data)
+
+    return r
+  }
+  const replaceHistory: RouterHistory['replace'] = (to: string, data?: HistoryState) => {
+    const r = routerHistory.replace(to, data)
+    position.value = routerHistory.state.position as number
+    console.log('replace', to, data)
+    return r
+  }
 
   let _goPromise: null | TDefer<PopStateEvent['state']> = null
   window.addEventListener('popstate', (e) => {
@@ -42,9 +43,12 @@ export const useModalHistory = (options: {
       _goPromise = null
     }
   })
-  const goPromise = (delta: number, triggerListener: boolean = false) => {
+  const goHistory = (delta: number, triggerListener: boolean = false) => {
     _goPromise = defer()
     routerHistory.go(delta, triggerListener)
+    _goPromise.then(() => {
+      position.value = routerHistory.state.position as number
+    })
     return _goPromise
   }
   const getNavigationInfo = (
@@ -77,13 +81,10 @@ export const useModalHistory = (options: {
   const ctx = createContext()
 
   return {
-    goPromise,
     getNavigationInfo,
-    // modalBeforeEach,
-    // modalAfterEach,
-    setPosition: (pos: number) => {
-      position.value = pos
-    },
+    goHistory,
+    pushHistory,
+    replaceHistory,
     context: ctx,
   }
 }
