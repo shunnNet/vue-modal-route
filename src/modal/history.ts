@@ -13,24 +13,55 @@ export const useModalHistory = (options: {
   }
   const router = _options.router
   const routerHistory = _options.routerHistory
-  const initPosition = { value: history.state.position ?? 0 }
+  const getCurrentPosition = () => routerHistory.state.position as number
+
+  const initPosition = { value: getCurrentPosition() ?? 0 }
 
   const position = { value: 0 }
   router.afterEach((_to, _from, failure) => {
     if (!failure) {
-      position.value = history.state.position as number
+      position.value = getCurrentPosition()
     }
   })
+  const tagKey = 'vmrt'
+  const tags: Record<string, string> = JSON.parse(sessionStorage.getItem(tagKey) || '{}')
+
+  const saveTags = () => {
+    sessionStorage.setItem(tagKey, JSON.stringify(tags))
+  }
+  const tagHistory = (name: string) => {
+    tags[`${getCurrentPosition()}`] = name
+    routerHistory.replace(
+      routerHistory.location,
+      { ...routerHistory.state, vmrTag: name },
+    )
+    saveTags()
+  }
+  // get most last position has tag name
+  const getPositionByTag = (name: string) => {
+    for (const [key, value] of Object.entries(tags).reverse()) {
+      if (value === name) {
+        return parseFloat(key)
+      }
+    }
+    return null
+  }
+
   const pushHistory: RouterHistory['push'] = (to: string, data?: HistoryState) => {
     const r = routerHistory.push(to, data)
-    position.value = routerHistory.state.position as number
+    position.value = getCurrentPosition()
     console.log('push', to, data)
+
+    if (tags[`${getCurrentPosition()}`]) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete tags[`${getCurrentPosition()}`]
+    }
 
     return r
   }
   const replaceHistory: RouterHistory['replace'] = (to: string, data?: HistoryState) => {
     const r = routerHistory.replace(to, data)
-    position.value = routerHistory.state.position as number
+    position.value = getCurrentPosition()
     console.log('replace', to, data)
     return r
   }
@@ -43,14 +74,32 @@ export const useModalHistory = (options: {
       _goPromise = null
     }
   })
-  const goHistory = (delta: number, triggerListener: boolean = false) => {
+  const goHistory = (deltaOrTag: number | string, triggerListener: boolean = false) => {
+    let delta = 0
+    if (typeof deltaOrTag === 'number') {
+      delta = deltaOrTag
+    }
+    else if (typeof deltaOrTag === 'string') {
+      const p = getPositionByTag(deltaOrTag)
+      if (p !== null) {
+        delta = p - getCurrentPosition()
+      }
+      else {
+        return Promise.reject(new Error(`History tag ${deltaOrTag} not found.`))
+      }
+    }
+    else {
+      return Promise.reject(new Error('Invalid argument type.'))
+    }
+
     _goPromise = defer()
     routerHistory.go(delta, triggerListener)
     _goPromise.then(() => {
-      position.value = routerHistory.state.position as number
+      position.value = getCurrentPosition()
     })
     return _goPromise
   }
+
   const getNavigationInfo = (
     _: RouteLocationNormalizedGeneric,
     from: RouteLocationNormalizedGeneric,
@@ -61,9 +110,9 @@ export const useModalHistory = (options: {
 
     // direction is correct only when forward or backward by .go() or user action
     // because pushState is called at the end of the navigation when calling push or replace
-    const direction = history.state.position > position.value
+    const direction = getCurrentPosition() > position.value
       ? 'forward'
-      : history.state.position < position.value
+      : getCurrentPosition() < position.value
         ? 'backward'
         : 'unknown'
 
@@ -86,5 +135,6 @@ export const useModalHistory = (options: {
     pushHistory,
     replaceHistory,
     context: ctx,
+    tagHistory,
   }
 }
