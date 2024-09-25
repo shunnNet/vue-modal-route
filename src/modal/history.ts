@@ -1,8 +1,10 @@
 import { HistoryState, RouteLocationNormalizedGeneric, Router, RouterHistory, START_LOCATION } from 'vue-router'
 import { defer, TDefer } from './helpers'
 import { createContext } from './context'
+import { useSessionStorage } from './storage'
 
 export type TModalHistory = ReturnType<typeof useModalHistory>
+type TvmrtTags = Record<string, string>
 
 export const useModalHistory = (options: {
   router: Router
@@ -23,11 +25,11 @@ export const useModalHistory = (options: {
       position.value = getCurrentPosition()
     }
   })
-  const tagKey = 'vmrt'
-  const tags: Record<string, string> = JSON.parse(sessionStorage.getItem(tagKey) || '{}')
+  const vmrtStorage = useSessionStorage<TvmrtTags>('vmrt')
+  const tags: TvmrtTags = vmrtStorage.get() ?? {}
 
   const saveTags = () => {
-    sessionStorage.setItem(tagKey, JSON.stringify(tags))
+    vmrtStorage.set(tags)
   }
   const tagHistory = (name: string) => {
     tags[`${getCurrentPosition()}`] = name
@@ -55,6 +57,7 @@ export const useModalHistory = (options: {
     if (tags[`${getCurrentPosition()}`]) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete tags[`${getCurrentPosition()}`]
+      saveTags()
     }
 
     return r

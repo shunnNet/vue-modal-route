@@ -1,13 +1,13 @@
-export const useSessionStorage = () => {
-  const set = (key: string, value: any) => {
-    sessionStorage.setItem(key, JSON.stringify(value))
+export const useSessionStorage = <T>(name: string) => {
+  const set = (value: T) => {
+    sessionStorage.setItem(name, JSON.stringify(value))
   }
-  const get = (key: string) => {
-    const value = sessionStorage.getItem(key)
-    return value ? JSON.parse(value) : null
+  const get = () => {
+    const value = sessionStorage.getItem(name)
+    return value ? JSON.parse(value) : null as T | null
   }
-  const del = (key: string) => {
-    sessionStorage.removeItem(key)
+  const del = () => {
+    sessionStorage.removeItem(name)
   }
   return { set, get, del }
 }
