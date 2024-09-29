@@ -30,8 +30,8 @@ export const useModalHistory = (options: {
   const saveTags = () => {
     vmrtStorage.set(tags)
   }
-  const tagHistory = (name: string) => {
-    tags[`${getCurrentPosition()}`] = name
+  const tagHistory = (name: string, position: number = getCurrentPosition()) => {
+    tags[`${position}`] = name
     routerHistory.replace(
       routerHistory.location,
       { ...routerHistory.state, vmrTag: name },
@@ -51,10 +51,9 @@ export const useModalHistory = (options: {
   const pushHistory: RouterHistory['push'] = (to: string, data?: HistoryState) => {
     const r = routerHistory.push(to, data)
     position.value = getCurrentPosition()
-    console.log('push', to, data)
+    console.log('push', to, position.value)
 
     if (tags[`${getCurrentPosition()}`]) {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete tags[`${getCurrentPosition()}`]
       saveTags()
     }
@@ -64,7 +63,7 @@ export const useModalHistory = (options: {
   const replaceHistory: RouterHistory['replace'] = (to: string, data?: HistoryState) => {
     const r = routerHistory.replace(to, data)
     position.value = getCurrentPosition()
-    console.log('replace', to, data)
+    console.log('replace', to, position.value)
     return r
   }
 
@@ -127,16 +126,14 @@ export const useModalHistory = (options: {
       position: position.value,
     }
   }
-  // string | ({ path: string } & Record<string, any>)
-
-  const ctx = createContext()
 
   return {
     getNavigationInfo,
     goHistory,
     pushHistory,
     replaceHistory,
-    context: ctx,
     tagHistory,
+    getCurrentPosition,
+    getPositionByTag,
   }
 }

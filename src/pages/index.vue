@@ -44,7 +44,7 @@ setupModal('ModalB', {
   },
 })
 const pushSelf = () => {
-  router.push('#')
+  router.push({ query: { some: 'data' }, hash: '#123' })
 }
 const openAndGetReturn = async () => {
   const data = await openModal('ModalA', { message: 'Open By OpenModal function' })
@@ -95,6 +95,9 @@ setTimeout(() => {
     >
       Push
     </ElButton>
+    <RouterLink to="/?redi=123">
+      redi
+    </RouterLink>
     <RouterView />
     <ModalPathView />
   </div>

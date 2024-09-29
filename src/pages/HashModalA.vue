@@ -34,6 +34,7 @@ const { closeModal } = useModalRoute()
 <template>
   <ElDialog
     v-model="visible"
+    title="Hash Modal A"
     :before-close="onBeforeClose"
   >
     <div v-loading="loading">

@@ -40,8 +40,8 @@ const closeWithReturn = () => {
   <ElDialog
     v-model="visible"
     :before-close="onBeforeClose"
+    title="Modal PH 1"
   >
-    Modal PH 1
     <ElButton
       type="success"
       @click="openModal('hash-modal-a')"

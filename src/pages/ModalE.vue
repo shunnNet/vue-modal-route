@@ -45,7 +45,7 @@ const { openModal } = useModalRoute()
 
     <ElButton
       type="warning"
-      @click="openModal('ModalB')"
+      @click="openModal('ModalB', {})"
     >
       Open Modal B
     </ElButton>

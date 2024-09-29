@@ -18,9 +18,12 @@ export const createHashRoutes = (
     currentRoute.value.matched.some(route => route.name === name)
 
   function openModal(name: string, data: Record<string, any> = {}) {
-    router.addRoute(currentRoute.value.name as string, hashRoute)
+    prepareHashRoute()
     store.push(name, data)
     router.push({ name })
+  }
+  function prepareHashRoute(target?: string) {
+    router.addRoute(target || currentRoute.value.name as string, hashRoute)
   }
 
   function findBase(name: string) {
@@ -79,33 +82,11 @@ export const createHashRoutes = (
     children,
   }
 
-  // router.beforeEach((to, _, next) => {
-  //   // 1. When from hash route to another hash route that based on another path route
-  //   // 2. When router initialization
-  //   if (to.hash.startsWith('#modal/')) {
-  //     router.addRoute(to.name as string, hashRoute)
-  //     const r = resolveHashRoute(to.fullPath)
-
-  //     // Should include "shouldReplace" ?
-  //     return r.name ? next(r) : next()
-  //   }
-  //   else {
-  //     return next(to)
-  //   }
-  // })
-  router.afterEach((to, from) => {
-    if (
-      from.matched.some(route => route.meta.modalHashRoot)
-      && to.matched.every(route => !route.meta.modalHashRoot)
-    ) {
-      router.removeRoute(hashRoute.name as string)
-    }
-  })
-
   return {
     routes: hashRoute,
     addRoutes,
     registerHashRoutes,
     resolveHashRoute,
+    prepareHashRoute,
   }
 }

@@ -76,6 +76,12 @@ export const createQueryRoutes = (
       return modal ? [modal] : []
     })
   }
+  function removeModalFromQuery(query: Record<string, any>, name: string) {
+    const _query = { ...query }
+    delete _query[mQName(name)]
+    return _query
+  }
+
   return {
     routes: _routes,
     addRoutes,
@@ -84,5 +90,6 @@ export const createQueryRoutes = (
     getQueryModalsFromQuery,
     mQName,
     mQuery,
+    removeModalFromQuery,
   }
 }
