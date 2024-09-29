@@ -18,8 +18,7 @@ export const useModalHistory = (options: {
   const getCurrentPosition = () => routerHistory.state.position as number
 
   const initPosition = { value: getCurrentPosition() ?? 0 }
-
-  const position = { value: 0 }
+  const position = { value: initPosition.value }
   router.afterEach((_to, _from, failure) => {
     if (!failure) {
       position.value = getCurrentPosition()
