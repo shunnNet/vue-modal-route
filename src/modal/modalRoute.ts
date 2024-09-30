@@ -77,7 +77,7 @@ export const createModalRoute = (options: {
 
   const {
     modalMap,
-    get,
+    pop,
     push,
     getModalItem,
     getModalItemUnsafe,
@@ -367,7 +367,7 @@ export const createModalRoute = (options: {
   const modalRouteContext = {
     store: modalMap,
     push,
-    get,
+    pop,
     _setupModal,
     _unsetModal,
     openModal,

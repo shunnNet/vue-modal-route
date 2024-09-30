@@ -34,7 +34,7 @@ export type TModalMapItem = {
   } | null
 }
 export type TModalMapPush = (name: string, data: Record<string, any>) => void
-export type TModalMapGet = (name: string) => TModalMapItem['data']
+export type TModalMapPop = (name: string) => TModalMapItem['data']
 export type TModalMapBackToParent = (
   name: string,
   mode?: 'push' | 'replace'
@@ -43,8 +43,7 @@ export type TModalMapBackToParent = (
 
 export type TModalRouteContext = {
   push: TModalMapPush
-  // pop: TModalMapGet
-  get: TModalMapGet
+  pop: TModalMapPop
   store: Record<string, TModalMapItem>
   getModalItem: (name: string) => TModalMapItem
   _setupModal: (name: string, options: TModalMapItem['options']) => void

@@ -18,7 +18,7 @@ type TModalMap = Record<string, {
 }>
 
 const setupModalRoute = () => {
-  const { get, getModalItem } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
+  const { pop, getModalItem } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
   const { closeModal, isModalActive } = useModalRoute()
 
   const componentMap: TModalMap = reactive({})
@@ -74,8 +74,8 @@ const setupModalRoute = () => {
 
       const propsOption = {
         get: getProps
-          ? () => getProps(get(name))
-          : () => get(name),
+          ? () => getProps(pop(name))
+          : () => pop(name),
       }
 
       const props = ref({})

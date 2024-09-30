@@ -95,11 +95,16 @@ export const createModalStore = () => {
     // console.log(name)
     return ensureModalItem(name).data
   }
+  function pop(name: string) {
+    // console.log(name)
+    return ensureModalItem(name).data
+  }
 
   return {
     modalMap,
     registerModal,
     get,
+    pop,
     push,
     getModalItem,
     getModalItemUnsafe,
