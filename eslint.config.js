@@ -38,6 +38,7 @@ export default [
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+      '@typescript-eslint/no-dynamic-delete': 'off',
     },
   },
 ]
