@@ -35,14 +35,14 @@ const { unlock, returnValue } = setupModal('ModalA', {
   },
 })
 
-setupModal('ModalB', {
-  props: {
-    message: 'Hello Modal B from index',
-    onTrigger() {
-      console.log('Triggered from index')
-    },
-  },
-})
+// setupModal('ModalB', {
+//   props: {
+//     message: 'Hello Modal B from index',
+//     onTrigger() {
+//       console.log('Triggered from index')
+//     },
+//   },
+// })
 const pushSelf = () => {
   router.push({ query: { some: 'data' }, hash: '#123' })
 }

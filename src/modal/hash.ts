@@ -17,10 +17,17 @@ export const createHashRoutes = (
   const defineActive = (name: string) =>
     currentRoute.value.matched.some(route => route.name === name)
 
-  function openModal(name: string, data: Record<string, any> = {}) {
+  function openModal(name: string, options?: {
+    query?: Record<string, any>
+    hash?: string
+    params?: Record<string, any>
+  }) {
     prepareHashRoute()
-    store.push(name, data)
-    router.push({ name })
+    return router.push({
+      name,
+      ...(options?.params ? { params: options.params } : {}),
+      ...(options?.query ? { query: options.query } : {}),
+    })
   }
   function prepareHashRoute(target?: string) {
     router.addRoute(target || currentRoute.value.name as string, hashRoute)

@@ -19,7 +19,12 @@ export type TModalMapItem = {
   _openPromise: TDefer<unknown> | null
   _openPosition: number
   isActive: (name: string) => boolean
-  open: (name: string, data: Record<string, any>) => void
+  activate: (name: string, data: Record<string, any>) => TDefer<unknown>
+  open: (name: string, options?: {
+    query?: Record<string, any>
+    hash?: string
+    params?: Record<string, any>
+  }) => Promise<void>
   close: (name: string, returnValue: unknown) => void
   findBase: () => { path: string } & Record<string, any>
 

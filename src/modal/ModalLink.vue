@@ -17,7 +17,7 @@ const props = defineProps({
 const { openModal } = useModalRoute()
 
 const onClick = () => {
-  openModal(props.name, props.data)
+  openModal(props.name, { data: props.data })
 }
 </script>
 <template>

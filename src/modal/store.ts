@@ -23,11 +23,18 @@ export const createModalStore = () => {
       direct: _options.direct,
       propInitiated: false,
       isActive: _options.isActive,
-      open: (name, data) => {
-        _options.open(name, data)
+      activate(name, data) {
+        push(name, data)
         modalMap[name].propInitiated = false
         modalMap[name]._openPromise = defer()
         return modalMap[name]._openPromise
+      },
+      open: (name, options?: {
+        query?: Record<string, any>
+        hash?: string
+        params?: Record<string, any>
+      }) => {
+        return _options.open(name, options)
       },
       close: (name, returnValue) => {
         setModalReturnValue(name, returnValue)

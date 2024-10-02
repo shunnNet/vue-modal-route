@@ -33,11 +33,23 @@ const { openModal } = useModalRoute()
       </ModalLink>
       <ModalLink
         :name="'ModalA'"
-        :data="{ message: 'Hello from link' }"
+        :data="[['ModalA',{ message: 'Hello from link22' }]]"
       >
         Modal A with Data
       </ModalLink>
-      <ModalLink :name="'ModalB'">
+      <ModalLink
+        name="ModalAChild"
+        :data="[['ModalA',{ message: 'Hello from link A Child with data' }]]"
+      >
+        Modal A Child with Data
+      </ModalLink>
+      <ModalLink
+        :name="'ModalB'"
+        :data="[
+          ['ModalA', { message: 'Hello from linkA' } ],
+          ['ModalB', { message: 'Hello from linkB' } ]
+        ]"
+      >
         Modal B
       </ModalLink>
 

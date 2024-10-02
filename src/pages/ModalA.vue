@@ -58,7 +58,10 @@ const { openModal } = useModalRoute()
     >
       Open Modal B
     </ElButton>
-
+    <RouterLink :to="{ name: 'ModalAChild'}">
+      Modal Child A
+    </RouterLink>
+    <RouterView />
     <ModalPathView />
   </ElDialog>
 </template>

@@ -1,13 +1,15 @@
 import { computed, inject, onScopeDispose } from 'vue'
-import { TModalHashRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TModalRouteContextKey } from './types'
+import { TModalData, TModalHashRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TModalRouteContextKey } from './types'
 import {
   Router,
   RouteRecordNormalized,
   RouterHistory,
   matchedRouteKey,
   useRouter,
+  RouteLocationRaw,
+  RouteRecordRaw,
 } from 'vue-router'
-import { ensureArray, ensureInjection, noop } from './helpers'
+import { ensureArray, ensureInjection, isPlainObject, noop } from './helpers'
 import { createHashRoutes } from './hash'
 import { useModalHistory } from './history'
 import { createModalStore } from './store'
@@ -49,8 +51,10 @@ export const createModalRoute = (options: {
   } = useModalHistory({ router, routerHistory })
 
   const context = createContext()
-  // TODO: find some time to makes me better
-  // reset context when
+
+  // NOTE: It's better to bind the context with something like navigation instance for every navigation
+  // ! the global context will not correct when run "await route.push" in afterEach
+  // or make a hash id by "to" and "from" ?
   router.beforeEach((to, from) => {
     context.append(getNavigationInfo(to, from))
     let unregister: any = noop
@@ -89,13 +93,42 @@ export const createModalRoute = (options: {
     getModalLocked,
   } = store
 
+  const modalRouteCollection: Map<string, { type: 'path' | 'hash' | 'query', modal: string[] }> = new Map()
+  const getRouteModalInfo = (name: string) => modalRouteCollection.get(name)
+
   registerQueryRoutes(_options.query)
   registerHashRoutes(_options.hash)
+
+  const registChildren = (type: string, parents: string[], children: TModalHashRoute[] | RouteRecordRaw[]) => {
+    children.forEach((route) => {
+      const _parents = [...parents, ...(route.meta?.modal && route.name && route.component ? [route.name as string] : [])]
+      if (route.name) {
+        modalRouteCollection.set(route.name as string, { type: 'path', modal: [..._parents] })
+      }
+      if (Array.isArray(route.children)) {
+        registChildren(type, _parents, route.children)
+      }
+    })
+  }
   _options.router.getRoutes().forEach((route) => {
     if (route.meta?.modal && route.name && route.components?.default) {
       registerPathModalRoute(route)
+      registChildren('path', [route.name as string], route.children || [])
+      modalRouteCollection.set(route.name as string, { type: 'path', modal: [route.name as string] })
     }
   })
+  _options.hash.forEach((route) => {
+    if (route.meta?.modal && route.name && route.component) {
+      registChildren('hash', [route.name as string], route.children || [])
+      modalRouteCollection.set(route.name as string, { type: 'hash', modal: [route.name as string] })
+    }
+  })
+  _options.query.forEach((route) => {
+    if (route.name) {
+      modalRouteCollection.set(route.name as string, { type: 'query', modal: [route.name as string] })
+    }
+  })
+  console.log('modalRouteCollection', modalRouteCollection)
 
   // Not allow forward open without using openModal
   router.beforeEach((to) => {
@@ -319,21 +352,47 @@ export const createModalRoute = (options: {
 
   async function openModal(
     name: string,
-    data?: any,
+    options?: {
+      query?: Record<string, any>
+      hash?: string
+      params?: Record<string, any>
+      data?: TModalData | [string, TModalData][]
+    },
   ) {
-    if (isModalActive(name)) {
-      console.warn(`Not allow open modal ${name} becuase it is already opened.`, name)
+    const modalInfo = getRouteModalInfo(name)
+    if (!modalInfo) {
+      console.warn(`Not allow open modal ${name} because it is not found.`, name)
       return
     }
-    const modalItem = getModalItem(name)
+    const modalsNeedActivate = modalInfo.modal.filter(m => !isModalActive(m))
+    if (!modalsNeedActivate.length) {
+      console.warn(`Not allow open modal ${modalInfo.modal.join(',')} because it is already opened.`)
+      return
+    }
+    const modalNeedOpen = modalsNeedActivate.at(-1) as string
+    if (Array.isArray(options?.data)) {
+      modalsNeedActivate.forEach((m) => {
+        const data = (options.data as [string, TModalData][]).find(([name]) => name === m)?.[1]
+        getModalItem(m).activate(m, data || {})
+      })
+    }
+    else if (isPlainObject(options?.data)) {
+      getModalItem(modalNeedOpen).activate(modalNeedOpen, options.data)
+    }
+
+    const modalItem = getModalItem(modalNeedOpen)
     context.append({ openByOpenModal: true, openingModal: modalItem })
-    // TODO: playback if failed
-    return modalItem.open(name, data || null)
+    modalItem.open(name, {
+      query: options?.query,
+      hash: options?.hash,
+      params: options?.params,
+    }).catch(noop)
+
+    return modalItem._openPromise
   }
 
   async function closeModal(name: string, returnValue?: any) {
     const modal = getModalItem(name)
-    console.log('closeModal', name, isModalActive(name))
     if (!isModalActive(name)) {
       console.warn(`Not allow close modal ${name} because it is not opened.`, name)
       return

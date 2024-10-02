@@ -59,6 +59,11 @@ export const router = createRouter({
                 modal: true,
               },
             },
+            {
+              name: 'ModalAChild',
+              path: 'modal-a-child',
+              component: () => import('./pages/ModalAChild.vue'),
+            },
           ],
         },
 
@@ -121,6 +126,13 @@ export const modalRoute = createModalRoute({
       meta: {
         modal: true,
       },
+      children: [
+        {
+          name: 'hash-child-a',
+          component: () => import('./pages/ModalAChild.vue'),
+          path: 'hash-child-a',
+        },
+      ],
     },
   ],
 

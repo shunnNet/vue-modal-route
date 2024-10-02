@@ -10,9 +10,17 @@ export const createPathRoutes = (
   const defineActive = (name: string) =>
     currentRoute.value.matched.some(route => route.name === name)
 
-  function openModal(name: string, data: Record<string, any> = {}) {
-    store.push(name, data)
-    router.push({ name })
+  function openModal(name: string, options?: {
+    query?: Record<string, any>
+    hash?: string
+    params?: Record<string, any>
+  }) {
+    return router.push({
+      name,
+      ...(options?.hash ? { hash: options.hash } : {}),
+      ...(options?.params ? { params: options.params } : {}),
+      ...(options?.query ? { query: options.query } : {}),
+    })
   }
   function findBase(name: string) {
     const modalRoute = router.resolve({ name })
