@@ -494,6 +494,12 @@ export const useModalReturnValue = <T>(name: string) => {
   return computed(() => store[name].returnValue as T)
 }
 
+export const useModalActive = (name: string) => {
+  const { isModalActive } = ensureInjection(modalRouteContextKey, 'useModalActive must be used inside a ModalRoute component')
+
+  return computed(() => isModalActive(name))
+}
+
 export const useModalRejection = () => {
   const matchedRoute = inject(matchedRouteKey)
   const router = useRouter()
