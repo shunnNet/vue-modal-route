@@ -447,34 +447,44 @@ export const createModalRoute = (options: {
 
 export const useModalRoute = () => {
   const {
+    closeModal,
+    openModal,
+    isModalActive,
+  } = ensureInjection(modalRouteContextKey, 'useModalRoute must be used inside a ModalRoute component')
+
+  return {
+    useModal,
+    closeModal,
+    openModal,
+    isModalActive,
+  }
+}
+
+export const useModal = <ReturnValue = any>(
+  name: string,
+  options?: TModalMapItem['options'],
+) => {
+  const {
     _setupModal,
     _unsetModal,
     closeModal,
     openModal,
-    isModalActive,
     unlockModal,
-  } = ensureInjection(modalRouteContextKey, 'useModalRoute must be used inside a ModalRoute component')
+    isModalActive,
+  } = ensureInjection(modalRouteContextKey, 'useModal must be used inside a ModalRoute component')
 
-  function setupModal<ReturnValue = any>(name: string, options?: TModalMapItem['options']) {
-    _setupModal(name, options)
-    onScopeDispose(() => {
-      _unsetModal(name)
-    })
-    const returnValue = useModalReturnValue<ReturnValue>(name)
-
-    return {
-      open: (options: Partial<TOpenModalOptions>) => openModal(name, options),
-      close: (returnValue: any) => closeModal(name, returnValue),
-      unlock: () => unlockModal(name),
-      returnValue,
-    }
-  }
+  _setupModal(name, options)
+  onScopeDispose(() => {
+    _unsetModal(name)
+  })
+  const returnValue = useModalReturnValue<ReturnValue>(name)
 
   return {
-    setupModal,
-    closeModal,
-    openModal,
-    isModalActive,
+    open: (options: Partial<TOpenModalOptions>) => openModal(name, options),
+    close: (returnValue: any) => closeModal(name, returnValue),
+    unlock: () => unlockModal(name),
+    isActive: computed(() => isModalActive(name)),
+    returnValue,
   }
 }
 
