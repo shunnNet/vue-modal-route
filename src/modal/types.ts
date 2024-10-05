@@ -50,7 +50,7 @@ export type TModalRouteContext = {
   pop: TModalMapPop
   store: Record<string, TModalMapItem>
   getModalItem: (name: string) => TModalMapItem
-  _setupModal: (name: string, options: TModalMapItem['options']) => void
+  _setupModal: (name: string, options?: TModalMapItem['options']) => void
   _unsetModal: (name: string) => void
   queryRoutes: TModalQueryRoute[]
   openModal: (name: string, data?: Record<string, any>) => void

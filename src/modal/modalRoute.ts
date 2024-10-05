@@ -455,7 +455,7 @@ export const useModalRoute = () => {
     unlockModal,
   } = ensureInjection(modalRouteContextKey, 'useModalRoute must be used inside a ModalRoute component')
 
-  function setupModal<ReturnValue = any>(name: string, options: TModalMapItem['options']) {
+  function setupModal<ReturnValue = any>(name: string, options?: TModalMapItem['options']) {
     _setupModal(name, options)
     onScopeDispose(() => {
       _unsetModal(name)

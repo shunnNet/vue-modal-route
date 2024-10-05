@@ -63,8 +63,8 @@ export const createModalStore = () => {
   function getModalItemUnsafe(name: string) {
     return modalMap[name]
   }
-  function _setupModal(name: string, options: TModalMapItem['options']) {
-    ensureModalItem(name).options = options
+  function _setupModal(name: string, options?: TModalMapItem['options']) {
+    ensureModalItem(name).options = options ?? null
     if (options?.manual) {
       setModalLock(name, true)
     }
