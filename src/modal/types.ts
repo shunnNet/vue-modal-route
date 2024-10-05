@@ -13,7 +13,6 @@ export type TModalMapItem = {
    */
   direct?: boolean
 
-  propInitiated: boolean
   _manualLocked: boolean
   returnValue: unknown
   _openPromise: TDefer<unknown> | null

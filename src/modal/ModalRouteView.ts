@@ -83,11 +83,8 @@ const setupModalRoute = () => {
 
       const _getModalProps = () => {
         setActive(true)
-        if (!modalItem.propInitiated) {
           const response = propsOption.get()
           props.value = response || {}
-          modalItem.propInitiated = true
-        }
       }
 
       const modalSlots = isPlainObject(modalItem?.options?.slots)

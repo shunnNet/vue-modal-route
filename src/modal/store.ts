@@ -21,11 +21,9 @@ export const createModalStore = () => {
       options: null,
       type,
       direct: _options.direct,
-      propInitiated: false,
       isActive: _options.isActive,
       activate(name, data) {
         push(name, data)
-        modalMap[name].propInitiated = false
         modalMap[name]._openPromise = defer()
         return modalMap[name]._openPromise
       },
