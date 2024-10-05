@@ -1,4 +1,4 @@
-import { Component, InjectionKey } from 'vue'
+import { Component, InjectionKey, RendererElement, RendererNode, VNode } from 'vue'
 import { NavigationFailure, RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import { Rejection } from './rejection'
 import { TDefer } from './helpers'
@@ -82,3 +82,7 @@ export type TModalData = Record<string, {
 export type TModalPathRoute = RouteRecordRaw & { name: string }
 export type TModalHashRoute = RouteRecordRaw & { name: string }
 export type TModalQueryRoute = { name: string, component: Component, meta?: Record<string, any> }
+
+export type TComponent = VNode<RendererNode, RendererElement, {
+  [key: string]: any
+}> | Component

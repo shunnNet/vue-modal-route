@@ -1,11 +1,9 @@
-import { defineComponent, h, PropType, watch, Component, computed, reactive, ref, RendererElement, RendererNode, VNode, inject } from 'vue'
+import { defineComponent, h, PropType, watch, computed, reactive, ref, RendererElement, RendererNode, VNode, inject } from 'vue'
 import { matchedRouteKey } from 'vue-router'
 import { ensureInjection, isPlainObject } from './helpers'
 import { modalRouteContextKey, useModalRoute } from './modalRoute'
+import { TComponent } from './types'
 
-export type TComponent = VNode<RendererNode, RendererElement, {
-  [key: string]: any
-}> | Component
 type TModalMap = Record<string, {
   _component: TComponent
   active: boolean
@@ -125,7 +123,7 @@ export default defineComponent({
     },
   },
 
-  setup(props) {
+  setup(props, { slots }) {
     const { setModal, componentMap } = setupModalRoute()
     const { closeModal } = useModalRoute()
     const matchedRoute = inject(matchedRouteKey, null)
@@ -163,6 +161,17 @@ export default defineComponent({
     })
     return () => {
       return Object.entries(componentMap).map(([name, { _component }]) => {
+        const _slots = Object.fromEntries(
+          Object.entries(slots).flatMap(([key, value]) => {
+            const [parsedKey, slotName] = key.split('-')
+            if (parsedKey === name) {
+              return [[slotName, value]]
+            }
+            else {
+              return []
+            }
+          }),
+        )
         const modal = componentMap[name]
         return h(_component, {
           ...modal.props,
@@ -173,7 +182,7 @@ export default defineComponent({
             modal.props?.onClose?.($event)
             closeModal(name, $event)
           },
-        }, modal.slots)
+        }, Object.assign(_slots, modal.slots))
       })
     }
   },
