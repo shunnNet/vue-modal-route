@@ -1,4 +1,4 @@
-import { defineComponent, h, PropType, watch, Component, computed, reactive, ref, RendererElement, RendererNode, VNode } from 'vue'
+import { defineComponent, h, PropType, watch, Component, computed, reactive, ref, RendererElement, RendererNode, VNode, inject } from 'vue'
 import { matchedRouteKey } from 'vue-router'
 import { ensureInjection, isPlainObject } from './helpers'
 import { modalRouteContextKey, useModalRoute } from './modalRoute'
@@ -128,14 +128,17 @@ export default defineComponent({
   setup(props) {
     const { setModal, componentMap } = setupModalRoute()
     const { closeModal } = useModalRoute()
-    const matchedRoute = ensureInjection(matchedRouteKey, 'ModalRoute component must be used inside a router view')
-    const { getModalItemUnsafe } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
+    const matchedRoute = inject(matchedRouteKey, null)
+    const { getModalItemUnsafe } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRouteContext')
 
     const setupModalIfExist = (cmp: TComponent, name?: string) => {
       if (!cmp) {
         return
       }
-      const _name = name || matchedRoute.value?.name as string
+      const _name = name || matchedRoute?.value?.name as string
+      if (!_name) {
+        throw new Error('modalName not provided')
+      }
       const modal = getModalItemUnsafe(_name)
 
       if (modal && modal.type === props.modalType) {
