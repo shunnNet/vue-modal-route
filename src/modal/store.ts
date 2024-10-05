@@ -97,12 +97,13 @@ export const createModalStore = () => {
     return modalMap[name]._manualLocked
   }
   function get(name: string) {
-    // console.log(name)
     return ensureModalItem(name).data
   }
   function pop(name: string) {
-    // console.log(name)
-    return ensureModalItem(name).data
+    const modal = ensureModalItem(name)
+    const data = modal.data
+    modal.data = null
+    return data
   }
 
   return {

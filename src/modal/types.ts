@@ -1,5 +1,5 @@
 import { Component, InjectionKey } from 'vue'
-import { NavigationFailure, RouteLocationRaw, RouteRecordRaw, RouteRecordSingleViewWithChildren } from 'vue-router'
+import { NavigationFailure, RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import { Rejection } from './rejection'
 import { TDefer } from './helpers'
 
