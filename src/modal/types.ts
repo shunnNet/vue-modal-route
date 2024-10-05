@@ -45,6 +45,12 @@ export type TModalMapBackToParent = (
   // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 ) => Promise<void | NavigationFailure | undefined>
 
+export type TOpenModalOptions = {
+  data: Record<string, any>
+  query: Record<string, any>
+  hash: string
+  params: Record<string, any>
+}
 export type TModalRouteContext = {
   push: TModalMapPush
   pop: TModalMapPop
@@ -53,7 +59,7 @@ export type TModalRouteContext = {
   _setupModal: (name: string, options?: TModalMapItem['options']) => void
   _unsetModal: (name: string) => void
   queryRoutes: TModalQueryRoute[]
-  openModal: (name: string, data?: Record<string, any>) => void
+  openModal: (name: string, options?: Partial<TOpenModalOptions>) => void
   closeModal: (name: string, returnValue?: unknown) => void
   modalExists: (name: string) => boolean
   isModalActive: (name: string) => boolean

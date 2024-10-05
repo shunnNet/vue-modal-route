@@ -1,5 +1,5 @@
 import { computed, inject, onScopeDispose } from 'vue'
-import { TModalData, TModalHashRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TModalRouteContextKey } from './types'
+import { TModalData, TModalHashRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TModalRouteContextKey, TOpenModalOptions } from './types'
 import {
   Router,
   RouteRecordNormalized,
@@ -463,7 +463,7 @@ export const useModalRoute = () => {
     const returnValue = useModalReturnValue<ReturnValue>(name)
 
     return {
-      open: (data: any) => openModal(name, data),
+      open: (options: Partial<TOpenModalOptions>) => openModal(name, options),
       close: (returnValue: any) => closeModal(name, returnValue),
       unlock: () => unlockModal(name),
       returnValue,
