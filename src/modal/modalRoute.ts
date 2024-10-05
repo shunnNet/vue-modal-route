@@ -6,7 +6,6 @@ import {
   RouterHistory,
   matchedRouteKey,
   useRouter,
-  RouteLocationRaw,
   RouteRecordRaw,
 } from 'vue-router'
 import { ensureArray, ensureInjection, isPlainObject, noop } from './helpers'
@@ -23,15 +22,15 @@ export const modalRouteContextKey: TModalRouteContextKey = Symbol('modalRouteCon
 export const createModalRoute = (options: {
   router: Router
   routerHistory: RouterHistory
-  query: TModalQueryRoute[]
-  hash: TModalHashRoute[]
+  query?: TModalQueryRoute[]
+  hash?: TModalHashRoute[]
   direct?: boolean
 }) => {
   const _options = {
     direct: false,
     ...options,
-    query: ensureArray(options.query),
-    hash: ensureArray(options.hash),
+    query: ensureArray(options.query as TModalQueryRoute[]),
+    hash: ensureArray(options.hash as TModalHashRoute[]),
   }
   if (!_options.router) {
     throw new Error('router is required')
@@ -128,7 +127,6 @@ export const createModalRoute = (options: {
       modalRouteCollection.set(route.name as string, { type: 'query', modal: [route.name as string] })
     }
   })
-  console.log('modalRouteCollection', modalRouteCollection)
 
   // Not allow forward open without using openModal
   router.beforeEach((to) => {
