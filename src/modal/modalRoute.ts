@@ -7,6 +7,7 @@ import {
   matchedRouteKey,
   useRouter,
   RouteRecordRaw,
+  RouteLocationNormalizedGeneric,
 } from 'vue-router'
 import { ensureArray, ensureInjection, isPlainObject, noop } from './helpers'
 import { createHashRoutes } from './hash'
@@ -332,20 +333,38 @@ export const createModalRoute = (options: {
     if (isSameRoute) {
       return
     }
+    const tagIfRouteModal = (r: RouteRecordNormalized | RouteLocationNormalizedGeneric, position: number) => {
+      if (modalExists(r.name as string)) {
+        tagHistory(r.name as string, position)
+      }
+    }
     // Find shared parent route in "to" matched
     // if not found, use all "to" matched routes to pad history
     // e.g 1: A->B->C => A->D
     // e.g 2: X->Y => A->D
     const index = to.matched.findIndex(r => r.name === from.name)
-    const [first, ...rest] = to.matched.slice(index + 1).filter(r => !r.meta.modalHashRoot)
-    replaceHistory(first.path)
-    if (modalExists(first.name as string)) tagHistory(first.name as string, getCurrentPosition() - 1)
-    rest.forEach((r) => {
-      const name = r.name as string
-      if (modalExists(name)) tagHistory(name)
-      pushHistory(r.path)
-    })
-    return
+    const steps = to.matched.slice(index + 1).filter(r => !r.meta.modalHashRoot)
+
+    if (steps.length === 1) {
+      replaceHistory(to.fullPath)
+      tagIfRouteModal(steps[0], getCurrentPosition() - 1)
+      return
+    }
+    else {
+      const [first, ...rest] = steps
+      rest.pop() // remove the last route because it should be replaced by "to.fullPath" to keep query/hash
+      replaceHistory(first.path)
+      tagIfRouteModal(first, getCurrentPosition() - 1)
+
+      rest.forEach((r) => {
+        tagIfRouteModal(r, getCurrentPosition())
+        pushHistory(r.path)
+      })
+      tagIfRouteModal(to, getCurrentPosition())
+      pushHistory(to.fullPath)
+
+      return
+    }
   })
 
   async function openModal(
