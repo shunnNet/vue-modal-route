@@ -1,139 +1,75 @@
-import { createWebHistory, createRouter, RouterHistory, HistoryState } from 'vue-router'
-import PageIndex from '~/pages/index.vue'
-import ModalA from './pages/ModalA.vue'
-import ModalB from './pages/ModalB.vue'
+import { createWebHistory, createRouter } from 'vue-router'
 import { createModalRoute } from './modal'
-import HashModalA from './pages/HashModalA.vue'
-import QueryModalA from './pages/QueryModalA.vue'
-import QueryModalB from './pages/QueryModalB.vue'
-import ModalE from './pages/ModalE.vue'
 
-const createWebModalHistory: () => RouterHistory = () => {
-  const webHistory = createWebHistory()
-  const _replace = webHistory.replace
-  const _push = webHistory.push
-
-  const push: RouterHistory['push'] = (path: string, data?: HistoryState) => {
-    const _data = {
-      vmr: window.history.state?.vmr ?? {},
-      ...(data ?? {}),
-    }
-    _push(path, _data)
-  }
-
-  const replace: RouterHistory['replace'] = (path: string, data?: HistoryState) => {
-    const _data = {
-      vmr: window.history.state?.vmr ?? {},
-      ...(data ?? {}),
-    }
-    _replace(path, _data)
-  }
-  // TODO: Why ?
-  webHistory.push = push
-  webHistory.replace = replace
-  return webHistory
-}
-const routerHistory = createWebModalHistory()
-
+const routerHistory = createWebHistory()
 export const router = createRouter({
+  history: routerHistory,
   routes: [
     {
-      name: 'Index',
+      name: 'PageSingleModal',
       path: '/',
-      component: PageIndex,
+      component: () => import('./pages/page-single-modal/index.vue'),
       children: [
         {
-          name: 'ModalA',
+          name: 'ModalPageSingleA',
           path: 'modal-a',
-          component: ModalA,
+          component: () => import('./pages/page-single-modal/ModalA.vue'),
+          meta: {
+            modal: true,
+          },
+        },
+        {
+          name: 'ModalPageSingleB',
+          path: 'modal-b/:id',
+          component: () => import('./pages/page-single-modal/ModalB.vue'),
           meta: {
             modal: true,
           },
           children: [
             {
-              name: 'ModalB',
+              name: 'ModalPageSingleBChild',
+              path: 'child',
+              component: () => import('./pages/page-single-modal/ModalB/child.vue'),
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'PageCrossPage',
+      path: '/cross-page',
+      component: () => import('./pages/cross-page/index.vue'),
+    },
+    {
+      name: 'PageNestedModal',
+      path: '/nested',
+      component: () => import('./pages/nested/index.vue'),
+      children: [
+        {
+          name: 'ModalNestedA',
+          path: 'modal-a',
+          component: () => import('./pages/nested/ModalA.vue'),
+          meta: {
+            modal: true,
+          },
+          children: [
+            {
+              name: 'ModalNestedB',
               path: 'modal-b',
-              component: ModalB,
-
+              component: () => import('./pages/nested/ModalB.vue'),
               meta: {
                 modal: true,
               },
             },
-            {
-              name: 'ModalAChild',
-              path: 'modal-a-child',
-              component: () => import('./pages/ModalAChild.vue'),
-            },
-          ],
-        },
 
-      ],
-    },
-    {
-      name: 'Test',
-      path: '/test',
-      component: () => import('./pages/test.vue'),
-      children: [
-        {
-          name: 'ModalE',
-          path: 'modal-e',
-          component: ModalE,
-          meta: {
-            modal: true,
-          },
-        },
-      ],
-    },
-    {
-      name: 'PathHashA',
-      path: '/path-hash-a',
-      component: () => import('./pages/path-hash/path-hash-a.vue'),
-      children: [
-        {
-          name: 'ModalPH1',
-          path: 'modal-ph1',
-          component: () => import('./pages/path-hash/ModalPH1.vue'),
-          meta: {
-            modal: true,
-          },
+          ],
         },
       ],
     },
   ],
-  history: routerHistory,
 })
 
 export const modalRoute = createModalRoute({
-  direct: true,
   router,
   routerHistory,
-  query: [
-    {
-      name: 'query-modal-a',
-      component: QueryModalA,
-    },
-    {
-      name: 'query-modal-b',
-      component: QueryModalB,
-    },
-  ],
-  hash: [
-    {
-      name: 'hash-modal-a',
-      // TODO: make path no effect
-      path: 'hash-modal-a',
-      component: HashModalA,
-      meta: {
-        modal: true,
-      },
-      children: [
-        {
-          name: 'hash-child-a',
-          component: () => import('./pages/ModalAChild.vue'),
-          path: 'hash-child-a',
-        },
-      ],
-    },
-  ],
-
 })

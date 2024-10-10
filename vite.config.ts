@@ -1,6 +1,7 @@
 // Configure Vitest (https://vitest.dev/config/)
 /// <reference types="vitest" />
 import { configDefaults } from 'vitest/config'
+import UnoCSS from 'unocss/vite'
 
 import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
@@ -10,7 +11,7 @@ import dts from 'vite-plugin-dts'
 // https://vitejs.dev/config/
 // https://vitejs.dev/guide/build.html#library-mode
 export default defineConfig({
-  plugins: [vue(), dts({ rollupTypes: true })],
+  plugins: [vue(), UnoCSS(), dts({ rollupTypes: true })],
   define: {
     // enable hydration mismatch details in production build
     __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: 'true',

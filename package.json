@@ -1,6 +1,6 @@
 {
   "name": "vrm",
-  "description": "VRM (Vue Route Modal) is a package provide a way to manage modals with route.",
+  "description": "VRM (Vue Route Modal) is a package that manages modals using routes.",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.umd.cjs",
@@ -34,6 +34,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@unocss/reset": "^0.63.2",
     "vue": "^3.4.38"
   },
   "devDependencies": {
@@ -49,6 +50,7 @@
     "lint-staged": "^15.2.9",
     "typescript": "^5.0.2",
     "typescript-eslint": "^8.2.0",
+    "unocss": "^0.63.2",
     "vite": "^4.4.5",
     "vite-plugin-dts": "^3.6.0",
     "vitest": "^0.34.6",

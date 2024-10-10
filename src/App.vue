@@ -1,77 +1,46 @@
 <script setup lang="ts">
-import { useModalRoute } from './modal'
-import ModalHashView from './modal/ModalHashView.vue'
-import ModalLink from './modal/ModalLink.vue'
+import { ModalHashView, ModalQueryView } from '~/modal'
 
-const { setupModal } = useModalRoute()
-setupModal('hash-modal-a', {
-  props: {
-    handler(data) {
-      console.log('hash-modal-a', data)
-      return {
-        message: 'Hello from hash modal a',
-        ...data ?? {},
-      }
-    },
+const navs = [
+  {
+    name: 'PageSingleModal',
+    title: 'Single Modal',
   },
-})
-
-const { openModal } = useModalRoute()
+  {
+    name: 'PageCrossPage',
+    title: 'Cross Page',
+  },
+  {
+    name: 'PageNestedModal',
+    title: 'Nested',
+  },
+]
 </script>
 <template>
-  <div>
-    <nav class="nav">
-      <RouterLink :to="{ name: 'Index' }">
-        Index
-      </RouterLink>
-      <RouterLink :to="{ name: 'Test' }">
-        Test
-      </RouterLink>
-
-      <ModalLink :name="'ModalA'">
-        Modal A (Will be rejected)
-      </ModalLink>
-      <ModalLink
-        :name="'ModalA'"
-        :data="[['ModalA',{ message: 'Hello from link22' }]]"
+  <div class="grid grid-cols-[200px_1fr] grid-auto-flow-col min-h-100vh">
+    <nav class="grid gap-2 p-4 border-r grid-auto-rows-[max-content]">
+      <RouterLink
+        v-for="navItem in navs"
+        :key="navItem.name"
+        class="p-2 hover:bg-gray-800 hover:text-white rounded-xl"
+        :to="{ name: navItem.name }"
       >
-        Modal A with Data
-      </ModalLink>
-      <ModalLink
-        name="ModalAChild"
-        :data="[['ModalA',{ message: 'Hello from link A Child with data' }]]"
-      >
-        Modal A Child with Data
-      </ModalLink>
-      <ModalLink
-        :name="'ModalB'"
-        :data="[
-          ['ModalA', { message: 'Hello from linkA' } ],
-          ['ModalB', { message: 'Hello from linkB' } ]
-        ]"
-      >
-        Modal B
-      </ModalLink>
-
-      <ElButton @click="openModal('query-modal-a', {})">
-        Query Modal A
-      </ElButton>
-    </nav>
-    <nav class="nav">
-      <RouterLink to="/path-hash-a">
-        path-hash-a
+        {{ navItem.title }}
       </RouterLink>
     </nav>
+    <div class="p-4">
+      <RouterView />
+    </div>
   </div>
-
-  <RouterView />
   <ModalHashView />
+  <ModalQueryView />
 </template>
 <style>
-.nav {
-  display: grid;
-  grid-auto-flow: column;
-  gap: 16px;
-  grid-auto-columns: max-content;
+:root {
+  color-scheme: dark;
 }
+body {
+  color: #a3a3a3;
+}
+
 </style>

@@ -1,6 +1,9 @@
 <script setup lang="ts">
+
 </script>
 <template>
-  <div>hash2</div>
+  <div class="font-italic text-amber">
+    Modal B child route
+  </div>
 </template>
 <style></style>
