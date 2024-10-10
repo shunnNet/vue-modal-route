@@ -509,7 +509,7 @@ export const useModal = <ReturnValue = any>(
   const returnValue = useModalReturnValue<ReturnValue>(name)
 
   return {
-    open: (options: Partial<TOpenModalOptions>) => openModal(name, options),
+    open: (options?: Partial<TOpenModalOptions>) => openModal(name, options),
     close: (returnValue: any) => closeModal(name, returnValue),
     unlock: () => unlockModal(name),
     isActive: computed(() => isModalActive(name)),
