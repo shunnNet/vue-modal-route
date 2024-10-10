@@ -25,6 +25,7 @@ export const createModalStore = () => {
       activate(name, data) {
         push(name, data)
         modalMap[name]._openPromise = defer()
+        modalMap[name].returnValue = null
         return modalMap[name]._openPromise
       },
       open: (name, options?: {
@@ -34,12 +35,12 @@ export const createModalStore = () => {
       }) => {
         return _options.open(name, options)
       },
-      close: (name, returnValue) => {
-        setModalReturnValue(name, returnValue)
-        if (modalMap[name]._openPromise) {
-          modalMap[name]._openPromise._resolve(returnValue)
-        }
+      close: (name) => {
         _unsetModal(name)
+        if (modalMap[name]._openPromise) {
+          modalMap[name]._openPromise._resolve(modalMap[name].returnValue)
+        }
+        modalMap[name]._openPromise = null
       },
       findBase: options => _options.findBase(name, options?.params ?? {}),
       _manualLocked: false,

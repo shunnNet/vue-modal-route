@@ -418,7 +418,7 @@ export const createModalRoute = (options: {
     return modalItem._openPromise
   }
 
-  async function closeModal(name: string, returnValue?: any) {
+  async function closeModal(name: string) {
     const modal = getModalItem(name)
     if (!isModalActive(name)) {
       console.warn(`Not allow close modal ${name} because it is not opened.`, name)
@@ -438,7 +438,7 @@ export const createModalRoute = (options: {
         'vmr-close': name,
       },
     })
-    modal.close(name, returnValue)
+    modal.close(name)
   }
 
   function isModalActive(name: string) {
@@ -510,7 +510,7 @@ export const useModal = <ReturnValue = any>(
 
   return {
     open: (options?: Partial<TOpenModalOptions>) => openModal(name, options),
-    close: (returnValue: any) => closeModal(name, returnValue),
+    close: () => closeModal(name),
     unlock: () => unlockModal(name),
     isActive: computed(() => isModalActive(name)),
     returnValue,

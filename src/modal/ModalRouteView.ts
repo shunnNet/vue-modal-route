@@ -127,7 +127,10 @@ export default defineComponent({
     const { setModal, componentMap } = setupModalRoute()
     const { closeModal } = useModalRoute()
     const matchedRoute = inject(matchedRouteKey, null)
-    const { getModalItemUnsafe } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRouteContext')
+    const {
+      getModalItemUnsafe,
+      setModalReturnValue,
+    } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRouteContext')
 
     const setupModalIfExist = (cmp: TComponent, name?: string) => {
       if (!cmp) {
@@ -179,8 +182,8 @@ export default defineComponent({
           'onUpdate:modelValue': (value: boolean) => modal.active = value,
           'loading': modal.loading,
           'onReturn': ($event: any) => {
-            modal.props?.onClose?.($event)
-            closeModal(name, $event)
+            setModalReturnValue(name, $event)
+            closeModal(name)
           },
         }, Object.assign(_slots, modal.slots))
       })

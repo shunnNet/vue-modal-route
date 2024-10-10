@@ -24,7 +24,7 @@ export type TModalMapItem = {
     hash?: string
     params?: Record<string, any>
   }) => Promise<void>
-  close: (name: string, returnValue: unknown) => void
+  close: (name: string) => void
   findBase: (options?: {
     params?: Record<string, any>
   }) => { path: string } & Record<string, any>
@@ -62,7 +62,7 @@ export type TModalRouteContext = {
   _unsetModal: (name: string) => void
   queryRoutes: TModalQueryRoute[]
   openModal: (name: string, options?: Partial<TOpenModalOptions>) => void
-  closeModal: (name: string, returnValue?: unknown) => void
+  closeModal: (name: string) => void
   modalExists: (name: string) => boolean
   isModalActive: (name: string) => boolean
   getModalItemUnsafe: (name: string) => TModalMapItem | undefined
