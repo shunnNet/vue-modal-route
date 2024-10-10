@@ -41,7 +41,7 @@ export const createModalStore = () => {
         }
         _unsetModal(name)
       },
-      findBase: () => _options.findBase(name),
+      findBase: options => _options.findBase(name, options?.params ?? {}),
       _manualLocked: false,
       _openPromise: null,
       _openPosition: -1,

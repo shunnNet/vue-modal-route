@@ -22,8 +22,8 @@ export const createPathRoutes = (
       ...(options?.query ? { query: options.query } : {}),
     })
   }
-  function findBase(name: string) {
-    const modalRoute = router.resolve({ name })
+  function findBase(name: string, params: Record<string, any> = {}) {
+    const modalRoute = router.resolve({ name, params })
     const selfIndex = modalRoute.matched.findIndex(route => route.name === name)
     if (selfIndex > 0) {
       return modalRoute.matched[selfIndex - 1]

@@ -25,7 +25,9 @@ export type TModalMapItem = {
     params?: Record<string, any>
   }) => Promise<void>
   close: (name: string, returnValue: unknown) => void
-  findBase: () => { path: string } & Record<string, any>
+  findBase: (options?: {
+    params?: Record<string, any>
+  }) => { path: string } & Record<string, any>
 
   options: {
     props?: {

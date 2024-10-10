@@ -33,8 +33,8 @@ export const createHashRoutes = (
     router.addRoute(target || currentRoute.value.name as string, hashRoute)
   }
 
-  function findBase(name: string) {
-    const modalRoute = router.resolve({ name })
+  function findBase(name: string, params: Record<string, any> = {}) {
+    const modalRoute = router.resolve({ name, params })
     const selfIndex = modalRoute.matched.findIndex(route => route.name === name)
     if (selfIndex > 0) {
       if (modalRoute.matched[selfIndex - 1].name === 'modal-hash-root') {
