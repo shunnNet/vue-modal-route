@@ -8,6 +8,8 @@ import {
   useRouter,
   RouteRecordRaw,
   RouteLocationNormalizedGeneric,
+  createRouterMatcher,
+  RouteParamsGeneric,
 } from 'vue-router'
 import { ensureArray, ensureInjection, isPlainObject, noop } from './helpers'
 import { createHashRoutes } from './hash'
@@ -39,6 +41,14 @@ export const createModalRoute = (options: {
   const router = _options.router
   const routerHistory = _options.routerHistory
   const currentRoute = _options.router.currentRoute
+  const routerMatcher = createRouterMatcher(router.getRoutes(), router.options)
+  const routeParamsToPath = (
+    r: RouteRecordNormalized | RouteLocationNormalizedGeneric,
+    params: RouteParamsGeneric,
+  ) => {
+    return routerMatcher.getRecordMatcher(r.name as string)?.stringify(params) || r.path
+  }
+
   const store = createModalStore()
   const {
     goHistory,
@@ -172,7 +182,7 @@ export const createModalRoute = (options: {
     // when direct: true, undefined means use _options.direct
     if (notAllowRoute) {
       const modal = getModalItem(notAllowRoute.name as string)
-      const base = modal.findBase()
+      const base = modal.findBase({ params: to.params })
       console.warn(`Not allow open modal ${notAllowRoute.name as string} with directly enter`)
       return base
     }
@@ -269,7 +279,7 @@ export const createModalRoute = (options: {
 
       // handle closeModal when no base tag in history
       const closingModal = getModalItem(closingModalName)
-      let rootBaseRoute = closingModal.findBase()
+      let rootBaseRoute = closingModal.findBase({ params: from.params })
 
       const baseRoute = rootBaseRoute
       while (rootBaseRoute && rootBaseRoute.meta?.modal) {
@@ -353,12 +363,12 @@ export const createModalRoute = (options: {
     else {
       const [first, ...rest] = steps
       rest.pop() // remove the last route because it should be replaced by "to.fullPath" to keep query/hash
-      replaceHistory(first.path)
+      replaceHistory(routeParamsToPath(first, to.params))
       tagIfRouteModal(first, getCurrentPosition() - 1)
 
       rest.forEach((r) => {
         tagIfRouteModal(r, getCurrentPosition())
-        pushHistory(r.path)
+        pushHistory(routeParamsToPath(r, to.params))
       })
       tagIfRouteModal(to, getCurrentPosition())
       pushHistory(to.fullPath)
