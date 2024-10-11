@@ -104,7 +104,7 @@ export const createModalRoute = (options: {
   } = store
 
   const modalRouteCollection: Map<string, { type: 'path' | 'hash' | 'query', modal: string[] }> = new Map()
-  const getRouteModalInfo = (name: string) => modalRouteCollection.get(name)
+  const getRelatedModalsByRouteName = (name: string) => modalRouteCollection.get(name)
 
   registerQueryRoutes(_options.query)
   registerHashRoutes(_options.hash)
@@ -386,7 +386,7 @@ export const createModalRoute = (options: {
       data?: TModalData | [string, TModalData][]
     },
   ) {
-    const modalInfo = getRouteModalInfo(name)
+    const modalInfo = getRelatedModalsByRouteName(name)
     if (!modalInfo) {
       throw new Error(`Modal ${name} is not found.`)
     }
@@ -463,6 +463,7 @@ export const createModalRoute = (options: {
     unlockModal,
     getModalItemUnsafe,
     setModalReturnValue,
+    getRelatedModalsByRouteName,
     queryRoutes,
   } satisfies TModalRouteContext
 
@@ -499,19 +500,29 @@ export const useModal = <ReturnValue = any>(
     openModal,
     unlockModal,
     isModalActive,
+    getRelatedModalsByRouteName,
   } = ensureInjection(modalRouteContextKey, 'useModal must be used inside a ModalRoute component')
 
-  _setupModal(name, options)
+  const relatedModalInfo = getRelatedModalsByRouteName(name)
+  if (!relatedModalInfo) {
+    throw new Error(`Can not find related modals for ${name}`)
+  }
+  if (relatedModalInfo.modal.length > 1) {
+    throw new Error(`Multiple modals found for ${name}, useModal can only be used for single modal.`)
+  }
+  const modalNameToOpen = relatedModalInfo.modal[0]
+
+  _setupModal(modalNameToOpen, options)
   onScopeDispose(() => {
-    _unsetModal(name)
+    _unsetModal(modalNameToOpen)
   })
-  const returnValue = useModalReturnValue<ReturnValue>(name)
+  const returnValue = useModalReturnValue<ReturnValue>(modalNameToOpen)
 
   return {
     open: (options?: Partial<TOpenModalOptions>) => openModal(name, options),
-    close: () => closeModal(name),
-    unlock: () => unlockModal(name),
-    isActive: computed(() => isModalActive(name)),
+    close: () => closeModal(modalNameToOpen),
+    unlock: () => unlockModal(modalNameToOpen),
+    isActive: computed(() => isModalActive(modalNameToOpen)),
     returnValue,
   }
 }

@@ -68,6 +68,7 @@ export type TModalRouteContext = {
   getModalItemUnsafe: (name: string) => TModalMapItem | undefined
   unlockModal: (name: string) => void
   setModalReturnValue: (name: string, value: unknown) => void
+  getRelatedModalsByRouteName: (name: string) => { type: 'path' | 'hash' | 'query', modal: string[] } | undefined
 }
 
 export type TModalRouteContextKey = InjectionKey<TModalRouteContext>
