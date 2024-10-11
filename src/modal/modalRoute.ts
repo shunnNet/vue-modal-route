@@ -101,6 +101,7 @@ export const createModalRoute = (options: {
     setModalReturnValue,
     modalExists,
     getModalLocked,
+    setModalLock,
   } = store
 
   const modalRouteCollection: Map<string, { type: 'path' | 'hash' | 'query', modal: string[] }> = new Map()
@@ -461,6 +462,7 @@ export const createModalRoute = (options: {
     modalExists,
     isModalActive,
     unlockModal,
+    setModalLock,
     getModalItemUnsafe,
     setModalReturnValue,
     getRelatedModalsByRouteName,
@@ -499,6 +501,7 @@ export const useModal = <ReturnValue = any>(
     closeModal,
     openModal,
     unlockModal,
+    setModalLock,
     isModalActive,
     getRelatedModalsByRouteName,
   } = ensureInjection(modalRouteContextKey, 'useModal must be used inside a ModalRoute component')
@@ -516,6 +519,9 @@ export const useModal = <ReturnValue = any>(
   onScopeDispose(() => {
     _unsetModal(modalNameToOpen)
   })
+  if (options?.manual) {
+    setModalLock(name, true)
+  }
   const returnValue = useModalReturnValue<ReturnValue>(modalNameToOpen)
 
   return {

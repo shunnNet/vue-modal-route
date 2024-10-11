@@ -69,13 +69,12 @@ export type TModalRouteContext = {
   unlockModal: (name: string) => void
   setModalReturnValue: (name: string, value: unknown) => void
   getRelatedModalsByRouteName: (name: string) => { type: 'path' | 'hash' | 'query', modal: string[] } | undefined
+  setModalLock: (name: string, lock: boolean) => void
 }
 
 export type TModalRouteContextKey = InjectionKey<TModalRouteContext>
 
-export type TModalData = Record<string, {
-  getModalData?: (data: Record<string, any>) => Record<string, any>
-}>
+export type TModalData = Record<string, any>
 
 export type TModalPathRoute = RouteRecordRaw & { name: string }
 export type TModalHashRoute = RouteRecordRaw & { name: string }

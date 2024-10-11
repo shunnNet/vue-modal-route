@@ -33,9 +33,6 @@ export const createModalStore = () => {
         hash?: string
         params?: Record<string, any>
       }) => {
-        if (modalMap[name].options?.manual) {
-          setModalLock(name, true)
-        }
         return _options.open(name, options)
       },
       close: () => {
@@ -129,5 +126,6 @@ export const createModalStore = () => {
     modalExists,
     getQueryModals,
     getModalLocked,
+    setModalLock,
   }
 }
