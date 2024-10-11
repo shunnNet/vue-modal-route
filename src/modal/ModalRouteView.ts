@@ -1,4 +1,4 @@
-import { defineComponent, h, PropType, watch, computed, reactive, ref, inject } from 'vue'
+import { defineComponent, h, PropType, watch, computed, reactive, ref, inject, toValue } from 'vue'
 import { matchedRouteKey } from 'vue-router'
 import { ensureInjection, isPlainObject } from './helpers'
 import { modalRouteContextKey, useModalRoute } from './modalRoute'
@@ -11,13 +11,13 @@ type TModalMap = Record<string, {
   propsInited: boolean
   loading: boolean
   setActive: (value: boolean) => Promise<void>
-  _getModalProps: () => void
   _active: boolean
   slots: Record<string, any>
+  _data: any
 }>
 
 const setupModalRoute = () => {
-  const { pop, getModalItem, unlockModal } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
+  const { pop, getModalItem } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
   const { closeModal, isModalActive } = useModalRoute()
 
   const componentMap: TModalMap = reactive({})
@@ -63,25 +63,7 @@ const setupModalRoute = () => {
         }
       })
 
-      const getProps = typeof modalItem?.options?.props === 'function'
-        ? modalItem.options.props
-        : isPlainObject(modalItem?.options?.props)
-          ? () => modalItem.options?.props
-          : null
-
-      const propsOption = {
-        get: getProps
-          ? () => getProps(pop(name), { unlock: () => unlockModal(name), close: () => setActive(false) })
-          : () => pop(name),
-      }
-
-      const props = ref({})
       const loading = ref(false)
-
-      const _getModalProps = () => {
-        const response = propsOption.get()
-        props.value = response || {}
-      }
 
       const modalSlots = isPlainObject(modalItem?.options?.slots)
         ? modalItem.options.slots
@@ -93,15 +75,32 @@ const setupModalRoute = () => {
         active: active as unknown as boolean,
         setActive,
         loading: loading as unknown as boolean,
-        props,
-        _getModalProps,
+        props: computed(() => {
+          let result = componentMap[name]._data
+          if (typeof modalItem?.options?.props === 'function') {
+            result = modalItem.options.props(result)
+          }
+          else if (isPlainObject(modalItem?.options?.props)) {
+            result = modalItem.options.props
+          }
+          return toValue(result || {})
+        }),
         slots: modalSlots,
         _active: _active as unknown as boolean,
         propsInited: false,
+        _data: {},
       }
     }
     if (!componentMap[name].propsInited) {
-      componentMap[name]._getModalProps()
+      const data = pop(name)
+      if (
+        typeof modalItem?.options?.validate === 'function'
+        && !modalItem?.options?.validate?.(data)
+      ) {
+        componentMap[name].setActive(false)
+        return
+      }
+      componentMap[name]._data = data
       componentMap[name].setActive(true)
       componentMap[name].propsInited = true
     }

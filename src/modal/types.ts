@@ -29,11 +29,8 @@ export type TModalMapItem = {
   }) => { path: string } & Record<string, any>
 
   options: {
-    props?: Record<string, any>
-    | ((
-      data: Record<string, any> | null,
-      utils: { close: () => void, unlock: () => void }
-    ) => Record<string, any>)
+    validate?: (data: unknown) => boolean
+    props?: TModalData | ((data: TModalData | null) => TModalData)
 
     slots?: Record<string, any>
     manual?: boolean
