@@ -28,19 +28,22 @@ export const createModalStore = () => {
         modalMap[name].returnValue = null
         return modalMap[name]._openPromise
       },
-      open: (name, options?: {
+      open: (options?: {
         query?: Record<string, any>
         hash?: string
         params?: Record<string, any>
       }) => {
+        if (modalMap[name].options?.manual) {
+          setModalLock(name, true)
+        }
         return _options.open(name, options)
       },
-      close: (name) => {
-        _unsetModal(name)
+      close: () => {
+        modalMap[name].data = null
         if (modalMap[name]._openPromise) {
           modalMap[name]._openPromise._resolve(modalMap[name].returnValue)
+          modalMap[name]._openPromise = null
         }
-        modalMap[name]._openPromise = null
       },
       findBase: options => _options.findBase(name, options?.params ?? {}),
       _manualLocked: false,
@@ -74,7 +77,10 @@ export const createModalStore = () => {
   function _unsetModal(name: string) {
     const modal = ensureModalItem(name)
     modal.data = null
-    modal.options = null
+    _unsetModalOptions(name)
+  }
+  function _unsetModalOptions(name: string) {
+    ensureModalItem(name).options = null
   }
   function setModalLock(name: string, lock: boolean) {
     if (modalExists(name)) {
@@ -117,6 +123,7 @@ export const createModalStore = () => {
     getModalItemUnsafe,
     _setupModal,
     _unsetModal,
+    _unsetModalOptions,
     unlockModal,
     setModalReturnValue,
     modalExists,

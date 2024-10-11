@@ -388,8 +388,7 @@ export const createModalRoute = (options: {
   ) {
     const modalInfo = getRouteModalInfo(name)
     if (!modalInfo) {
-      console.warn(`Not allow open modal ${name} because it is not found.`, name)
-      return
+      throw new Error(`Modal ${name} is not found.`)
     }
     const modalsNeedActivate = modalInfo.modal.filter(m => !isModalActive(m))
     if (!modalsNeedActivate.length) {
@@ -409,7 +408,7 @@ export const createModalRoute = (options: {
 
     const modalItem = getModalItem(modalNeedOpen)
     context.append({ openByOpenModal: true, openingModal: modalItem })
-    modalItem.open(name, {
+    modalItem.open({
       query: options?.query,
       hash: options?.hash,
       params: options?.params,
@@ -420,7 +419,7 @@ export const createModalRoute = (options: {
 
   async function closeModal(name: string) {
     const modal = getModalItem(name)
-    if (!isModalActive(name)) {
+    if (!modal.isActive(name)) {
       console.warn(`Not allow close modal ${name} because it is not opened.`, name)
       return
     }
@@ -438,7 +437,7 @@ export const createModalRoute = (options: {
         'vmr-close': name,
       },
     })
-    modal.close(name)
+    modal.close()
   }
 
   function isModalActive(name: string) {
@@ -527,12 +526,4 @@ export const useModalActive = (name: string) => {
   const { isModalActive } = ensureInjection(modalRouteContextKey, 'useModalActive must be used inside a ModalRoute component')
 
   return computed(() => isModalActive(name))
-}
-
-export const useModalRejection = () => {
-  const matchedRoute = inject(matchedRouteKey)
-  const router = useRouter()
-  return () => {
-    router.replace(matchedRoute!.value as RouteRecordNormalized)
-  }
 }

@@ -1,6 +1,5 @@
 import { Component, InjectionKey, RendererElement, RendererNode, VNode } from 'vue'
-import { NavigationFailure, RouteLocationRaw, RouteRecordRaw } from 'vue-router'
-import { Rejection } from './rejection'
+import { NavigationFailure, RouteRecordRaw } from 'vue-router'
 import { TDefer } from './helpers'
 
 export type TModalMapItem = {
@@ -19,22 +18,23 @@ export type TModalMapItem = {
   _openPosition: number
   isActive: (name: string) => boolean
   activate: (name: string, data: Record<string, any>) => TDefer<unknown>
-  open: (name: string, options?: {
+  open: (options?: {
     query?: Record<string, any>
     hash?: string
     params?: Record<string, any>
   }) => Promise<void>
-  close: (name: string) => void
+  close: () => void
   findBase: (options?: {
     params?: Record<string, any>
   }) => { path: string } & Record<string, any>
 
   options: {
-    props?: {
-      handler: (
-        data: Record<string, any> | null
-      ) => Record<string, any> | Rejection
-    } | Record<string, any>
+    props?: Record<string, any>
+    | ((
+      data: Record<string, any> | null,
+      utils: { close: () => void, unlock: () => void }
+    ) => Record<string, any>)
+
     slots?: Record<string, any>
     manual?: boolean
   } | null
@@ -71,11 +71,6 @@ export type TModalRouteContext = {
 }
 
 export type TModalRouteContextKey = InjectionKey<TModalRouteContext>
-
-export type TCreateRejection = (
-  mode?: 'replace' | 'push',
-  route?: RouteLocationRaw,
-) => Rejection
 
 export type TModalData = Record<string, {
   getModalData?: (data: Record<string, any>) => Record<string, any>

@@ -1,4 +1,4 @@
-import { defineComponent, h, PropType, watch, computed, reactive, ref, RendererElement, RendererNode, VNode, inject } from 'vue'
+import { defineComponent, h, PropType, watch, computed, reactive, ref, inject } from 'vue'
 import { matchedRouteKey } from 'vue-router'
 import { ensureInjection, isPlainObject } from './helpers'
 import { modalRouteContextKey, useModalRoute } from './modalRoute'
@@ -8,6 +8,7 @@ type TModalMap = Record<string, {
   _component: TComponent
   active: boolean
   props: Record<string, any>
+  propsInited: boolean
   loading: boolean
   setActive: (value: boolean) => Promise<void>
   _getModalProps: () => void
@@ -16,7 +17,7 @@ type TModalMap = Record<string, {
 }>
 
 const setupModalRoute = () => {
-  const { pop, getModalItem } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
+  const { pop, getModalItem, unlockModal } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
   const { closeModal, isModalActive } = useModalRoute()
 
   const componentMap: TModalMap = reactive({})
@@ -32,15 +33,9 @@ const setupModalRoute = () => {
     })
     const setActive = async (value: boolean) => {
       if (value) {
-        // await activeAction()
         _active.value = true
       }
       else {
-        // TODO: when no matched route
-        // [Vue Router warn]: router.resolve() was passed an invalid location. This will fail in production.
-        // handle visible when router.push is failed
-        // TODO: handle push/replace failed
-        // TODO: allow set mode ?
         await closeAction()
         _active.value = false
       }
@@ -56,23 +51,27 @@ const setupModalRoute = () => {
     else {
       const { active, setActive, _active } = createActive(
         () => isModalActive(name),
-        async () => closeModal(name),
+        async () => {
+          await closeModal(name)
+          componentMap[name].propsInited = false
+        },
       )
       watch(active, (value) => {
         if (value === false) {
           _active.value = false
+          componentMap[name].propsInited = false
         }
       })
 
-      const getProps = typeof modalItem?.options?.props?.handler === 'function'
-        ? modalItem.options.props.handler
+      const getProps = typeof modalItem?.options?.props === 'function'
+        ? modalItem.options.props
         : isPlainObject(modalItem?.options?.props)
           ? () => modalItem.options?.props
           : null
 
       const propsOption = {
         get: getProps
-          ? () => getProps(pop(name))
+          ? () => getProps(pop(name), { unlock: () => unlockModal(name), close: () => setActive(false) })
           : () => pop(name),
       }
 
@@ -80,7 +79,6 @@ const setupModalRoute = () => {
       const loading = ref(false)
 
       const _getModalProps = () => {
-        setActive(true)
         const response = propsOption.get()
         props.value = response || {}
       }
@@ -99,9 +97,14 @@ const setupModalRoute = () => {
         _getModalProps,
         slots: modalSlots,
         _active: _active as unknown as boolean,
+        propsInited: false,
       }
     }
-    componentMap[name]._getModalProps()
+    if (!componentMap[name].propsInited) {
+      componentMap[name]._getModalProps()
+      componentMap[name].setActive(true)
+      componentMap[name].propsInited = true
+    }
   }
 
   return { setModal, componentMap }
@@ -141,7 +144,6 @@ export default defineComponent({
         throw new Error('modalName not provided')
       }
       const modal = getModalItemUnsafe(_name)
-
       if (modal && modal.type === props.modalType) {
         setModal(_name, cmp)
       }
