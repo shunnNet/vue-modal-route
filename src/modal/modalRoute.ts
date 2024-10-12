@@ -10,6 +10,7 @@ import {
   createRouterMatcher,
   RouteParamsGeneric,
   useRoute,
+  NavigationFailure,
 } from 'vue-router'
 import { ensureArray, ensureInjection, isPlainObject, noop } from './helpers'
 import { createHashRoutes } from './hash'
@@ -18,6 +19,13 @@ import { createModalStore } from './store'
 import { createQueryRoutes } from './query'
 import { createPathRoutes } from './path'
 import { createContext } from './context'
+
+type TModalNavigationGuardAfterEach = (context: {
+  to: RouteLocationNormalizedGeneric
+  from: RouteLocationNormalizedGeneric
+  failure: NavigationFailure | undefined | ReturnType<() => void>
+  ctx: Record<string, any>
+}) => any | Promise<any>
 
 // Note: find some way to mark modal open by openModal/closeModal
 export const modalRouteContextKey: TModalRouteContextKey = Symbol('modalRouteContext')
@@ -215,7 +223,7 @@ export const createModalRoute = (options: {
       const backSteps = basePosition - getCurrentPosition()
       if (backSteps !== 0) {
         console.log(`go ${backSteps} steps back to base position`, basePosition)
-        return go ? router.go(backSteps) : await goHistory(backSteps, false)
+        return go ? await router.go(backSteps) : await goHistory(backSteps, false)
       }
     }
   }
@@ -224,8 +232,7 @@ export const createModalRoute = (options: {
   // go to other route (e.g: router.push / modal.open)
   // go to other route if is init modal (e.g: router.push / modal.open)
   // only close modal
-  router.afterEach(async (to, from, failure) => {
-    const ctx = context.get()
+  const handleHistoryForCloseModal = (async ({ to, from, failure, ctx }) => {
     if (
       failure
       || ctx.isInitNavigation
@@ -262,16 +269,16 @@ export const createModalRoute = (options: {
       return
     }
     const basePosition = getPositionByTag(closingModalName)
-    const hasBasePosition = basePosition === null
+    const hasBasePosition = basePosition !== null
 
     console.log('closing modal', closingModalName, hasBasePosition)
-    if (!hasBasePosition) {
+    if (hasBasePosition) {
       if (closingModalName) {
         console.log('is not init navigation, go back to base route', closingModalName)
         await backToBase(closingModalName, ctx.closeByCloseModal ? true : false)
       }
       if (to.name !== from.name) {
-        // Because router.push/openModal is close modal then go to other route, so we need recover the "to" history
+        // Because router.push/openModal will close modal then go to other route, so we need recover the "to" history
         routerHistory.push(to.fullPath)
         console.log('recover history', to.fullPath)
       }
@@ -322,11 +329,9 @@ export const createModalRoute = (options: {
         goHistory(-1)
       }
     }
-  })
+  }) satisfies TModalNavigationGuardAfterEach
 
-  // pad history when using openModal
-  router.afterEach(async (to, from, failure) => {
-    const ctx = context.get()
+  const padHistoryWhenOpenModal = (async ({ to, from, failure, ctx }) => {
     if (failure || !ctx.openByOpenModal || ctx.direct) {
       return
     }
@@ -378,6 +383,14 @@ export const createModalRoute = (options: {
 
       return
     }
+  }) satisfies TModalNavigationGuardAfterEach
+
+  // afterEach guards will not keep the register order when meet "await", its execution order will decided by event loop
+  // so we handle its order by hand
+  router.afterEach(async (to, from, failure) => {
+    const ctx = context.get()
+    await handleHistoryForCloseModal({ to, from, failure, ctx })
+    await padHistoryWhenOpenModal({ to, from, failure, ctx })
   })
 
   async function openModal(
