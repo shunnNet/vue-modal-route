@@ -60,7 +60,8 @@ export type TModalRouteContext = {
   _setupModal: (name: string, options?: TModalMapItem['options']) => void
   _unsetModal: (name: string) => void
   queryRoutes: TModalQueryRoute[]
-  openModal: (name: string, options?: Partial<TOpenModalOptions>) => void
+  // FIXME: my type is not concise
+  openModal: (name: string, options?: Partial<TOpenModalOptions>) => Promise<any>
   closeModal: (name: string) => void
   modalExists: (name: string) => boolean
   isModalActive: (name: string) => boolean
