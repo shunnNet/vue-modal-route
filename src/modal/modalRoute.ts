@@ -395,8 +395,7 @@ export const createModalRoute = (options: {
     }
     const modalsNeedActivate = modalInfo.modal.filter(m => !isModalActive(m))
     if (!modalsNeedActivate.length) {
-      console.warn(`Not allow open modal ${modalInfo.modal.join(',')} which is already opened.`)
-      return
+      throw new Error(`Not allow open modal which is already opened: ${modalInfo.modal.join(',')}.`)
     }
     if (typeof options?.hash === 'string' && options.hash.startsWith('#modal')) {
       throw new Error('Not allow open modal with hash start with "#modal"')
