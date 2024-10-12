@@ -5,11 +5,11 @@ import {
   RouteRecordNormalized,
   RouterHistory,
   matchedRouteKey,
-  useRouter,
   RouteRecordRaw,
   RouteLocationNormalizedGeneric,
   createRouterMatcher,
   RouteParamsGeneric,
+  useRoute,
 } from 'vue-router'
 import { ensureArray, ensureInjection, isPlainObject, noop } from './helpers'
 import { createHashRoutes } from './hash'
@@ -504,16 +504,55 @@ export const useModal = <ReturnValue = any>(
     setModalLock,
     isModalActive,
     getRelatedModalsByRouteName,
+    modalExists,
   } = ensureInjection(modalRouteContextKey, 'useModal must be used inside a ModalRoute component')
 
+  // useModal can not target nested modal
+  const matchedRoute = inject(matchedRouteKey, null)
+  const currentRoute = useRoute()
   const relatedModalInfo = getRelatedModalsByRouteName(name)
+
+  const inModalHashRoute = currentRoute.matched.some(r => r.meta.modalHashRoot)
+
   if (!relatedModalInfo) {
     throw new Error(`Can not find related modals for ${name}`)
   }
-  if (relatedModalInfo.modal.length > 1) {
+  if (
+    !inModalHashRoute
+    && ['hash', 'query'].includes(relatedModalInfo.type)
+    && matchedRoute?.value
+  ) {
+    throw new Error(`useModal for hash or query modal must be used outside <RouterView>`)
+  }
+  const checkIfModalIsChild = (children: RouteRecordRaw[]) => {
+    for (const child of children) {
+      if (child.name === name) {
+        return true
+      }
+      if (child.children && checkIfModalIsChild(child.children)) {
+        return true
+      }
+    }
+    return false
+  }
+  if (!checkIfModalIsChild(matchedRoute?.value?.children || [])) {
+    throw new Error(`useModal ${name} must be used in a parent route of the modal.`)
+  }
+
+  const parentIndex = currentRoute.matched.findIndex(r =>
+    matchedRoute?.value?.name === r.name && matchedRoute?.value?.path === r.path,
+  )
+  const openedModals = currentRoute.matched.slice(0, parentIndex + 1).flatMap(r => r.meta.modal ? [r.name as string] : [])
+  const targetModals = relatedModalInfo.modal.filter(name => !openedModals.includes(name))
+
+  if (targetModals.length > 1) {
     throw new Error(`Multiple modals found for ${name}, useModal can only be used for single modal.`)
   }
-  const modalNameToOpen = relatedModalInfo.modal[0]
+
+  const modalNameToOpen = targetModals[0]
+  if (!modalExists(modalNameToOpen)) {
+    throw new Error(`Can not found modal by ${name}. It is not a route name that inside modal route or modal its self.`)
+  }
 
   try {
     _setupModal(modalNameToOpen, options)
