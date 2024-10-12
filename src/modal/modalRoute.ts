@@ -85,6 +85,7 @@ export const createModalRoute = (options: {
     routes: queryRoutes,
     getQueryModalsFromQuery,
     removeModalFromQuery,
+    mqprefix,
   } = createQueryRoutes(store, router)
 
   const { registerPathModalRoute } = createPathRoutes(store, router)
@@ -395,6 +396,12 @@ export const createModalRoute = (options: {
     if (!modalsNeedActivate.length) {
       console.warn(`Not allow open modal ${modalInfo.modal.join(',')} which is already opened.`)
       return
+    }
+    if (typeof options?.hash === 'string' && options.hash.startsWith('#modal')) {
+      throw new Error('Not allow open modal with hash start with "#modal"')
+    }
+    if (isPlainObject(options?.query) && Object.keys(options.query).some(k => k.startsWith(mqprefix))) {
+      throw new Error(`Not allow open modal with query key start with ${mqprefix}"`)
     }
     const modalNeedOpen = getModalItem(modalsNeedActivate.at(-1) as string)
 

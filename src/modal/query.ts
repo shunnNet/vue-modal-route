@@ -96,5 +96,6 @@ export const createQueryRoutes = (
     mQName,
     mQuery,
     removeModalFromQuery,
+    mqprefix,
   }
 }
