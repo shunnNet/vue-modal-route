@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton, ElDialog } from 'element-plus'
-import { useModal } from '~/modal'
+import { useModalRoute } from '~/modal'
 
 const visible = defineModel({
   type: Boolean,
@@ -13,7 +13,7 @@ defineProps({
   },
 })
 defineEmits(['return', 'message'])
-const { open } = useModal('ModalNestedA')
+const { openModal } = useModalRoute()
 </script>
 <template>
   <ElDialog
@@ -25,7 +25,7 @@ const { open } = useModal('ModalNestedA')
     <template #footer>
       <ElButton
         type="primary"
-        @click="open()"
+        @click="openModal('ModalNestedA')"
       >
         Open Parent ModalA
       </ElButton>

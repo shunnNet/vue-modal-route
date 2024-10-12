@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import { useModalRoute, ModalPathView } from '~/modal'
+import { useModalRoute, ModalPathView, useModal } from '~/modal'
 import PageTitle from '~/components/PageTitle.vue'
 
 const { openModal } = useModalRoute()
 
+const { open } = useModal('ModalNestedA')
+const onClickOpenNestedB = async () => {
+  const result = await openModal('ModalNestedB')
+  console.log(result)
+}
 </script>
 <template>
   <div>
@@ -13,7 +18,7 @@ const { openModal } = useModalRoute()
     />
     <ElButton
       type="primary"
-      @click="openModal('ModalNestedB')"
+      @click="onClickOpenNestedB"
     >
       Open ModalNestedB (modalA/modalB)
     </ElButton>

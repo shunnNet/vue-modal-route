@@ -1,5 +1,6 @@
 import { createWebHistory, createRouter } from 'vue-router'
 import { createModalRoute } from './modal'
+import ModalQueryA from '~/components/ModalQueryA.vue'
 
 const routerHistory = createWebHistory()
 export const router = createRouter({
@@ -72,4 +73,21 @@ export const router = createRouter({
 export const modalRoute = createModalRoute({
   router,
   routerHistory,
+  hash: [
+    {
+      name: 'ModalHashA',
+      path: 'modal-hash-a',
+      component: () => import('~/components/ModalHashA.vue'),
+      meta: {
+        modal: true,
+        direct: true,
+      },
+    },
+  ],
+  query: [
+    {
+      name: 'ModalQueryA',
+      component: ModalQueryA,
+    },
+  ],
 })

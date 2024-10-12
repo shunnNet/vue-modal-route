@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import PageTitle from '../../components/PageTitle.vue'
 import { ElButton, ElDivider, ElMessage } from 'element-plus'
-import { h, ref } from 'vue'
+import { h, reactive, ref } from 'vue'
 import HighlightText from '~/components/HighlightText.vue'
 import {
   useModalRoute,
@@ -17,17 +17,34 @@ const onAClick = async () => {
   console.log('returnValue', returnValue)
 }
 
+const modalProps = reactive({
+  message: 'default message',
+})
+setTimeout(() => {
+  modalProps.message = 'Message from setTimeout'
+  console.log('changed')
+}, 3000)
 const modalMessage = ref('')
 const {
   open,
   returnValue,
   isActive: isModalAActive,
+  unlock,
 } = useModal('ModalPageSingleA', {
-  props: {
-    onMessage: (message: string) => {
-      console.log('onMessage', message)
-      modalMessage.value = message
-    },
+  // manual: true,
+  validate: (data) => {
+    console.log('validate', data)
+    if (!data) {
+      console.log('Close because data is empty')
+      return false
+    }
+    return true
+  },
+  props: (data) => {
+    if (data?.message) {
+      modalProps.message = data!.message
+    }
+    return modalProps
   },
   slots: {
     footer: () => (
@@ -45,13 +62,12 @@ const onOpenNotExistModal = async () => {
   }
 }
 
+useModal('ModalPageSingleBChild')
+
 const ModalAReturn = useModalReturnValue<any>('ModalPageSingleA')
 const ModalAActive = useModalActive('ModalPageSingleA')
 
 const insertMessage = ref('Message from slot')
-setTimeout(() => {
-  insertMessage.value = 'Message from slot after 5s'
-}, 5000)
 </script>
 <template>
   <div>
@@ -59,6 +75,12 @@ setTimeout(() => {
       title="Page Single Modal"
       description="Open 1 modal a time"
     />
+    <ElButton
+      type="primary"
+      @click="unlock"
+    >
+      Unlock ModalPageSingleA
+    </ElButton>
     <div class="grid gap-4">
       <div>
         <ElButton

@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { ModalHashView, ModalQueryView } from '~/modal'
+import { ModalHashView, ModalQueryView, useModalRoute, useModal } from '~/modal'
+import { matchedRouteKey } from 'vue-router'
+import { inject } from 'vue'
+import { ElButton } from 'element-plus'
+
+const matchedRoute = inject(matchedRouteKey, null)
+console.log('app', matchedRoute?.value)
 
 const navs = [
   {
@@ -15,6 +21,19 @@ const navs = [
     title: 'Nested',
   },
 ]
+
+const { openModal } = useModalRoute()
+const onOpenHashModal = () => {
+  openModal('ModalHashA').then((v) => {
+    console.log('ModalHashA return', v)
+  })
+}
+const onOpenQueryModal = () => {
+  openModal('ModalQueryA').then((v) => {
+    console.log('ModalQueryA return', v)
+  })
+}
+// useModal()
 </script>
 <template>
   <div class="grid grid-cols-[200px_1fr] grid-auto-flow-col min-h-100vh">
@@ -27,6 +46,12 @@ const navs = [
       >
         {{ navItem.title }}
       </RouterLink>
+      <ElButton @click="onOpenHashModal">
+        OpenHashModal
+      </ElButton>
+      <ElButton @click="onOpenQueryModal">
+        OpenQueryModal
+      </ElButton>
     </nav>
     <div class="p-4">
       <RouterView />
