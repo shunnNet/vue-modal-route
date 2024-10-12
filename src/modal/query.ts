@@ -48,8 +48,7 @@ export const createQueryRoutes = (
   function openModal(name: string, options?: {
     query?: Record<string, any>
   }) {
-    // TODO: check if modal is already open in store level
-    router.push({
+    return router.push({
       query: {
         ...currentRoute.value.query,
         ...options?.query,
