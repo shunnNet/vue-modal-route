@@ -66,6 +66,7 @@ export const createModalRoute = (options: {
     tagHistory,
     getCurrentPosition,
     getPositionByTag,
+    initPosition,
   } = useModalHistory({ router, routerHistory })
 
   const context = createContext()
@@ -236,35 +237,28 @@ export const createModalRoute = (options: {
     if (
       failure
       || ctx.isInitNavigation
+      || ctx.closeByCloseModal
       // no need pad step when only backward.
-      // "unknown" direction for closeModal which use router.replace
       || ctx.direction === 'backward'
       || ctx.direct
     ) {
       return
     }
     // ! Note: history already changed
-
     // TODO: check if modal allow direct open
-    let closingModalName: string
-    if (ctx.closeByCloseModal && ctx.closingModal) {
-      closingModalName = ctx.closingModal.name
-      routerHistory.replace(ctx.closingPath) // recover original path because closeModal change query of the path
-    }
-    else {
-      // 1. find the first closed modal to get which base route to back
-      const fromQueryModalNames = getQueryModalsFromQuery(from.query).map(m => m.name)
-      const toQueryModalNames = getQueryModalsFromQuery(to.query).map(m => m.name)
-      const firstClosedQueryModalName = fromQueryModalNames.find(
-        m => !toQueryModalNames.includes(m),
-      )
-      const firstClosedModalName = from.matched.find(
-        r => r.meta.modal && !to.matched.some(r2 => r2.name === r.name),
-      )?.name as string | undefined
+    // 1. find the first closed modal to get which base route to back
+    const fromQueryModalNames = getQueryModalsFromQuery(from.query).map(m => m.name)
+    const toQueryModalNames = getQueryModalsFromQuery(to.query).map(m => m.name)
+    const firstClosedQueryModalName = fromQueryModalNames.find(
+      m => !toQueryModalNames.includes(m),
+    )
+    const firstClosedModalName = from.matched.find(
+      r => r.meta.modal && !to.matched.some(r2 => r2.name === r.name),
+    )?.name as string | undefined
 
-      // path or hash modal take precedence over query modal
-      closingModalName = (firstClosedModalName || firstClosedQueryModalName) as string
-    }
+    // path or hash modal take precedence over query modal
+    const closingModalName = (firstClosedModalName || firstClosedQueryModalName) as string
+
     if (!closingModalName) {
       return
     }
@@ -284,50 +278,8 @@ export const createModalRoute = (options: {
       }
     }
     else {
-      // NOTE: This modal may opened by direct enter and is not refresh
-      // Query: no need handle. (because not allow directly enter)
-
-      // handle closeModal when no base tag in history
-      const closingModal = getModalItem(closingModalName)
-      let rootBaseRoute = closingModal.findBase({ params: from.params })
-
-      const baseRoute = rootBaseRoute
-      while (rootBaseRoute && rootBaseRoute.meta?.modal) {
-        rootBaseRoute = getModalItem(rootBaseRoute.name as string).findBase()
-      }
-      // TODO: Find a better way to detemine the direct entered modal
-      if (getCurrentPosition() !== 0) {
-        await goHistory(-getCurrentPosition(), false)
-      }
-      // pad history from root base route, but only back to closing modal base route
-      if (rootBaseRoute) {
-        const matched = currentRoute.value.matched.filter(r => !r.meta.modalHashRoot)
-        const rootBaseIndex = matched.findIndex(r => r.name === rootBaseRoute.name)
-        const baseIndex = matched.findIndex(r => r.name === baseRoute.name)
-        if (rootBaseIndex !== -1) {
-          replaceHistory(rootBaseRoute.path)
-          matched.slice(rootBaseIndex + 1)
-            .filter(r => !r.meta.modalHashRoot)
-            .forEach((r) => {
-              const name = r.name as string
-              if (modalExists(name)) tagHistory(name)
-              pushHistory(r.path)
-            })
-
-          console.log('go back to base route', baseRoute.name, 1 - matched.slice(baseIndex).length)
-          router.go(1 - matched.slice(baseIndex).length)
-        }
-        else {
-          throw new Error('No modal base route not found')
-        }
-      }
-      else {
-        console.log('go back to "/", and pad history to closing modal')
-        replaceHistory('/')
-        pushHistory(currentRoute.value.fullPath)
-        tagHistory(closingModalName)
-        goHistory(-1)
-      }
+      // For cases which close modal because go to other page
+      padHistoryWhenInitModal(closingModalName)
     }
   }) satisfies TModalNavigationGuardAfterEach
 
@@ -465,20 +417,67 @@ export const createModalRoute = (options: {
       console.warn(`Not allow close modal ${name} because it is not opened.`, name)
       return
     }
-    context.append({
-      closeByCloseModal: true,
-      closingModal: modal,
-      closingPath: currentRoute.value.fullPath,
-    })
-    // TODO: Not good to close modal by query, it will force user to handle this route change
-    await router.replace({
-      ...currentRoute.value,
-      query: {
-        ...currentRoute.value.query,
-        'vmr-close': name,
-      },
-    })
+    context.append({ closeByCloseModal: true })
+    const basePosition = getPositionByTag(name)
+    const hasBasePosition = basePosition !== null
+    console.log('closing modal', name, hasBasePosition)
+
+    // TODO: This may breaks when leave site, and go back from other site to modal route
+    if (hasBasePosition) {
+      // normal close and refresh enter
+      await backToBase(name, true)
+    }
+    else {
+      await padHistoryWhenInitModal(name)
+    }
     modal.deactivate()
+  }
+  async function padHistoryWhenInitModal(closingModalName: string) {
+    // NOTE: This modal may opened by directly enter and is not refresh
+    // Query: no need handle. (because not allow directly enter)
+    const closingModal = getModalItem(closingModalName)
+    let rootBaseRoute = closingModal.findBase({ params: currentRoute.value.params })
+
+    const baseRoute = rootBaseRoute
+    while (rootBaseRoute && rootBaseRoute.meta?.modal) {
+      rootBaseRoute = getModalItem(rootBaseRoute.name as string).findBase({ params: currentRoute.value.params })
+    }
+
+    // Note: route change when modal still open, the currentPosition will not be 0
+    // We need its be 0 here to correctly pad history, for now...
+    // TODO: Find a better way to detemine the direct entered modal
+    if (getCurrentPosition() !== initPosition) {
+      await goHistory(-getCurrentPosition(), false)
+    }
+    // pad history from root base route, but only back to closing modal base route
+    if (rootBaseRoute) {
+      const matched = currentRoute.value.matched.filter(r => !r.meta.modalHashRoot)
+      const rootBaseIndex = matched.findIndex(r => r.name === rootBaseRoute.name)
+      const baseIndex = matched.findIndex(r => r.name === baseRoute.name)
+      if (rootBaseIndex !== -1) {
+        replaceHistory(rootBaseRoute.path)
+        matched.slice(rootBaseIndex + 1)
+          .filter(r => !r.meta.modalHashRoot)
+          .forEach((r) => {
+            const name = r.name as string
+            if (modalExists(name)) tagHistory(name)
+            pushHistory(r.path)
+          })
+
+        console.log(`go ${1 - matched.slice(baseIndex).length} back to base route`, baseRoute.name)
+        router.go(1 - matched.slice(baseIndex).length)
+      }
+      else {
+        throw new Error('No modal base route not found')
+      }
+    }
+    else {
+      console.log('go back to "/", and pad history to closing modal')
+      replaceHistory('/')
+      pushHistory(currentRoute.value.fullPath)
+      tagHistory(closingModalName)
+      goHistory(-1)
+    }
   }
 
   function isModalActive(name: string) {

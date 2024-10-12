@@ -1,6 +1,5 @@
 import { HistoryState, RouteLocationNormalizedGeneric, Router, RouterHistory, START_LOCATION } from 'vue-router'
 import { defer, TDefer } from './helpers'
-import { createContext } from './context'
 import { useSessionStorage } from './storage'
 
 export type TModalHistory = ReturnType<typeof useModalHistory>
@@ -135,5 +134,6 @@ export const useModalHistory = (options: {
     tagHistory,
     getCurrentPosition,
     getPositionByTag,
+    initPosition: initPosition.value,
   }
 }
