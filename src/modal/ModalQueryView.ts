@@ -15,17 +15,17 @@ export default defineComponent({
 
     const componentsBeRendered = computed(
       () => ctx.queryRoutes
-        .flatMap(modal => isModalActive(modal.name) ? [{ modalName: modal.name, component: modal.component }] : []),
+        .flatMap(modal => isModalActive(modal.name)
+          ? [{ modalName: modal.name, component: modal.component }]
+          : [],
+        ),
     )
-    const parent = computed(() => {
-      return route.matched.at(-1)
-    })
-
+    const parent = computed(() => route.matched.at(-1))
     return () => {
       return h(ModalRoute, {
         modalType: 'query',
         components: componentsBeRendered.value,
-        parent,
+        parent: parent.value,
       }, slots)
     }
   },
