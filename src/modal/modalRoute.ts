@@ -396,16 +396,17 @@ export const createModalRoute = (options: {
       console.warn(`Not allow open modal ${modalInfo.modal.join(',')} which is already opened.`)
       return
     }
+    const modalNeedOpen = getModalItem(modalsNeedActivate.at(-1) as string)
+
     const _datas = Array.isArray(options?.data)
       ? options.data
-      : [[name, options?.data]] as [string, TModalData][]
+      : [[modalNeedOpen.name, options?.data]] as [string, TModalData][]
 
     const activateResults = modalsNeedActivate.map((m) => {
       const data = _datas.find(([name]) => name === m)?.[1]
       return getModalItem(m).activate(m, data || {})
     })
 
-    const modalNeedOpen = getModalItem(modalsNeedActivate.at(-1) as string)
     context.append({ openByOpenModal: true, openingModal: modalNeedOpen })
     modalNeedOpen.open({
       query: options?.query,
