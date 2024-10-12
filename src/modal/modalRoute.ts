@@ -393,29 +393,33 @@ export const createModalRoute = (options: {
     }
     const modalsNeedActivate = modalInfo.modal.filter(m => !isModalActive(m))
     if (!modalsNeedActivate.length) {
-      console.warn(`Not allow open modal ${modalInfo.modal.join(',')} because it is already opened.`)
+      console.warn(`Not allow open modal ${modalInfo.modal.join(',')} which is already opened.`)
       return
     }
-    const modalNeedOpen = modalsNeedActivate.at(-1) as string
-    if (Array.isArray(options?.data)) {
-      modalsNeedActivate.forEach((m) => {
-        const data = (options.data as [string, TModalData][]).find(([name]) => name === m)?.[1]
-        getModalItem(m).activate(m, data || {})
-      })
-    }
-    else if (isPlainObject(options?.data)) {
-      getModalItem(modalNeedOpen).activate(modalNeedOpen, options.data)
-    }
+    const _datas = Array.isArray(options?.data)
+      ? options.data
+      : [[name, options?.data]] as [string, TModalData][]
 
-    const modalItem = getModalItem(modalNeedOpen)
-    context.append({ openByOpenModal: true, openingModal: modalItem })
-    modalItem.open({
+    const activateResults = modalsNeedActivate.map((m) => {
+      const data = _datas.find(([name]) => name === m)?.[1]
+      return getModalItem(m).activate(m, data || {})
+    })
+
+    const modalNeedOpen = getModalItem(modalsNeedActivate.at(-1) as string)
+    context.append({ openByOpenModal: true, openingModal: modalNeedOpen })
+    modalNeedOpen.open({
       query: options?.query,
       hash: options?.hash,
       params: options?.params,
     }).catch(noop)
 
-    return modalItem._openPromise
+    return Promise.all(activateResults)
+      .then((results) => {
+        if (results.length === 1) {
+          return results[0]
+        }
+        return Object.fromEntries(results.map((r, i) => [modalsNeedActivate[i], r]))
+      })
   }
 
   async function closeModal(name: string) {
