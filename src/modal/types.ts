@@ -28,6 +28,8 @@ export type TModalMapItem = {
     params?: Record<string, any>
   }) => { path: string } & Record<string, any>
 
+  _settled: boolean
+
   options: {
     validate?: (data: unknown) => boolean
     props?: TModalData | ((data: TModalData | null) => TModalData)

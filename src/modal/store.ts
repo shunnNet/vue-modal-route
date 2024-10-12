@@ -46,6 +46,7 @@ export const createModalStore = () => {
       _manualLocked: false,
       _openPromise: null,
       _openPosition: -1,
+      _settled: false,
     }
   }
 
@@ -65,19 +66,28 @@ export const createModalStore = () => {
     return modalMap[name]
   }
   function _setupModal(name: string, options?: TModalMapItem['options']) {
-    ensureModalItem(name).options = options ?? null
+    _setModalOptions(name, options)
     if (options?.manual) {
       setModalLock(name, true)
     }
   }
-  // TODO: remove this?
   function _unsetModal(name: string) {
     const modal = ensureModalItem(name)
     modal.data = null
     _unsetModalOptions(name)
   }
+  function _setModalOptions(name: string, options?: TModalMapItem['options']) {
+    const m = ensureModalItem(name)
+    if (m._settled) {
+      throw new Error(`Modal has ${name} has already been settled.`)
+    }
+    m.options = options ?? null
+    m._settled = true
+  }
   function _unsetModalOptions(name: string) {
-    ensureModalItem(name).options = null
+    const m = ensureModalItem(name)
+    m.options = null
+    m._settled = false
   }
   function setModalLock(name: string, lock: boolean) {
     if (modalExists(name)) {

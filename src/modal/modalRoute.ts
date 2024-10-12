@@ -515,7 +515,12 @@ export const useModal = <ReturnValue = any>(
   }
   const modalNameToOpen = relatedModalInfo.modal[0]
 
-  _setupModal(modalNameToOpen, options)
+  try {
+    _setupModal(modalNameToOpen, options)
+  }
+  catch (_) {
+    throw new Error(`useModal ${name} may be called in multiple place in same times. useModal for a name can only be used in one place at a time.`)
+  }
   onScopeDispose(() => {
     _unsetModal(modalNameToOpen)
   })
