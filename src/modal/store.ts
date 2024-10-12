@@ -28,14 +28,7 @@ export const createModalStore = () => {
         modalMap[name].returnValue = null
         return modalMap[name]._openPromise
       },
-      open: (options?: {
-        query?: Record<string, any>
-        hash?: string
-        params?: Record<string, any>
-      }) => {
-        return _options.open(name, options)
-      },
-      close: () => {
+      deactivate: () => {
         modalMap[name].data = null
         if (modalMap[name]._openPromise) {
           modalMap[name]._openPromise._resolve(modalMap[name].returnValue)

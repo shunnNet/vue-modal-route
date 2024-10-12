@@ -64,7 +64,6 @@ export const createHashRoutes = (
       store.registerModal(aRoute.name as string, 'hash', {
         ...aRoute.meta,
         isActive: defineActive,
-        open: openModal,
         findBase,
       })
       if (aRoute.children?.length) {
@@ -95,5 +94,6 @@ export const createHashRoutes = (
     registerHashRoutes,
     resolveHashRoute,
     prepareHashRoute,
+    openModal,
   }
 }

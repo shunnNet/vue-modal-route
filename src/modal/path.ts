@@ -41,7 +41,6 @@ export const createPathRoutes = (
     store.registerModal(aRoute.name as string, 'path', {
       ...aRoute.meta,
       isActive: defineActive,
-      open: openModal,
       findBase,
     })
     return aRoute
@@ -49,5 +48,6 @@ export const createPathRoutes = (
 
   return {
     registerPathModalRoute,
+    openModal,
   }
 }

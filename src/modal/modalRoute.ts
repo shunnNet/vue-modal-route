@@ -78,6 +78,7 @@ export const createModalRoute = (options: {
     registerHashRoutes,
     resolveHashRoute,
     prepareHashRoute,
+    openModal: openHashModal,
   } = createHashRoutes(store, router)
 
   const {
@@ -86,9 +87,10 @@ export const createModalRoute = (options: {
     getQueryModalsFromQuery,
     removeModalFromQuery,
     mqprefix,
+    openModal: openQueryModal,
   } = createQueryRoutes(store, router)
 
-  const { registerPathModalRoute } = createPathRoutes(store, router)
+  const { registerPathModalRoute, openModal: openPathModal } = createPathRoutes(store, router)
 
   const {
     modalMap,
@@ -411,15 +413,30 @@ export const createModalRoute = (options: {
 
     const activateResults = modalsNeedActivate.map((m) => {
       const data = _datas.find(([name]) => name === m)?.[1]
-      return getModalItem(m).activate(m, data || {})
+      return getModalItem(m).activate(m, data)
     })
 
     context.append({ openByOpenModal: true, openingModal: modalNeedOpen })
-    modalNeedOpen.open({
-      query: options?.query,
-      hash: options?.hash,
-      params: options?.params,
-    }).catch(noop)
+    switch (modalInfo.type) {
+      case 'path':
+        openPathModal(name, {
+          query: options?.query,
+          hash: options?.hash,
+          params: options?.params,
+        }).catch(noop)
+        break
+      case 'hash':
+        openHashModal(name, {
+          query: options?.query,
+          params: options?.params,
+        }).catch(noop)
+        break
+      case 'query':
+        openQueryModal(name, {
+          query: options?.query,
+        }).catch(noop)
+        break
+    }
 
     return Promise.all(activateResults)
       .then((results) => {
@@ -450,7 +467,7 @@ export const createModalRoute = (options: {
         'vmr-close': name,
       },
     })
-    modal.close()
+    modal.deactivate()
   }
 
   function isModalActive(name: string) {
