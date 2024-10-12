@@ -1,4 +1,4 @@
-import { markRaw } from 'vue'
+import { defineAsyncComponent, markRaw } from 'vue'
 import { TModalQueryRoute } from './types'
 import { createModalStore } from './store'
 import { ensureArray } from './helpers'
@@ -36,7 +36,11 @@ export const createQueryRoutes = (
 
   const addRoutes = (newRoutes: TModalQueryRoute[]) => {
     newRoutes.forEach((aRoute) => {
-      aRoute.component = markRaw(aRoute.component)
+      aRoute.component = markRaw(
+        typeof aRoute.component === 'function'
+          ? defineAsyncComponent(aRoute.component as any)
+          : aRoute.component,
+      )
       _routes.push(aRoute)
     })
   }
