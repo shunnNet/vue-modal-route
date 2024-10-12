@@ -236,7 +236,6 @@ export const createModalRoute = (options: {
     ) {
       return
     }
-    console.log('afterEach: handle closeModal ')
     // ! Note: history already changed
 
     // TODO: check if modal allow direct open
@@ -416,6 +415,7 @@ export const createModalRoute = (options: {
       return getModalItem(m).activate(m, data)
     })
 
+    // TODO: playback if failed
     context.append({ openByOpenModal: true, openingModal: modalNeedOpen })
     switch (modalInfo.type) {
       case 'path':
@@ -458,8 +458,7 @@ export const createModalRoute = (options: {
       closingModal: modal,
       closingPath: currentRoute.value.fullPath,
     })
-    // TODO: playback if failed
-
+    // TODO: Not good to close modal by query, it will force user to handle this route change
     await router.replace({
       ...currentRoute.value,
       query: {

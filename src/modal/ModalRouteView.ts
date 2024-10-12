@@ -92,6 +92,7 @@ const setupModalRoute = () => {
       }
     }
     if (!componentMap[name].propsInited) {
+      // TODO: FIXME: I will be ran twice because closeModal's query updated
       const data = pop(name)
       if (
         typeof modalItem?.options?.validate === 'function'
