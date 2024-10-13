@@ -226,7 +226,7 @@ export const createModalRoute = (options: {
   // Not allow open modal by router.push / router.replace
   router.beforeEach((to, from) => {
     const ctx = context.get()
-    if (!ctx.isInitNavigation && ctx.openByOpenModal) {
+    if (ctx.isInitNavigation || (!ctx.isInitNavigation && ctx.openByOpenModal)) {
       return true
     }
     if (to.matched.find(r => r.meta.modal && !from.matched.some(r2 => r2.name === r.name))) {
