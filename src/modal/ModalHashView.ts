@@ -12,9 +12,6 @@ export default defineComponent({
     })
 
     provide(viewDepthKey, hashRouteDepth)
-    const parent = computed(() => {
-      return routes.matched[hashRouteDepth.value - 1]
-    })
     const RouterView = resolveComponent('RouterView')
 
     return () => {
@@ -23,7 +20,6 @@ export default defineComponent({
           return h(ModalRoute, {
             modalType: 'hash',
             components: [scope.Component],
-            parent,
           }, slots)
         },
 

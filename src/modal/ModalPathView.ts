@@ -1,14 +1,11 @@
-import { inject, h, resolveComponent, defineComponent } from 'vue'
+import { h, resolveComponent, defineComponent } from 'vue'
 import ModalRoute from './ModalRouteView'
-import { matchedRouteKey } from 'vue-router'
 
 export default defineComponent({
   components: {
     ModalRoute,
   },
   setup(_, { slots }) {
-    const matchedRoute = inject(matchedRouteKey)
-
     const RouterView = resolveComponent('RouterView')
     return () => {
       return h(RouterView, null, {
@@ -16,7 +13,6 @@ export default defineComponent({
           return h(ModalRoute, {
             modalType: 'path',
             components: [scope.Component],
-            parent: matchedRoute,
           }, slots)
         },
 

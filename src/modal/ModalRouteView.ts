@@ -116,10 +116,6 @@ export default defineComponent({
       type: Array as PropType<TComponent[] | { modalName: string, component: TComponent }[]>,
       default: () => [],
     },
-    parent: {
-      type: Object,
-      default: null,
-    },
     modalType: {
       type: String as PropType<'path' | 'hash' | 'query'>,
       required: true,
