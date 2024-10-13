@@ -182,7 +182,7 @@ export const createModalRoute = (options: {
     return true
   })
   // Not allow directly enter if modal didn't has "meta.modal.direct: true" or global direct: true
-  router.beforeEach((to) => {
+  router.beforeEach(async (to) => {
     const ctx = context.get()
     if (!ctx.isInitNavigation) {
       return true
@@ -194,6 +194,11 @@ export const createModalRoute = (options: {
     )
     // when direct: true, undefined means use _options.direct
     if (notAllowRoute) {
+      const basePosition = getPositionByTag(notAllowRoute.name as string)
+      if (basePosition !== null) {
+        console.log('go back to base position', basePosition)
+        await goHistory(basePosition - getCurrentPosition(), false)
+      }
       const modal = getModalItem(notAllowRoute.name as string)
       const base = modal.findBase({ params: to.params })
       console.warn(`Not allow open modal ${notAllowRoute.name as string} with directly enter`)
