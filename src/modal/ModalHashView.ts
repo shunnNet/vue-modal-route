@@ -7,11 +7,14 @@ export default defineComponent({
   },
   setup(_, { slots }) {
     const routes = useRoute()
-    const hashRouteDepth = computed(() => {
-      return routes.matched?.findIndex(r => r?.meta?.modalHashRoot === true)
-    })
-
+    const hashRouteDepth = computed(() => routes.matched?.findIndex(r => r?.meta?.modalHashRoot === true))
+    const inModalHashRoute = inject('ModalHashContext', false)
+    if (inModalHashRoute) {
+      console.warn('ModalHashView should not be nested in another ModalHashView, use `ModalPathView` instead')
+      return () => null
+    }
     provide(viewDepthKey, hashRouteDepth)
+    provide('ModalHashContext', true)
     const RouterView = resolveComponent('RouterView')
 
     return () => {
