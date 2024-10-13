@@ -1,7 +1,8 @@
-import { computed, defineComponent, h } from 'vue'
+import { computed, defineComponent, h, inject } from 'vue'
 import ModalRoute from './ModalRouteView'
 import { ensureInjection } from './helpers'
 import { modalRouteContextKey, useModalRoute } from './modalRoute'
+import { matchedRouteKey } from 'vue-router'
 
 export default defineComponent({
   components: {
@@ -10,6 +11,16 @@ export default defineComponent({
   setup(_, { slots }) {
     const ctx = ensureInjection(modalRouteContextKey, 'useModalRoute must be used inside a ModalRoute component')
     const { isModalActive } = useModalRoute()
+    const inModalQueryRoute = inject('ModalQueryContext', false)
+    const inRouterView = inject(matchedRouteKey, null)
+    if (inModalQueryRoute) {
+      console.warn('ModalQueryView should not be nested in ModalQueryView.')
+      return () => null
+    }
+    if (inRouterView !== null) {
+      console.warn('ModalQueryView should not be nested inside router view.')
+      return () => null
+    }
 
     const componentsBeRendered = computed(
       () => ctx.queryRoutes
