@@ -572,12 +572,14 @@ export const useModal = <ReturnValue = any>(
   if (!relatedModalInfo) {
     throw new Error(`Can not find related modals for ${name}`)
   }
-  if (
-    !inModalHashRoute
-    && ['hash', 'query'].includes(relatedModalInfo.type)
-    && matchedRoute?.value
-  ) {
-    throw new Error(`useModal for hash or query modal must be used outside <RouterView>`)
+
+  if (matchedRoute?.value) {
+    if (relatedModalInfo.type === 'hash' && !inModalHashRoute) {
+      throw new Error(`useModal for first layer hash modal must be used outside <RouterView>`)
+    }
+    if (relatedModalInfo.type === 'query') {
+      throw new Error(`useModal for query modal must be used outside <RouterView>`)
+    }
   }
   const checkIfModalIsChild = (children: RouteRecordRaw[]) => {
     for (const child of children) {
@@ -590,21 +592,28 @@ export const useModal = <ReturnValue = any>(
     }
     return false
   }
-  if (!checkIfModalIsChild(matchedRoute?.value?.children || [])) {
-    throw new Error(`useModal ${name} must be used in a parent route of the modal.`)
+  let modalNameToOpen = name
+
+  if (
+    relatedModalInfo.type === 'path'
+    || (inModalHashRoute && relatedModalInfo.type === 'hash')
+  ) {
+    if (!checkIfModalIsChild(matchedRoute?.value?.children || [])) {
+      throw new Error(`useModal ${name} must be used in a parent route of the modal.`)
+    }
+
+    const parentIndex = currentRoute.matched.findIndex(r =>
+      matchedRoute?.value?.name === r.name && matchedRoute?.value?.path === r.path,
+    )
+    const openedModals = currentRoute.matched.slice(0, parentIndex + 1).flatMap(r => r.meta.modal ? [r.name as string] : [])
+    const targetModals = relatedModalInfo.modal.filter(name => !openedModals.includes(name))
+
+    if (targetModals.length > 1) {
+      throw new Error(`Multiple modals found for ${name}, useModal can only be used for single modal.`)
+    }
+    modalNameToOpen = targetModals[0]
   }
 
-  const parentIndex = currentRoute.matched.findIndex(r =>
-    matchedRoute?.value?.name === r.name && matchedRoute?.value?.path === r.path,
-  )
-  const openedModals = currentRoute.matched.slice(0, parentIndex + 1).flatMap(r => r.meta.modal ? [r.name as string] : [])
-  const targetModals = relatedModalInfo.modal.filter(name => !openedModals.includes(name))
-
-  if (targetModals.length > 1) {
-    throw new Error(`Multiple modals found for ${name}, useModal can only be used for single modal.`)
-  }
-
-  const modalNameToOpen = targetModals[0]
   if (!modalExists(modalNameToOpen)) {
     throw new Error(`Can not found modal by ${name}. It is not a route name that inside modal route or modal its self.`)
   }
