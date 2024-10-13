@@ -8,14 +8,14 @@ export const createHashRoutes = (
 ) => {
   const children: TModalHashRoute[] = []
   const currentRoute = router.currentRoute
+  let hashRootBaseName = ''
 
   const addRoutes = (routes: TModalHashRoute[]) => {
     routes.forEach((route) => {
       children.push(route)
     })
   }
-  const defineActive = (name: string) =>
-    currentRoute.value.matched.some(route => route.name === name)
+  const defineActive = (name: string) => currentRoute.value.matched.some(route => route.name === name)
 
   function openModal(name: string, options?: {
     query?: Record<string, any>
@@ -30,7 +30,11 @@ export const createHashRoutes = (
     })
   }
   function prepareHashRoute(target?: string) {
-    router.addRoute(target || currentRoute.value.name as string, hashRoute)
+    const base = target || currentRoute.value.name
+    if (hashRootBaseName !== base) {
+      hashRootBaseName = base as string
+      router.addRoute(hashRootBaseName as string, hashRoute)
+    }
   }
 
   function findBase(name: string, params: Record<string, any> = {}) {
@@ -81,7 +85,7 @@ export const createHashRoutes = (
   }
   const hashRoute = {
     name: 'modal-hash-root',
-    path: '#modal',
+    path: '_modal',
     meta: {
       modalHashRoot: true,
     },
