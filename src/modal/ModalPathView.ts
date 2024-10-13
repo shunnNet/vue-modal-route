@@ -8,6 +8,11 @@ export default defineComponent({
   setup(_, { slots }) {
     const RouterView = resolveComponent('RouterView')
     const inModalHashRoute = inject('ModalHashContext', false)
+    const inModalQueryRoute = inject('ModalQueryContext', false)
+    if (inModalQueryRoute) {
+      console.warn('ModalPathView should not be nested in ModalQueryView.')
+      return () => null
+    }
     return () => {
       return h(RouterView, null, {
         default: (scope: any) => {
