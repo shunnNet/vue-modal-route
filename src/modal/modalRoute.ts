@@ -218,6 +218,17 @@ export const createModalRoute = (options: {
       return { ...to, query: _query }
     }
   })
+  // Not allow open modal by router.push / router.replace
+  router.beforeEach((to, from) => {
+    const ctx = context.get()
+    if (!ctx.isInitNavigation && ctx.openByOpenModal) {
+      return true
+    }
+    if (to.matched.find(r => r.meta.modal && !from.matched.some(r2 => r2.name === r.name))) {
+      console.warn('Not allow open modal by router.push / router.replace')
+      return false
+    }
+  })
   const backToBase = async (name: string, go: boolean = false) => {
     const basePosition = getPositionByTag(name)
     if (basePosition !== null) {
