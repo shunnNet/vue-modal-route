@@ -1,10 +1,7 @@
-import { createWebHistory, createRouter } from 'vue-router'
-import { createModalRoute } from './modal'
 import ModalQueryA from '~/components/ModalQueryA.vue'
+import { createModalRouter } from '~/modal'
 
-const routerHistory = createWebHistory()
-export const router = createRouter({
-  history: routerHistory,
+export const router = createModalRouter({
   routes: [
     {
       name: 'PageSingleModal',
@@ -34,12 +31,23 @@ export const router = createRouter({
             },
           ],
         },
+
       ],
     },
     {
       name: 'PageCrossPage',
       path: '/cross-page',
       component: () => import('./pages/cross-page/index.vue'),
+      children: [
+        {
+          name: 'ModalCrossPageA',
+          path: 'modal-a',
+          component: () => import('./pages/cross-page/ModalA.vue'),
+          meta: {
+            modal: true,
+          },
+        },
+      ],
     },
     {
       name: 'PageNestedModal',
@@ -61,18 +69,37 @@ export const router = createRouter({
               meta: {
                 modal: true,
               },
+              children: [
+                {
+                  name: 'ModalNestedBChild',
+                  path: 'child',
+                  component: () => import('./pages/nested/ModalB/child-path.vue'),
+                },
+              ],
             },
 
           ],
         },
       ],
     },
-  ],
-})
+    {
+      name: 'PagePrepare',
+      path: '/prepare',
+      component: () => import('./pages/prepare-open/index.vue'),
+      children: [
+        {
+          name: 'PagePrepareModalC',
+          path: 'modal-c',
+          component: () => import('./pages/prepare-open/ModalC.vue'),
+          meta: {
+            modal: true,
+            direct: true,
+          },
 
-export const modalRoute = createModalRoute({
-  router,
-  routerHistory,
+        },
+      ],
+    },
+  ],
   hash: [
     {
       name: 'ModalHashA',
@@ -82,6 +109,21 @@ export const modalRoute = createModalRoute({
         modal: true,
         direct: true,
       },
+      children: [
+        {
+          name: 'ModalHashB',
+          path: 'modal-hash-b',
+          component: () => import('~/pages/cross-page/ModalA.vue'),
+          meta: {
+            modal: true,
+          },
+        },
+        // {
+        //   name: 'ModalHashAChild',
+        //   path: 'child',
+        //   component: () => import('~/components/ModalHashAChild.vue'),
+        // },
+      ],
     },
   ],
   query: [

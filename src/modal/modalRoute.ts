@@ -1,9 +1,8 @@
-import { computed, inject, onScopeDispose } from 'vue'
+import { App, computed, inject, onScopeDispose } from 'vue'
 import { TModalData, TModalHashRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TModalRouteContextKey, TOpenModalOptions } from './types'
 import {
   Router,
   RouteRecordNormalized,
-  RouterHistory,
   matchedRouteKey,
   RouteRecordRaw,
   RouteLocationNormalizedGeneric,
@@ -11,6 +10,9 @@ import {
   RouteParamsGeneric,
   useRoute,
   NavigationFailure,
+  RouterOptions,
+  createWebHistory,
+  createRouter,
 } from 'vue-router'
 import { ensureArray, ensureInjection, isPlainObject, noop } from './helpers'
 import { createHashRoutes } from './hash'
@@ -30,25 +32,26 @@ type TModalNavigationGuardAfterEach = (context: {
 // Note: find some way to mark modal open by openModal/closeModal
 export const modalRouteContextKey: TModalRouteContextKey = Symbol('modalRouteContext')
 
-export const createModalRoute = (options: {
-  router: Router
-  routerHistory: RouterHistory
-  query?: TModalQueryRoute[]
-  hash?: TModalHashRoute[]
-  direct?: boolean
-}) => {
-  const _options = {
-    direct: false,
+export const createModalRouter = (
+  options:
+    Omit<RouterOptions, 'history'> & {
+      query?: TModalQueryRoute[]
+      hash?: TModalHashRoute[]
+      direct?: boolean
+    },
+) => {
+  const routerHistory = createWebHistory()
+  const router = createRouter({
     ...options,
+    history: routerHistory,
+  })
+  const _options = {
+    direct: options.direct || false,
     query: ensureArray(options.query as TModalQueryRoute[]),
     hash: ensureArray(options.hash as TModalHashRoute[]),
   }
-  if (!_options.router) {
-    throw new Error('router is required')
-  }
-  const router = _options.router
-  const routerHistory = _options.routerHistory
-  const currentRoute = _options.router.currentRoute
+
+  const currentRoute = router.currentRoute
   const routerMatcher = createRouterMatcher(router.getRoutes(), router.options)
   const routeParamsToPath = (
     r: RouteRecordNormalized | RouteLocationNormalizedGeneric,
@@ -133,7 +136,7 @@ export const createModalRoute = (options: {
       }
     })
   }
-  _options.router.getRoutes().forEach((route) => {
+  router.getRoutes().forEach((route) => {
     if (route.meta?.modal && route.name && route.components?.default) {
       registerPathModalRoute(route)
       registChildren('path', [route.name as string], route.children || [])
@@ -525,10 +528,12 @@ export const createModalRoute = (options: {
   } satisfies TModalRouteContext
 
   return {
-    install(app: any) {
+    ...router,
+    install(app: App) {
+      app.use(router)
       app.provide(modalRouteContextKey, modalRouteContext)
     },
-  }
+  } as Router
 }
 
 export const useModalRoute = () => {
