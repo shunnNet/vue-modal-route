@@ -1,6 +1,7 @@
 import { inject, InjectionKey } from 'vue'
+import { RouteRecordRaw } from 'vue-router'
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 export const ensureInjection = <T = unknown>(injectKey: string | InjectionKey<T>, errorMsg: string) => {
   const injection = inject(injectKey)
@@ -87,3 +88,43 @@ export function createCallbacks() {
 }
 
 export const noop = () => { }
+
+export const isModalRoute = (route: RouteRecordRaw) => {
+  return route.meta?.modal
+}
+export const transformToModalRoute = (routes: RouteRecordRaw[], inModalRoute: boolean = false) => {
+  const prefix = 'modal-'
+  return routes.map((aRoute) => {
+    const result = {
+      ...aRoute,
+    } as RouteRecordRaw
+    const children = Array.isArray(result.children)
+      ? transformToModalRoute(result.children || [], true)
+      : undefined
+    result.children = children as RouteRecordRaw[]
+    if (
+      !(inModalRoute || (aRoute.meta?.modal && aRoute.name))
+    ) {
+      return result
+    }
+    if (aRoute.component) {
+      result.components = {
+        default: aRoute.component,
+        ...(result.components ?? {}),
+      }
+      delete result.component
+    }
+    if (!(isPlainObject(result.components) && result.components.default)) {
+      return result
+    }
+    result.components = Object.keys(result.components).reduce(
+      (acc, key) => {
+        acc[`${prefix}${key}`] = result.components![key]
+        return acc
+      },
+      {} as Record<string, NonNullable<RouteRecordRaw['component']>>,
+    )
+
+    return result
+  }) as RouteRecordRaw[]
+}

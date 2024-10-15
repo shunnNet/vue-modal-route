@@ -14,7 +14,7 @@ import {
   createWebHistory,
   createRouter,
 } from 'vue-router'
-import { ensureArray, ensureInjection, isPlainObject, noop } from './helpers'
+import { ensureArray, ensureInjection, isPlainObject, noop, transformToModalRoute } from './helpers'
 import { createHashRoutes } from './hash'
 import { useModalHistory } from './history'
 import { createModalStore } from './store'
@@ -43,12 +43,13 @@ export const createModalRouter = (
   const routerHistory = createWebHistory()
   const router = createRouter({
     ...options,
+    routes: transformToModalRoute(options.routes as RouteRecordRaw[]),
     history: routerHistory,
   })
   const _options = {
     direct: options.direct || false,
     query: ensureArray(options.query as TModalQueryRoute[]),
-    hash: ensureArray(options.hash as TModalHashRoute[]),
+    hash: transformToModalRoute(ensureArray(options.hash as TModalHashRoute[])),
   }
 
   const currentRoute = router.currentRoute
@@ -127,7 +128,7 @@ export const createModalRouter = (
 
   const registChildren = (type: string, parents: string[], children: TModalHashRoute[] | RouteRecordRaw[]) => {
     children.forEach((route) => {
-      const _parents = [...parents, ...(route.meta?.modal && route.name && route.component ? [route.name as string] : [])]
+      const _parents = [...parents, ...(route.meta?.modal && route.name && route.components?.['modal-default'] ? [route.name as string] : [])]
       if (route.name) {
         modalRouteCollection.set(route.name as string, { type: 'path', modal: [..._parents] })
       }
@@ -137,14 +138,14 @@ export const createModalRouter = (
     })
   }
   router.getRoutes().forEach((route) => {
-    if (route.meta?.modal && route.name && route.components?.default) {
+    if (route.meta?.modal && route.name && route.components?.['modal-default']) {
       registerPathModalRoute(route)
       registChildren('path', [route.name as string], route.children || [])
       modalRouteCollection.set(route.name as string, { type: 'path', modal: [route.name as string] })
     }
   })
   _options.hash.forEach((route) => {
-    if (route.meta?.modal && route.name && route.component) {
+    if (route.meta?.modal && route.name && route.components?.['modal-default']) {
       registChildren('hash', [route.name as string], route.children || [])
       modalRouteCollection.set(route.name as string, { type: 'hash', modal: [route.name as string] })
     }
@@ -172,18 +173,15 @@ export const createModalRouter = (
     }
   })
   // handle direct enter hash modal
-  router.beforeEach((to) => {
-    const ctx = context.get()
-    if (!ctx.isInitNavigation) {
-      return true
-    }
-    prepareHashRoute(to.name as string)
-    if (to.hash) {
-      const result = resolveHashRoute(to.fullPath)
-      return result || true
-    }
-    return true
-  })
+  // Note: seems like vue-router do something like route match when register plugin
+  // It will report warning if put dynamic route registration when router.beforeEach
+  // So we need to handle before that
+  const isHashRoute = routerHistory.location.includes('_modal')
+  if (isHashRoute) {
+    const baseRoute = router.resolve(routerHistory.location.replace(/\/_modal.*/, ''))
+    prepareHashRoute(baseRoute.name as string)
+  }
+
   // Not allow directly enter if modal didn't has "meta.modal.direct: true" or global direct: true
   router.beforeEach(async (to) => {
     const ctx = context.get()
@@ -420,7 +418,8 @@ export const createModalRouter = (
         }).catch(noop)
         break
     }
-
+    // ISSUE: page index open nested modalA/modalB -> close modalB to modalA -> open modalB -> modalB emit "return" with value
+    // the openModal resolved promise will get the modalB's result (null)
     return Promise.all(activateResults)
       .then((results) => {
         if (results.length === 1) {
@@ -433,8 +432,7 @@ export const createModalRouter = (
   async function closeModal(name: string) {
     const modal = getModalItem(name)
     if (!modal.isActive(name)) {
-      console.warn(`Not allow close modal ${name} because it is not opened.`, name)
-      return
+      throw new Error(`Not allow close modal ${name} because it is not opened.`)
     }
     context.append({ closeByCloseModal: true })
     const basePosition = getPositionByTag(name)
@@ -598,7 +596,6 @@ export const useModal = <ReturnValue = any>(
     return false
   }
   let modalNameToOpen = name
-
   if (
     relatedModalInfo.type === 'path'
     || (inModalHashRoute && relatedModalInfo.type === 'hash')
@@ -638,6 +635,7 @@ export const useModal = <ReturnValue = any>(
   const returnValue = useModalReturnValue<ReturnValue>(modalNameToOpen)
 
   return {
+    // TODO: data here should not accept array of data, because `open` only open single modal.
     open: (options?: Partial<TOpenModalOptions>) => openModal(name, options),
     close: () => closeModal(modalNameToOpen),
     unlock: () => unlockModal(modalNameToOpen),

@@ -5,7 +5,13 @@ export default defineComponent({
   components: {
     ModalRoute,
   },
-  setup(_, { slots }) {
+  props: {
+    name: {
+      type: String,
+      default: 'default',
+    },
+  },
+  setup(props, { slots }) {
     const RouterView = resolveComponent('RouterView')
     const inModalHashRoute = inject('ModalHashContext', false)
     const inModalQueryRoute = inject('ModalQueryContext', false)
@@ -14,15 +20,18 @@ export default defineComponent({
       return () => null
     }
     return () => {
-      return h(RouterView, null, {
-        default: (scope: any) => {
-          return h(ModalRoute, {
-            modalType: inModalHashRoute ? 'hash' : 'path',
-            components: [scope.Component],
-          }, slots)
-        },
+      return h(
+        RouterView,
+        { name: `modal-${props.name}` },
+        {
+          default: (scope: any) => {
+            return h(ModalRoute, {
+              modalType: inModalHashRoute ? 'hash' : 'path',
+              components: [scope.Component],
+            }, slots)
+          },
 
-      })
+        })
     }
   },
 })
