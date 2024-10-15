@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ElButton, ElDialog } from 'element-plus'
+import HighlightText from '~/components/HighlightText.vue'
 import { useModal, ModalPathView } from '~/modal'
 
 const visible = defineModel({
@@ -20,22 +21,28 @@ const { open } = useModal('ModalNestedB')
     v-model="visible"
     title="Nested Modal A"
   >
-    <div class="grid gap-2" />
+    <div class="grid gap-2">
+      <HighlightText
+        v-if="message"
+        :message="message"
+      />
+    </div>
     <ModalPathView />
 
     <template #footer>
       <ElButton
         type="primary"
-        @click="open()"
+        @click="open({
+          data: [
+            ['ModalNestedA', { message: 'ModalA message from ModalB (which should not be seen.)' }],
+            ['ModalNestedB', { message: 'ModalB message from ModalA (should be shown)' }],
+            ['ModalNestedBChild', { message: 'ModalBChild message from ModalA (which should not be seen.)' }]
+          ]
+        })"
       >
         Open ModalB
       </ElButton>
-      <ElButton
-        icon="Message"
-        @click="$emit('message', 'Emit from ModalA')"
-      >
-        Send Message
-      </ElButton>
+
       <ElButton
         type="warning"
         icon="close"
@@ -48,7 +55,7 @@ const { open } = useModal('ModalNestedB')
         icon="check"
         @click="$emit('return', 'ModalA return value')"
       >
-        Confirm
+        Close (with Return Value)
       </ElButton>
     </template>
   </ElDialog>

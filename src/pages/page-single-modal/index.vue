@@ -1,73 +1,14 @@
 <script setup lang="ts">
 import PageTitle from '../../components/PageTitle.vue'
-import { ElButton, ElDivider, ElMessage } from 'element-plus'
-import { h, reactive, ref } from 'vue'
-import HighlightText from '~/components/HighlightText.vue'
-import {
-  useModalRoute,
-  ModalPathView,
-  useModalReturnValue,
-  useModal,
-  useModalActive,
-} from '~/modal'
-
-const { openModal } = useModalRoute()
-const onAClick = async () => {
-  const returnValue = await openModal('ModalPageSingleA')
-  console.log('returnValue', returnValue)
-}
-
-const modalProps = reactive({
-  message: 'default message',
-})
-setTimeout(() => {
-  modalProps.message = 'Message from setTimeout'
-  console.log('changed')
-}, 3000)
-const modalMessage = ref('')
-const {
-  open,
-  returnValue,
-  isActive: isModalAActive,
-  unlock,
-} = useModal('ModalPageSingleA', {
-  // manual: true,
-  validate: (data) => {
-    console.log('validate', data)
-    if (!data) {
-      console.log('Close because data is empty')
-      return false
-    }
-    return true
-  },
-  props: (data) => {
-    if (data?.message) {
-      modalProps.message = data!.message
-    }
-    return modalProps
-  },
-  slots: {
-    footer: () => (
-      h('span', 'overwrite footer')
-    ),
-  },
-})
-
-const onOpenNotExistModal = async () => {
-  try {
-    await openModal('"NotExistModal"')
-  }
-  catch (e) {
-    ElMessage.error((e as Error).message)
-  }
-}
-
-useModal('ModalPageSingleBChild')
-
-const ModalAReturn = useModalReturnValue<any>('ModalPageSingleA')
-const ModalAActive = useModalActive('ModalPageSingleA')
+import { ElButton, ElDivider } from 'element-plus'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import SingleModalSectionA from '~/components/SingleModalSectionA.vue'
+import SingleModalSectionB from '~/components/SingleModalSectionB.vue'
+import { ModalPathView } from '~/modal'
 
 const insertMessage = ref('Message from slot')
+
 </script>
 <template>
   <div>
@@ -75,71 +16,20 @@ const insertMessage = ref('Message from slot')
       title="Page Single Modal"
       description="Open 1 modal a time"
     />
-    <ElButton
-      type="primary"
-      @click="unlock"
-    >
-      Unlock ModalPageSingleA
-    </ElButton>
     <div class="grid gap-4">
-      <div>
-        <ElButton
-          type="primary"
-          @click="onAClick"
-        >
-          Open ModalPageSingleA
-        </ElButton>
-        <ElButton
-          type="primary"
-          @click="open( { data: { message: 'data from `open` method' } })"
-        >
-          Open With data.message
-        </ElButton>
-
-        <ElButton
-          type="danger"
-          @click="onOpenNotExistModal"
-        >
-          Open With not exist modal name
-        </ElButton>
-      </div>
-      <div>
-        <ElButton
-          type="primary"
-          @click="openModal( 'ModalPageSingleBChild',{
-            data: { message: 'data from `open` method' },
-            query: { query1: 'query1' },
-            hash: '#hash',
-            params: { id: 'ModalB-ID'}
-          })"
-        >
-          Open With `modal-b/child?query1=query1#hash` params { id: 'ModalB ID'}
-        </ElButton>
-      </div>
-
-      <ul class="mt-2 list-disc pl-4 grid gap-2">
-        <li>
-          ReturnValue: <HighlightText :message="returnValue" />
-        </li>
-        <li>
-          ReturnValue(composable): <HighlightText :message="ModalAReturn" />
-        </li>
-        <li>
-          ModalAActive: {{ isModalAActive }}
-        </li>
-        <li>
-          ModalAActive(composable): {{ ModalAActive }}
-        </li>
-        <li>
-          Message from ModalA: <HighlightText :message="modalMessage" />
-        </li>
-      </ul>
+      <SingleModalSectionA />
+      <SingleModalSectionB />
     </div>
+
     <ElDivider />
+    <RouterView />
 
     <ModalPathView>
       <template #ModalPageSingleA-footer>
         <span>{{ insertMessage }}</span>
+      </template>
+      <template #ModalPageSingleA-header>
+        <span> header slot inserted from parent </span>
       </template>
     </ModalPathView>
   </div>

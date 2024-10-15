@@ -63,29 +63,29 @@ export function once(fn: CallableFunction) {
   }
 }
 
-export function createCallbacks() {
-  const callbacks: Array<() => any> = []
+// export function createCallbacks() {
+//   const callbacks: Array<() => any> = []
 
-  function addCallback(cb: () => any) {
-    callbacks.push(cb)
-    return () => {
-      const index = callbacks.indexOf(cb)
-      if (index > -1) {
-        callbacks.splice(index, 1)
-      }
-    }
-  }
+//   function addCallback(cb: () => any) {
+//     callbacks.push(cb)
+//     return () => {
+//       const index = callbacks.indexOf(cb)
+//       if (index > -1) {
+//         callbacks.splice(index, 1)
+//       }
+//     }
+//   }
 
-  function run(...params: any[]) {
-    return callbacks.map(cb => cb(...params))
-  }
+//   function run(...params: any[]) {
+//     return callbacks.map(cb => cb(...params))
+//   }
 
-  return {
-    callbacks,
-    addCallback,
-    runCallback: run,
-  }
-}
+//   return {
+//     callbacks,
+//     addCallback,
+//     runCallback: run,
+//   }
+// }
 
 export const noop = () => { }
 

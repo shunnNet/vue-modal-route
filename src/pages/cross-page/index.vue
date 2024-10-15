@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useModalRoute } from '~/modal'
+import { ModalPathView, useModalRoute } from '~/modal'
 import PageTitle from '~/components/PageTitle.vue'
+import PageSection from '~/components/PageSection.vue'
 
 const { openModal } = useModalRoute()
 
@@ -11,18 +12,36 @@ const { openModal } = useModalRoute()
       title="Cross Page OpenModal"
       description="open modal from/in another page"
     />
-    <ElButton
-      type="primary"
-      @click="openModal('ModalPageSingleA')"
+    <PageSection
+      title="CrossPageA"
+      description="open nested modal in another page, then check if the history is correct."
     >
-      Open ModalPageSingleA in "Single Modal"
-    </ElButton>
-    <ElButton
-      type="primary"
-      @click="openModal('ModalNestedB')"
-    >
-      Open ModalNestedB in "Nested"
-    </ElButton>
+      <ElButton
+        type="success"
+        @click="openModal('ModalCrossPageA')"
+      >
+        Open ModalCrossPageA
+      </ElButton>
+    </PageSection>
+    <div class="grid gap-3">
+      <div>
+        <ElButton
+          type="primary"
+          @click="openModal('ModalPageSingleA')"
+        >
+          Open ModalPageSingleA in "Single Modal"
+        </ElButton>
+      </div>
+      <div>
+        <ElButton
+          type="primary"
+          @click="openModal('ModalNestedB')"
+        >
+          Open ModalNestedB in "Nested"
+        </ElButton>
+      </div>
+    </div>
+    <ModalPathView />
   </div>
 </template>
 <style></style>

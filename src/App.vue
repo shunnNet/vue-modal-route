@@ -20,36 +20,66 @@ const navs = [
     name: 'PageNestedModal',
     title: 'Nested',
   },
+  {
+    name: 'PagePrepare',
+    title: 'API Required',
+  },
 ]
 
 const { openModal } = useModalRoute()
 const onOpenHashModal = () => {
-  openModal('ModalHashA').then((v) => {
+  openModal('ModalHashA', {
+    // Hash should be ignore
+    hash: '#hash',
+  }).then((v) => {
     console.log('ModalHashA return', v)
   })
 }
 const onOpenQueryModal = () => {
-  openModal('ModalQueryA').then((v) => {
+  openModal('ModalQueryA', {
+    // Query should be append
+    query: { additionQuery: 'query1' },
+    // Hash should be ignore
+    hash: '#hash',
+  }).then((v) => {
     console.log('ModalQueryA return', v)
   })
 }
+useModal('ModalQueryA', {
+  props: {
+    message: 'Message from App.vue to ModalQueryA',
+  },
+})
+// useModal('ModalHashA', {
+//   props: {
+//     message: 'Message from App.vue to ModalHashA',
+//   },
+// })
+
+console.log('app setup')
 // useModal()
 </script>
 <template>
-  <div class="grid grid-cols-[200px_1fr] grid-auto-flow-col min-h-100vh">
-    <nav class="grid gap-2 p-4 border-r grid-auto-rows-[max-content]">
+  <div>
+    <nav class="flex flex-wrap items-center gap-2 p-4 border-b grid-auto-rows-[max-content]">
       <RouterLink
         v-for="navItem in navs"
         :key="navItem.name"
-        class="p-2 hover:bg-gray-800 hover:text-white rounded-xl"
+        class="p-2 hover:bg-gray-800 hover:text-white rounded-xl text-center"
         :to="{ name: navItem.name }"
       >
         {{ navItem.title }}
       </RouterLink>
-      <ElButton @click="onOpenHashModal">
+      <ElButton
+        type="primary"
+        @click="onOpenHashModal"
+      >
         OpenHashModal
       </ElButton>
-      <ElButton @click="onOpenQueryModal">
+      <ElButton
+        type="primary"
+        @click="onOpenQueryModal"
+      >
         OpenQueryModal
       </ElButton>
     </nav>

@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { ElButton, ElDialog } from 'element-plus'
 import { useRoute } from 'vue-router'
+import HighlightText from '~/components/HighlightText.vue'
 
 const visible = defineModel({
   type: Boolean,
   default: false,
 })
 defineEmits(['return'])
+defineProps({
+  message: {
+    type: String,
+    default: '',
+  },
+})
 const route = useRoute()
 </script>
 <template>
@@ -17,6 +24,7 @@ const route = useRoute()
     <p>Params.id: {{ route.params.id }}</p>
     <p>Close: no returnValue</p>
     <p>Confirm: 'ModalB return value'</p>
+    <HighlightText :message="`Message from props: ${ message}`" />
     <RouterView />
     <template #footer>
       <ElButton

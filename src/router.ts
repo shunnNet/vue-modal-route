@@ -14,6 +14,7 @@ export const router = createModalRouter({
           component: () => import('./pages/page-single-modal/ModalA.vue'),
           meta: {
             modal: true,
+            direct: true,
           },
         },
         {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ElButton, ElDialog } from 'element-plus'
+import { ElButton, ElMessage } from 'element-plus'
 import { useModalRoute } from '~/modal'
+import HighlightText from '~/components/HighlightText.vue'
 
 const visible = defineModel({
   type: Boolean,
@@ -13,29 +14,72 @@ defineProps({
   },
 })
 defineEmits(['return', 'message'])
-const { openModal } = useModalRoute()
+const { openModal, closeModal } = useModalRoute()
+const onOpenFailedCase = async (name: string) => {
+  try {
+    await openModal(name)
+  }
+  catch (e) {
+    console.error(e)
+    ElMessage.error((e as Error).message)
+  }
+}
+
 </script>
 <template>
-  <ElDialog
+  <ElDrawer
     v-model="visible"
     title="Nested Modal B"
+    class="max-w-400px !w-full"
   >
-    <div class="grid gap-2" />
+    <div>
+      <HighlightText
+        v-if="message"
+        :message="message"
+      />
+    </div>
+    <RouterLink
+      :to="{ name: 'ModalNestedBChild'}"
+      class="text-blue-5 hover:text-red-5"
+    >
+      Go to Child
+    </RouterLink>
 
-    <template #footer>
+    <div class="my-4">
+      <RouterView />
+    </div>
+
+    <div class="grid gap-4 max-w-200px">
       <ElButton
-        type="primary"
-        @click="openModal('ModalNestedA')"
+        class="!ml-0"
+        type="danger"
+        @click="onOpenFailedCase('ModalNestedA')"
       >
         Open Parent ModalA
       </ElButton>
       <ElButton
-        icon="Message"
-        @click="$emit('message', 'Emit from ModalB')"
+        class="!ml-0"
+        type="danger"
+        @click="onOpenFailedCase('ModalNestedB')"
       >
-        Send Message
+        Open Self (Not allowed)
       </ElButton>
       <ElButton
+        class="!ml-0"
+        type="danger"
+        @click="onOpenFailedCase('ModalNestedBChild')"
+      >
+        Go to Child by OpenModal (Not allowed)
+      </ElButton>
+      <ElButton
+        class="!ml-0"
+        type="primary"
+        @click="closeModal('ModalNestedA')"
+      >
+        Close Parent ModalA
+      </ElButton>
+      <ElButton
+        class="!ml-0"
         type="warning"
         icon="close"
         @click="visible = false"
@@ -43,13 +87,16 @@ const { openModal } = useModalRoute()
         Close
       </ElButton>
       <ElButton
+        class="!ml-0"
         type="success"
         icon="check"
         @click="$emit('return', 'ModalB return value')"
       >
-        Confirm
+        Close (with Return Value)
       </ElButton>
-    </template>
-  </ElDialog>
+    </div>
+
+    <template #footer />
+  </ElDrawer>
 </template>
 <style></style>
