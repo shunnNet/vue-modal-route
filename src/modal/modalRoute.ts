@@ -157,12 +157,14 @@ export const createModalRouter = (
   })
 
   // Not allow forward open without using openModal
-  router.beforeEach((to) => {
+  router.beforeEach((to, from) => {
     const ctx = context.get()
 
     const toOpenModal = to.matched
-      .some(r => r.meta.modal || !!getQueryModalsFromQuery(to.query).length)
-      || to.hash.startsWith('#modal')
+      .some(r =>
+        (r.meta.modal && !from.matched.find(r2 => r2.name === r.name))
+        || !!getQueryModalsFromQuery(to.query).length,
+      )
     if (
       ctx.direction === 'forward'
       && toOpenModal
