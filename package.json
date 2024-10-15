@@ -29,6 +29,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
+    "build:demo": "vite build",
     "preview": "vite preview",
     "test": "vitest",
     "prepare": "husky"
