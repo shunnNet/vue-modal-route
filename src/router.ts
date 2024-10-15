@@ -2,6 +2,7 @@ import ModalQueryA from '~/components/ModalQueryA.vue'
 import { createModalRouter } from '~/modal'
 
 export const router = createModalRouter({
+
   routes: [
     {
       name: 'PageSingleModal',

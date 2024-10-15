@@ -40,7 +40,7 @@ export const createModalRouter = (
       direct?: boolean
     },
 ) => {
-  const routerHistory = createWebHistory()
+  const routerHistory = createWebHistory('/vue-modal-route')
   const router = createRouter({
     ...options,
     routes: transformToModalRoute(options.routes as RouteRecordRaw[]),
