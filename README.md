@@ -1,5 +1,5 @@
-# VRM (Vue Route Modal)
-VRM (Vue Route Modal) is a package that manages modals using routes. 
+# vue-modal-route
+`vue-modal-route` is a package that manages modals using routes. 
 
 By leveraging `vue-router`, it opens or closes modals when navigating to or from specific paths in a web application. Additionally, it allows for the transmission of complex data beyond just route parameters.
 
@@ -28,10 +28,6 @@ pnpm dev
 ```
 
 Open `http://localhost:5173` in your browser. You can find some links and buttons to test the package.
-
-## TODO:
-- [ ] Still some issues
-- [ ] Implement hash modal for global modals
 
 ## License
 MIT
