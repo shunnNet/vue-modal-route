@@ -82,7 +82,7 @@ const ModalAActive = useModalActive('ModalPageSingleA')
           type="warning"
           @click="close()"
         >
-          Close PageSingleModalA by "close" from "useModal"
+          Close ModalA by "close" from "useModal"
         </ElButton>
       </div>
     </Teleport>

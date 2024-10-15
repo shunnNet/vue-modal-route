@@ -30,7 +30,6 @@ const onOpenFailedCase = async (name: string) => {
   <ElDrawer
     v-model="visible"
     title="Nested Modal B"
-    class="max-w-400px !w-full"
   >
     <div>
       <HighlightText

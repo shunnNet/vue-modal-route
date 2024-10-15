@@ -49,7 +49,6 @@ const onSubmit = async () => {
     title="Page Prepare ModalC"
   >
     <ElForm
-      class="max-w-500px"
       label-width="100"
       @submit.prevent="onSubmit"
     >

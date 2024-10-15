@@ -98,4 +98,9 @@ body {
   color: #a3a3a3;
 }
 
+.el-dialog, .el-drawer {
+  width: 100% !important;
+  max-width: 500px;
+}
+
 </style>
