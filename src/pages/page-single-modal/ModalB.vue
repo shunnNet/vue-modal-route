@@ -25,7 +25,7 @@ const route = useRoute()
     <p>Close: no returnValue</p>
     <p>Confirm: 'ModalB return value'</p>
     <HighlightText :message="`Message from props: ${ message}`" />
-    <RouterView />
+    <RouterView name="modal-default" />
     <template #footer>
       <ElButton
         type="warning"

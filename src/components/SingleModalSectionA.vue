@@ -77,7 +77,7 @@ const ModalAActive = useModalActive('ModalPageSingleA')
       v-if="isModalAActive"
       to="body"
     >
-      <div class="fixed top-20px left-20px z-100000">
+      <div class="fixed bottom-20px left-20px z-100000">
         <ElButton
           type="warning"
           @click="close()"

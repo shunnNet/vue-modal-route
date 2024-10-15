@@ -45,7 +45,7 @@ const onOpenFailedCase = async (name: string) => {
     </RouterLink>
 
     <div class="my-4">
-      <RouterView />
+      <RouterView name="modal-default" />
     </div>
 
     <div class="grid gap-4 max-w-200px">

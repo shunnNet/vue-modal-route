@@ -73,7 +73,7 @@ const onSubmit = async () => {
       Try to Refresh the page. Or copy/paste current url to other tab. <br>
       And you will first see the loading, then modal show after data loading complete.
     </div>
-    <RouterView />
+    <RouterView name="modal-default" />
     <template #footer>
       <ElButton
         type="warning"
