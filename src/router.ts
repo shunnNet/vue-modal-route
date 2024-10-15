@@ -84,23 +84,23 @@ export const router = createModalRouter({
         },
       ],
     },
-    {
-      name: 'PagePrepare',
-      path: '/prepare',
-      component: () => import('./pages/prepare-open/index.vue'),
-      children: [
-        {
-          name: 'PagePrepareModalC',
-          path: 'modal-c',
-          component: () => import('./pages/prepare-open/ModalC.vue'),
-          meta: {
-            modal: true,
-            direct: true,
-          },
+    // {
+    //   name: 'PagePrepare',
+    //   path: '/prepare',
+    //   component: () => import('./pages/prepare-open/index.vue'),
+    //   children: [
+    //     {
+    //       name: 'PagePrepareModalC',
+    //       path: 'modal-c',
+    //       component: () => import('./pages/prepare-open/ModalC.vue'),
+    //       meta: {
+    //         modal: true,
+    //         direct: true,
+    //       },
 
-        },
-      ],
-    },
+    //     },
+    //   ],
+    // },
   ],
   hash: [
     {
