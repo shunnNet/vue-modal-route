@@ -11,7 +11,6 @@ import vue from '@vitejs/plugin-vue'
 // https://vitejs.dev/config/
 // https://vitejs.dev/guide/build.html#library-mode
 export default defineConfig({
-  base: 'dist',
   plugins: [
     vue(),
     UnoCSS(),
