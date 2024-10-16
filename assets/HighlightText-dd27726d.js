@@ -1,1 +1,0 @@
-import{d as t,o as s,p as n,t as a,m as o,_ as i}from"./index-ab5b0adb.js";const r=["textContent"],c=t({__name:"HighlightText",props:{message:{type:String,default:""}},setup(e){return(g,l)=>e.message?(s(),n("span",{key:0,class:"text-green",textContent:a(e.message)},null,8,r)):o("",!0)}}),_=i(c,[["__file","HighlightText.vue"]]);export{_ as H};
