@@ -1,0 +1,1 @@
+import{_ as e,o as t,p as c,j as o}from"./index-58c7817a.js";const s={},a={class:"w-100% mx-auto min-h-200px grid place-content-center bg-gray-8"},n=o("h4",{class:"text-blue font-italic font-bold"}," Page Nested B Child Path ",-1),_=[n];function i(r,d){return t(),c("div",a,_)}const h=e(s,[["render",i],["__file","child-path.vue"]]);export{h as default};
