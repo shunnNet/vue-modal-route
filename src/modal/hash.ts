@@ -42,9 +42,7 @@ export const createHashRoutes = (
     const selfIndex = modalRoute.matched.findIndex(route => route.name === name)
     if (selfIndex > 0) {
       if (modalRoute.matched[selfIndex - 1].name === 'modal-hash-root') {
-        return {
-          path: '/',
-        }
+        return modalRoute.matched[selfIndex - 2]
       }
       else {
         return modalRoute.matched[selfIndex - 1]
