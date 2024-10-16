@@ -31,7 +31,7 @@ const modalProps = computed(() => {
 const { open, unlock } = useModal('PagePrepareModalC', {
   manual: true,
 
-  // TODO: still has bug when not allow open (back to not correct position)
+  // TODO: still has bug when not allow open (back to not correct position\)
   // validate(data) {
   //   // Not allow pass any data
   //   // TODO: click danger button twice will open modal route
@@ -77,7 +77,7 @@ onMounted(async () => {
           Open ModalC
         </ElButton>
       </div>
-      <div>
+      <!-- <div>
         <ElButton
           type="danger"
           icon="check"
@@ -87,7 +87,7 @@ onMounted(async () => {
         >
           Open ModalC with data (not allowed)
         </ElButton>
-      </div>
+      </div> -->
     </div>
     <!-- <ElButton
       type="primary"
