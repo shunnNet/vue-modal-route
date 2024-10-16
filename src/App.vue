@@ -20,10 +20,10 @@ const navs = [
     name: 'PageNestedModal',
     title: 'Nested',
   },
-  // {
-  //   name: 'PagePrepare',
-  //   title: 'API Required',
-  // },
+  {
+    name: 'PagePrepare',
+    title: 'API Required',
+  },
 ]
 
 const { openModal } = useModalRoute()
