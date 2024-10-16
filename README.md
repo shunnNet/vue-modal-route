@@ -5,6 +5,17 @@ By leveraging `vue-router`, it opens or closes modals when navigating to or from
 
 > [!WARNING] This package is still in development and is not yet ready for production use. But you can clone the repository and test it out for yourself.
 
+## Demo
+Demo: https://shunnnet.github.io/vue-modal-route
+
+You can visit the demo site to check the current working results. 
+
+If you encounter any weird behaviour after few actions, try to open a new tab to reset the page. (because its use `SessionStorage`)
+
+The code of demo can be found in the `src/pages` directory. If you want to learn more about how it work, you can refer to the [Development](#development) section below. 
+
+It's welcome to open an issue if you found any bug or issue.
+
 ## Motivation
 When I'm using a mobile web page, I often instinctively press the back button or the < button to close a modal, but instead of closing the modal, it navigates away from the entire page. This behavior doesn't meet user expectations. That's why I want to integrate modals with routes. If opening a modal is tied to opening a path, then going back would simply close the modal.
 
