@@ -5,6 +5,9 @@ import { useSessionStorage } from './storage'
 export type TModalHistory = ReturnType<typeof useModalHistory>
 type TvmrtTags = Record<string, string>
 
+// Note: enter the same url as current => position not change => same as refresh
+// enter different url => position + 1 => forward
+
 export const useModalHistory = (options: {
   router: Router
   routerHistory: RouterHistory
