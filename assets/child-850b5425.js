@@ -1,0 +1,1 @@
+import{_ as e,o as c,p as t}from"./index-c654c91f.js";const o={},r={class:"font-italic text-amber"};function s(_,a){return c(),t("div",r," Modal B child route ")}const i=e(o,[["render",s],["__file","child.vue"]]);export{i as default};
