@@ -32,11 +32,11 @@ const { open, unlock } = useModal('PagePrepareModalC', {
   manual: true,
 
   // TODO: has bug when not allow open (the tag is not corrent)
-  // validate(data) {
-  //   // Not allow pass any data
-  //   // TODO: click danger button twice will open modal route
-  //   return !data
-  // },
+  validate(data) {
+    // Not allow pass any data
+    // TODO: click danger button twice will open modal route
+    return !data
+  },
   props: modalProps,
 })
 
@@ -77,7 +77,7 @@ onMounted(async () => {
           Open ModalC
         </ElButton>
       </div>
-      <!-- <div>
+      <div>
         <ElButton
           type="danger"
           icon="check"
@@ -87,7 +87,7 @@ onMounted(async () => {
         >
           Open ModalC with data (not allowed)
         </ElButton>
-      </div> -->
+      </div>
     </div>
     <!-- <ElButton
       type="primary"

@@ -89,6 +89,8 @@ export function once(fn: CallableFunction) {
 
 export const noop = () => { }
 
+export const deepClone = (obj: any) => JSON.parse(JSON.stringify(obj))
+
 export const isModalRoute = (route: RouteRecordRaw) => {
   return route.meta?.modal
 }
