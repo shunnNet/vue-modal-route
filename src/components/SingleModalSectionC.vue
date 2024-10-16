@@ -31,12 +31,12 @@ const modalProps = computed(() => {
 const { open, unlock } = useModal('PagePrepareModalC', {
   manual: true,
 
-  // TODO: has bug when not allow open (the tag is not corrent)
-  validate(data) {
-    // Not allow pass any data
-    // TODO: click danger button twice will open modal route
-    return !data
-  },
+  // TODO: still has bug when not allow open (back to not correct position)
+  // validate(data) {
+  //   // Not allow pass any data
+  //   // TODO: click danger button twice will open modal route
+  //   return !data
+  // },
   props: modalProps,
 })
 
