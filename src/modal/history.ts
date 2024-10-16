@@ -1,5 +1,5 @@
 import { HistoryState, RouteLocationNormalizedGeneric, Router, RouterHistory, START_LOCATION } from 'vue-router'
-import { defer, TDefer } from './helpers'
+import { deepClone, defer, TDefer } from './helpers'
 import { useSessionStorage } from './storage'
 
 export type TModalHistory = ReturnType<typeof useModalHistory>
@@ -19,15 +19,69 @@ export const useModalHistory = (options: {
   const initPosition = { value: getCurrentPosition() ?? 0 }
   const position = { value: initPosition.value }
   router.afterEach((_to, _from, failure) => {
-    if (!failure) {
-      position.value = getCurrentPosition()
+    if (failure) {
+      return
+    }
+    position.value = getCurrentPosition()
+
+    // TODO: make it no need to do this twice
+    let needSave = false
+    Object.keys(_tags).forEach((key) => {
+      if (parseFloat(key) >= position.value) {
+        delete _tags[key]
+        needSave = true
+      }
+    })
+    Object.keys(tags).forEach((key) => {
+      if (parseFloat(key) >= position.value) {
+        delete tags[key]
+        needSave = true
+      }
+    })
+    if (needSave) {
+      saveTags()
     }
   })
-  const vmrtStorage = useSessionStorage<TvmrtTags>('vmrt')
-  const tags: TvmrtTags = vmrtStorage.get() ?? {}
 
-  const saveTags = () => {
-    vmrtStorage.set(tags)
+  window.addEventListener('beforeunload', () => {
+    tags[`${getCurrentPosition()}`] = 'unload'
+    saveTags()
+  })
+  const vmrtStorage = useSessionStorage<TvmrtTags>('vmrt')
+  const { tags, _tags } = initTags()
+  saveTags()
+
+  function initTags() {
+    const _tags: TvmrtTags = vmrtStorage.get() ?? {}
+    let unloadPosition = -1
+    Object.entries(_tags).forEach(([key, value]) => {
+      if (parseFloat(key) >= initPosition.value) {
+        // e.g: unload position, include unload position set by refresh
+        delete _tags[key]
+        return
+      }
+      if (value === 'unload') {
+        // get last unload position
+        unloadPosition = parseFloat(key)
+      }
+    })
+    const tags = Object.fromEntries(
+      Object.entries(deepClone(_tags) as TvmrtTags)
+        .filter(([key]) => parseFloat(key) > unloadPosition),
+    )
+
+    return { tags, _tags }
+  }
+
+  function saveTags() {
+    console.log('save', {
+      ..._tags,
+      ...tags,
+    })
+    vmrtStorage.set({
+      ..._tags,
+      ...tags,
+    })
   }
   const tagHistory = (name: string, position: number = getCurrentPosition()) => {
     tags[`${position}`] = name
@@ -51,12 +105,6 @@ export const useModalHistory = (options: {
     const r = routerHistory.push(to, data)
     position.value = getCurrentPosition()
     console.log('push', to, position.value)
-
-    if (tags[`${getCurrentPosition()}`]) {
-      delete tags[`${getCurrentPosition()}`]
-      saveTags()
-    }
-
     return r
   }
   const replaceHistory: RouterHistory['replace'] = (to: string, data?: HistoryState) => {
@@ -93,6 +141,7 @@ export const useModalHistory = (options: {
     }
 
     _goPromise = defer()
+    console.log('go', delta, triggerListener)
     routerHistory.go(delta, triggerListener)
     _goPromise.then(() => {
       position.value = getCurrentPosition()
