@@ -6,7 +6,7 @@ By leveraging `vue-router`, it opens or closes modals when navigating to or from
 > [!WARNING] This package is still in development and is not yet ready for production use. But you can clone the repository and test it out for yourself.
 
 ## Demo
-Demo: https://shunnnet.github.io/vue-modal-route
+Demo: https://vue-modal-route-demo.netlify.app
 
 You can visit the demo site to check the current working results. 
 
