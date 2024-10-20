@@ -2,6 +2,7 @@
 import { ElButton, ElDialog } from 'element-plus'
 import { useRoute } from 'vue-router'
 import HighlightText from '~/components/HighlightText.vue'
+import { ModalRouterView } from '~/modal'
 
 const visible = defineModel({
   type: Boolean,
@@ -25,7 +26,7 @@ const route = useRoute()
     <p>Close: no returnValue</p>
     <p>Confirm: 'ModalB return value'</p>
     <HighlightText :message="`Message from props: ${ message}`" />
-    <RouterView />
+    <ModalRouterView />
     <template #footer>
       <ElButton
         type="warning"

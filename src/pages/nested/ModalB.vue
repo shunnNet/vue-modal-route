@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton, ElMessage } from 'element-plus'
-import { useModalRoute } from '~/modal'
+import { ModalRouterView, useModalRoute } from '~/modal'
 import HighlightText from '~/components/HighlightText.vue'
 
 const visible = defineModel({
@@ -46,7 +46,7 @@ const onOpenFailedCase = async (name: string) => {
     </RouterLink>
 
     <div class="my-4">
-      <RouterView />
+      <ModalRouterView />
     </div>
 
     <div class="grid gap-4 max-w-200px">
