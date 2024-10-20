@@ -6,12 +6,12 @@ import { TComponent } from './types'
 
 type TModalMap = Record<string, {
   _component: TComponent
-  active: boolean
+  visible: boolean
   props: Record<string, any>
   propsInited: boolean
   loading: boolean
-  setActive: (value: boolean) => Promise<void>
-  _active: boolean
+  setVisible: (value: boolean) => Promise<void>
+  _visible: boolean
   slots: Record<string, any>
   _data: any
 }>
@@ -22,25 +22,25 @@ const setupModalRoute = () => {
 
   const componentMap: TModalMap = reactive({})
 
-  const createActive = (
-    defineActive: () => boolean,
+  const createVisible = (
+    defineVisible: () => boolean,
     closeAction: () => Promise<void>,
   ) => {
-    const _active = ref(false)
-    const active = computed({
-      get: () => defineActive() && _active.value,
-      set: value => setActive(value),
+    const _visible = ref(false)
+    const visible = computed({
+      get: () => defineVisible() && _visible.value,
+      set: value => setVisible(value),
     })
-    const setActive = async (value: boolean) => {
+    const setVisible = async (value: boolean) => {
       if (value) {
-        _active.value = true
+        _visible.value = true
       }
       else {
         await closeAction()
-        _active.value = false
+        _visible.value = false
       }
     }
-    return { active, setActive, _active }
+    return { visible, setVisible, _visible }
   }
 
   const setModal = (name: string, component: TComponent) => {
@@ -49,16 +49,16 @@ const setupModalRoute = () => {
       componentMap[name]._component = component
     }
     else {
-      const { active, setActive, _active } = createActive(
+      const { visible, setVisible, _visible } = createVisible(
         () => isModalActive(name),
         async () => {
           await closeModal(name)
           componentMap[name].propsInited = false
         },
       )
-      watch(active, (value) => {
+      watch(visible, (value) => {
         if (value === false) {
-          _active.value = false
+          _visible.value = false
           componentMap[name].propsInited = false
         }
       })
@@ -72,8 +72,8 @@ const setupModalRoute = () => {
       // TODO: How to handle reactive unwrap type ?
       componentMap[name] = {
         _component: component,
-        active: active as unknown as boolean,
-        setActive,
+        visible: visible as unknown as boolean,
+        setVisible,
         loading: loading as unknown as boolean,
         props: computed(() => {
           let result = componentMap[name]._data
@@ -86,7 +86,7 @@ const setupModalRoute = () => {
           return toValue(result || {})
         }),
         slots: modalSlots,
-        _active: _active as unknown as boolean,
+        _visible: _visible as unknown as boolean,
         propsInited: false,
         _data: {},
       }
@@ -94,15 +94,12 @@ const setupModalRoute = () => {
     if (!componentMap[name].propsInited) {
       // TODO: FIXME: I will be ran twice because closeModal's query updated
       const data = pop(name)
-      if (
-        typeof modalItem?.options?.validate === 'function'
-        && !modalItem?.options?.validate?.(data)
-      ) {
-        componentMap[name].setActive(false)
+      if (modalItem?.options?.validate?.(data)) {
+        componentMap[name].setVisible(false)
         return
       }
       componentMap[name]._data = data
-      componentMap[name].setActive(true)
+      componentMap[name].setVisible(true)
       componentMap[name].propsInited = true
     }
   }
@@ -176,8 +173,8 @@ export default defineComponent({
         const modal = componentMap[name]
         return h(_component, {
           ...modal.props,
-          'modelValue': modal.active,
-          'onUpdate:modelValue': (value: boolean) => modal.active = value,
+          'modelValue': modal.visible,
+          'onUpdate:modelValue': (value: boolean) => modal.visible = value,
           'loading': modal.loading,
           'onReturn': ($event: any) => {
             setModalReturnValue(name, $event)
