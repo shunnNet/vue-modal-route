@@ -1,4 +1,6 @@
 # vue-modal-route
+[English](./README.md) | [繁體中文](./README.zh-tw.md)
+
 `vue-modal-route` is a package that can help open/close modals with routes, manage its data and get its return value.
 
 By leveraging `vue-router`, it opens or closes modals when navigating to or from specific paths in a web application. Additionally, it allows for the transmission of complex data beyond just route parameters.
