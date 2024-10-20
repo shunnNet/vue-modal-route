@@ -12,6 +12,12 @@ This is not the same thing as `Next.js` modal route (twitter-style modal), but s
   - [Demo](#demo)
   - [Documentation (In progress)](#documentation-in-progress)
   - [Development](#development)
+    - [Usage (very basic)](#usage-very-basic)
+      - [Declare modal route](#declare-modal-route)
+      - [Prepare modal component](#prepare-modal-component)
+      - [Open/Close Modal](#openclose-modal)
+      - [Setup Modal](#setup-modal)
+      - [Pending modal visibility](#pending-modal-visibility)
   - [Intro](#intro)
     - [Motivation](#motivation)
     - [Current Status, Challenges, and Future Plans](#current-status-challenges-and-future-plans)
@@ -25,6 +31,7 @@ This is not the same thing as `Next.js` modal route (twitter-style modal), but s
 - 🚀 Pass data to the modal and receive a return value from it.
 - 🌴 Use full power of `router-view`, `navigation-guard` of `vue-router`.
 - ⬅️ Ensure a consistent navigation experience between the website and the mobile app.
+- 🪟 Not tied to any Modal implementation, you can use any library you like.
 
 ## Demo
 You can visit the demo site to check the current working results.
@@ -38,6 +45,8 @@ The modals allowed access by URL are:
 - https://vue-modal-route-demo.netlify.app/modal-a
 - https://vue-modal-route-demo.netlify.app/prepare/modal-c
 
+The `hash` modal is implemented by `#` previously, but it's not now. It's actually a global modal can opened from anywhere. It now work like normal modal route but with  `/_modal/` path prefix.
+
 If you encounter any weird behaviour after few actions, try to open a new tab to reset the page. (because its use `SessionStorage`)
 
 The code of demo can be found in the `src/pages` directory. If you want to learn more about how it work, you can refer to the [Development](#development) section below. 
@@ -46,7 +55,6 @@ It's welcome to open an issue if you found any bug or issue.
 
 ## Documentation (In progress)
 In progress...
-
 
 ## Development
 ```bash
@@ -61,6 +69,171 @@ pnpm dev
 ```
 
 Open `http://localhost:5173` in your browser. You can find some links and buttons to test the package.
+
+### Usage (very basic)
+
+#### Declare modal route
+```ts
+import { createModalRouter } from '~/modal'
+
+export const router = createModalRouter({
+  routes: [
+    {
+      name: 'PageSingleModal',
+      path: '/',
+      component: () => import('./pages/index.vue'),
+      children: [
+        // Declare modal route
+        {
+          name: "ModalA", // required
+          path: 'modal-a'
+          component: () => import('path/to/modal.vue'),
+          meta: {
+            modal: true, // required for declare modal route
+            direct: true // allow directly access from url
+          }
+        },
+      ],
+    },
+  ]
+})
+```
+
+#### Prepare modal component
+This repository use `element-plus` as modal library, but you can install modal from others you like.
+
+No matter modal you use, you need ensure the modal component you register to modal route has:
+
+- `v-model`: accept `visible` state (Boolean), it will be true if the modal should be opened. 
+- `event: "return"`: if you call `emit("return", data)` inside modal component, the modal will close with `returnValue`.
+
+for example:
+
+```vue
+<script setup lang="ts">
+const visible = defineModel({
+  type: Boolean,
+  default: false,
+})
+defineEmits(['return'])
+defineProps({
+  message: {
+    type: String,
+    default: '',
+  },
+})
+</script>
+<template>
+  <ElDialog
+    v-model="visible"
+    title="Page Single Modal B"
+  >
+    {{ message }}
+
+    <!-- You must use this as <RouterView> replacement if you need render child view **in modal route** -->
+    <ModalRouterView />
+  </ElDiable>
+</template>
+```
+
+#### Open/Close Modal 
+```vue
+<!-- pages/index.vue -->
+<script setup lang="ts">
+import { useModalRoute, ModalPathView } from "~/modal"
+import { onMounted } from "vue"
+
+const { openModal, closeModal } = useModalRoute()
+
+onMounted(async () => {
+  const returnValue = await openModal(
+    'ModalA', // open with modal route name
+    {
+      // data will be directly passed as props of modal 
+      data: {
+        message: "I am message"
+      }
+    }
+  )
+  console.log(returnValue) // returnValue from emit("return", "returnValue")
+})
+
+// closeModal("ModalA")
+</script>
+<template>
+    <div>Page Index</div>
+
+    <!-- You need render `<ModalPathView>` like `<RouterView>` -->
+    <ModalPathView /> 
+</template>
+```
+
+The `openModal` / `closeModal` can be call from other page, no need to call them at the page that modal be rendered.
+
+#### Setup Modal 
+To pass props, slots, handle data passed from `openModal`, use `setupModal`. `setupModal` must be called by the direct parent route of the modal route.
+
+```vue
+<!-- pages/index.vue -->
+<script setup lang="ts">
+import { setupModal, ModalPathView } from "~/modal"
+import { onMounted } from "vue"
+
+const {
+  open,
+  close,
+  returnValue,
+  isActive: isModalAActive,
+} = setupModal("ModalA", {
+  // props can be object or function return object, the object can be ref/computed/reactive ...
+  props: (data) => {
+    // You will get data from openModal
+    return computed(() => {
+      return {
+        ...modalProps.value,
+        ...(data?.message ? { message: data?.message } : {}),
+      }
+    })
+  },
+  // pass slots to modal 
+  slots: {
+    footer: () => (
+      h('span', 'This Slot passed from useModal. Should override the slot passed from template')
+    ),
+  },
+})
+</script>
+<template>
+    <div>Page Index</div>
+
+    <!-- Another way to pass slots -->
+    <ModalPathView>
+      <template #ModalA-footer>
+        <span>{{ insertMessage }}</span>
+      </template>
+      <template #ModalA-header>
+        <span> header slot inserted from parent </span>
+      </template>
+    </ModalPathView> 
+</template>
+```
+
+#### Pending modal visibility
+Check example in `src/components/SingleModalSectionC.vue`.
+
+```ts
+const { open, unlock } = setupModal('PagePrepareModalC', {
+  manual: true, // manual: true for pending modal 
+  props: modalProps,
+})
+
+onMounted(async () => {
+  await fetchUserData() // you can fetch data from API which is needed by modal
+  
+  // after data prepared
+  unlock() // to release modal
+})
+```
 
 ## Intro
 ### Motivation
