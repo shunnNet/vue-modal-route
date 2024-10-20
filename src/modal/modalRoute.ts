@@ -544,14 +544,13 @@ export const useModalRoute = () => {
   } = ensureInjection(modalRouteContextKey, 'useModalRoute must be used inside a ModalRoute component')
 
   return {
-    useModal,
+    setupModal,
     closeModal,
     openModal,
     isModalActive,
   }
 }
-
-export const useModal = <ReturnValue = any>(
+export const setupModal = <ReturnValue = any>(
   name: string,
   options?: TModalMapItem['options'],
 ) => {
@@ -656,4 +655,63 @@ export const useModalActive = (name: string) => {
   const { isModalActive } = ensureInjection(modalRouteContextKey, 'useModalActive must be used inside a ModalRoute component')
 
   return computed(() => isModalActive(name))
+}
+
+export const useModal = <ReturnValue>(name: string) => {
+  const {
+    closeModal,
+    openModal,
+    isModalActive,
+  } = ensureInjection(modalRouteContextKey, 'useModal must be used inside a ModalRoute component')
+  const returnValue = useModalReturnValue<ReturnValue>(name)
+
+  return {
+    open: (options?: Partial<TOpenModalOptions>) => openModal(name, options),
+    close: () => closeModal(name),
+    isActive: computed(() => isModalActive(name)),
+    returnValue,
+  }
+}
+
+export const defineModalRoute = <ReturnValue = any>(
+  path: string,
+  component: RouteRecordRaw['component'],
+  options: {
+    name?: string
+    direct?: boolean
+  } = {},
+) => {
+  // TODO: parse path to name like nuxt did
+  const name = path
+  return {
+    name: options.name || name,
+    route: (children?: RouteRecordRaw[]) => ({
+      name,
+      path,
+      component,
+      meta: {
+        modal: true,
+        direct: options.direct,
+      },
+      children,
+    } as RouteRecordRaw),
+    setup: (options?: TModalMapItem['options']) => setupModal<ReturnValue>(name, options),
+    use: () => useModal<ReturnValue>(name),
+  }
+}
+
+export const defineModalRouteQuery = <ReturnValue = any>(
+  path: string,
+  component: TModalQueryRoute['component'],
+) => {
+  const name = path
+  return {
+    name,
+    route: () => ({
+      name,
+      component,
+    }),
+    setup: (options?: TModalMapItem['options']) => setupModal<ReturnValue>(name, options),
+    use: () => useModal<ReturnValue>(name),
+  }
 }
