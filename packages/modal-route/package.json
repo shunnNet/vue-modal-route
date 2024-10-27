@@ -1,6 +1,6 @@
 {
-  "name": "vmr",
-  "description": "VMR (Vue Modal Route) is a package that manages modals using routes.",
+  "name": "@vmr/vue-modal-route",
+  "description": "VRM (Vue Route Modal) is a package that manages modals using routes.",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.umd.cjs",
@@ -27,21 +27,15 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc && vite build",
-    "build:demo": "vite build",
-    "preview": "vite preview"
+    "build": "eslint && unbuild",
+    "lint": "eslint"
+  },
+  "peerDependencies": {
+    "vue": "^3",
+    "vue-router": "^4"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.1",
-    "@stylistic/eslint-plugin": "^2.6.4",
-    "@types/node": "^22.8.1",
-    "eslint-plugin-vue": "^9.27.0",
-    "husky": "^9.1.5",
-    "lint-staged": "^15.2.9",
-    "typescript": "^5.0.2",
-    "typescript-eslint": "^8.2.0",
-    "vue-tsc": "^1.8.15"
+    "unbuild": "^2.0.0"
   },
   "files": [
     "dist"
