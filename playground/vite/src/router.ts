@@ -1,90 +1,97 @@
-import { createModalRouter } from '@vmr/modal-route'
+import { createModalRoute, transformToModalRoute } from '@vmr/modal-route'
 import { ModalA, ModalB, QueryModalA } from './modals'
-import ModalQueryA from '~/components/ModalQueryA.vue'
+import { createRouter, createWebHistory } from 'vue-router'
 
-export const router = createModalRouter({
-  routes: [
-    {
-      name: 'PageSingleModal',
-      path: '/',
-      component: () => import('./pages/page-single-modal/index.vue'),
-      children: [
-        ModalA.route(),
-        ModalB.route([
+const routes = transformToModalRoute([
+  {
+    name: 'PageSingleModal',
+    path: '/',
+    component: () => import('./pages/page-single-modal/index.vue'),
+    children: [
+      ModalA.route(),
+      ModalB.route([
+        {
+          name: 'ModalPageSingleBChild',
+          path: 'child',
+          component: () => import('./pages/page-single-modal/ModalB/child.vue'),
+        },
+      ]),
+    ],
+  },
+  {
+    name: 'PageCrossPage',
+    path: '/cross-page',
+    component: () => import('./pages/cross-page/index.vue'),
+    children: [
+      {
+        name: 'ModalCrossPageA',
+        path: 'modal-a',
+        component: () => import('./pages/cross-page/ModalA.vue'),
+        meta: {
+          modal: true,
+        },
+      },
+    ],
+  },
+  {
+    name: 'PageNestedModal',
+    path: '/nested',
+    component: () => import('./pages/nested/index.vue'),
+    children: [
+      {
+        name: 'ModalNestedA',
+        path: 'modal-a',
+        component: () => import('./pages/nested/ModalA.vue'),
+        meta: {
+          modal: true,
+        },
+        children: [
           {
-            name: 'ModalPageSingleBChild',
-            path: 'child',
-            component: () => import('./pages/page-single-modal/ModalB/child.vue'),
-          },
-        ]),
-      ],
-    },
-    {
-      name: 'PageCrossPage',
-      path: '/cross-page',
-      component: () => import('./pages/cross-page/index.vue'),
-      children: [
-        {
-          name: 'ModalCrossPageA',
-          path: 'modal-a',
-          component: () => import('./pages/cross-page/ModalA.vue'),
-          meta: {
-            modal: true,
-          },
-        },
-      ],
-    },
-    {
-      name: 'PageNestedModal',
-      path: '/nested',
-      component: () => import('./pages/nested/index.vue'),
-      children: [
-        {
-          name: 'ModalNestedA',
-          path: 'modal-a',
-          component: () => import('./pages/nested/ModalA.vue'),
-          meta: {
-            modal: true,
-          },
-          children: [
-            {
-              name: 'ModalNestedB',
-              path: 'modal-b',
-              component: () => import('./pages/nested/ModalB.vue'),
-              meta: {
-                modal: true,
-              },
-              children: [
-                {
-                  name: 'ModalNestedBChild',
-                  path: 'child',
-                  component: () => import('./pages/nested/ModalB/child-path.vue'),
-                },
-              ],
+            name: 'ModalNestedB',
+            path: 'modal-b',
+            component: () => import('./pages/nested/ModalB.vue'),
+            meta: {
+              modal: true,
             },
-
-          ],
-        },
-      ],
-    },
-    {
-      name: 'PagePrepare',
-      path: '/prepare',
-      component: () => import('./pages/prepare-open/index.vue'),
-      children: [
-        {
-          name: 'PagePrepareModalC',
-          path: 'modal-c',
-          component: () => import('./pages/prepare-open/ModalC.vue'),
-          meta: {
-            modal: true,
-            direct: true,
+            children: [
+              {
+                name: 'ModalNestedBChild',
+                path: 'child',
+                component: () => import('./pages/nested/ModalB/child-path.vue'),
+              },
+            ],
           },
 
+        ],
+      },
+    ],
+  },
+  {
+    name: 'PagePrepare',
+    path: '/prepare',
+    component: () => import('./pages/prepare-open/index.vue'),
+    children: [
+      {
+        name: 'PagePrepareModalC',
+        path: 'modal-c',
+        component: () => import('./pages/prepare-open/ModalC.vue'),
+        meta: {
+          modal: true,
+          direct: true,
         },
-      ],
-    },
-  ],
+
+      },
+    ],
+  },
+])
+const history = createWebHistory()
+export const router = createRouter({
+  routes,
+  history,
+})
+export const modalRoute = createModalRoute({
+  router,
+  history,
   hash: [
     {
       name: 'ModalHashA',

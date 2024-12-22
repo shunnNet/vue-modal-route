@@ -10,9 +10,7 @@ import {
   RouteParamsGeneric,
   useRoute,
   NavigationFailure,
-  RouterOptions,
-  createWebHistory,
-  createRouter,
+  RouterHistory,
 } from 'vue-router'
 import { ensureArray, ensureInjection, isPlainObject, noop, transformToModalRoute } from './helpers'
 import { createHashRoutes } from './hash'
@@ -32,20 +30,18 @@ type TModalNavigationGuardAfterEach = (context: {
 // Note: find some way to mark modal open by openModal/closeModal
 export const modalRouteContextKey: TModalRouteContextKey = Symbol('modalRouteContext')
 
-export const createModalRouter = (
-  options:
-    Omit<RouterOptions, 'history'> & {
-      query?: TModalQueryRoute[]
-      hash?: TModalHashRoute[]
-      direct?: boolean
-    },
+export const createModalRoute = (
+  options: Partial<{
+    query: TModalQueryRoute[]
+    hash: TModalHashRoute[]
+    direct: boolean
+  }> & {
+    router: Router
+    history: RouterHistory
+  },
 ) => {
-  const routerHistory = createWebHistory()
-  const router = createRouter({
-    ...options,
-    routes: transformToModalRoute(options.routes as RouteRecordRaw[]),
-    history: routerHistory,
-  })
+  const { router, history: routerHistory } = options
+
   const _options = {
     direct: options.direct || false,
     query: ensureArray(options.query as TModalQueryRoute[]),
@@ -154,7 +150,6 @@ export const createModalRouter = (
       modalRouteCollection.set(route.name as string, { type: 'query', modal: [route.name as string] })
     }
   })
-
   // Not allow forward open without using openModal
   router.beforeEach((to, from) => {
     const ctx = context.get()
@@ -527,9 +522,7 @@ export const createModalRouter = (
   } satisfies TModalRouteContext
 
   return {
-    ...router,
     install(app: App) {
-      app.use(router)
       app.provide(modalRouteContextKey, modalRouteContext)
     },
   } as Router

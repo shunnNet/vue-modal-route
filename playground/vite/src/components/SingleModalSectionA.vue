@@ -16,7 +16,7 @@ const router = useRouter()
 
 const { openModal, closeModal } = useModalRoute()
 const onAClick = async () => {
-  const returnValue = await openModal('ModalPageSingleA')
+  const returnValue = await openModal('modal-a')
   ElMessage.success(`ModalPageSingleA return value: "${returnValue}"`)
 }
 
