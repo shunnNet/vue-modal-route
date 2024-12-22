@@ -2,7 +2,7 @@
 import { ElButton, ElDialog } from 'element-plus'
 import { onMounted } from 'vue'
 import HighlightText from '~/components/HighlightText.vue'
-import { useModalRoute } from '@vmr/modal-route'
+import { useModalRoute } from '@vmr/vue-modal-route'
 
 const visible = defineModel({
   type: Boolean,

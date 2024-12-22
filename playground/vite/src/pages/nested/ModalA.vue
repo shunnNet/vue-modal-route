@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ElButton, ElDialog } from 'element-plus'
 import HighlightText from '~/components/HighlightText.vue'
-import { setupModal, ModalPathView } from '@vmr/modal-route'
+import { setupModal, ModalPathView } from '@vmr/vue-modal-route'
 
 const visible = defineModel({
   type: Boolean,

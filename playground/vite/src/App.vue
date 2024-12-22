@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ModalHashView, ModalQueryView, useModalRoute, setupModal } from '@vmr/modal-route'
+import { ModalHashView, ModalQueryView, useModalRoute} from '@vmr/vue-modal-route'
 import { ElButton } from 'element-plus'
 import { QueryModalA } from './modals'
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ElButton, ElDialog, ElFormItem, ElForm, ElLoading } from 'element-plus'
 import { onMounted, ref, watch } from 'vue'
-import { sleep } from '@vmr/modal-route'
+import { sleep } from '@vmr/vue-modal-route'
 
 const visible = defineModel({
   type: Boolean,

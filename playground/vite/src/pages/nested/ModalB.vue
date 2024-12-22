@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton, ElMessage } from 'element-plus'
-import { useModalRoute } from '@vmr/modal-route'
+import { useModalRoute } from '@vmr/vue-modal-route'
 import HighlightText from '~/components/HighlightText.vue'
 
 const visible = defineModel({

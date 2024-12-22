@@ -4,7 +4,7 @@ import { ElButton } from 'element-plus'
 import {
   setupModal,
   useModalRoute,
-} from '@vmr/modal-route'
+} from '@vmr/vue-modal-route'
 
 const { openModal } = useModalRoute()
 

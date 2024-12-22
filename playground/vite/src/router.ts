@@ -1,4 +1,4 @@
-import { createModalRoute, transformToModalRoute } from '@vmr/modal-route'
+import { createModalRoute, transformToModalRoute } from '@vmr/vue-modal-route'
 import { ModalA, ModalB, QueryModalA } from './modals'
 import { createRouter, createWebHistory } from 'vue-router'
 

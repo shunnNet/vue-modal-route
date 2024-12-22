@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { setupModal } from '@vmr/modal-route'
+import { setupModal } from '@vmr/vue-modal-route'
 import PageSection from './PageSection.vue'
 import { ElButton, ElLoading } from 'element-plus'
 import { computed, onMounted, ref } from 'vue'

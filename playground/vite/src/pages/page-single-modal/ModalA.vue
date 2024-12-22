@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton, ElDrawer } from 'element-plus'
-import { useModalRoute } from '@vmr/modal-route'
+import { useModalRoute } from '@vmr/vue-modal-route'
 import { QueryModalA } from '~/modals'
 
 const { openModal, closeModal } = useModalRoute()

@@ -1,4 +1,4 @@
-import { defineModalRoute, defineModalRouteQuery } from '@vmr/modal-route'
+import { defineModalRoute, defineModalRouteQuery } from '@vmr/vue-modal-route'
 import ModalQueryA from './components/ModalQueryA.vue'
 
 export const ModalA = defineModalRoute<string>(

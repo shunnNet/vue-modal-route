@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton, ElDialog } from 'element-plus'
-import { ModalPathView } from '@vmr/modal-route'
+import { ModalPathView } from '@vmr/vue-modal-route'
 
 const visible = defineModel({
   type: Boolean,

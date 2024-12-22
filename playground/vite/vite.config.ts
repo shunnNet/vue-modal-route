@@ -19,7 +19,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@vmr/modal-route': resolve(__dirname, '../../packages/modal-route/src/index.ts'),
+      '@vmr/vue-modal-route': resolve(__dirname, '../../packages/modal-route/src/index.ts'),
       '~': resolve(__dirname, './src'),
     },
   },
