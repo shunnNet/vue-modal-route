@@ -3,13 +3,13 @@
   "description": "VRM (Vue Route Modal) is a package that manages modals using routes.",
   "version": "0.1.0",
   "type": "module",
-  "main": "dist/index.umd.cjs",
-  "module": "dist/index.js",
+  "main": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.umd.cjs"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
     }
   },
   "repository": "https://github.com/shunnNet/vrm",
@@ -28,6 +28,7 @@
   },
   "scripts": {
     "build": "eslint && unbuild",
+    "stub": "unbuild --stub",
     "lint": "eslint"
   },
   "peerDependencies": {
