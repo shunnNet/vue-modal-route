@@ -1,6 +1,2 @@
-## before init git 
-```sh
-git config --global init.defaultBranch main
-
-git init
-```
+- [] tsconfig with unbuild
+- [] eslint inheritance ?
