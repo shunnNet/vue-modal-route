@@ -128,5 +128,5 @@ export const transformToModalRoute = (routes: RouteRecordRaw[], inModalRoute: bo
     )
 
     return result
-  }) as RouteRecordRaw[]
+  })
 }
