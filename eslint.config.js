@@ -7,8 +7,7 @@ import pluginVue from 'eslint-plugin-vue'
 
 export default [
   {
-    ignores: ['dist/*'],
-
+    ignores: ['**/dist/', '**/playground/'],
   },
   ...tseslint.config(
     eslint.configs.recommended, // enable eslint:recommended
@@ -17,7 +16,7 @@ export default [
   stylistic.configs['recommended-flat'],
   ...pluginVue.configs['flat/recommended'],
   {
-    files: ['*.vue', '**/*.vue'],
+    files: ['*.vue', '**/*.vue', '**/*.ts'],
     languageOptions: {
       parserOptions: {
         parser: '@typescript-eslint/parser',

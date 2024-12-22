@@ -1,6 +1,6 @@
 {
-  "name": "vrm",
-  "description": "VRM (Vue Route Modal) is a package that manages modals using routes.",
+  "name": "vmr",
+  "description": "VMR (Vue Modal Route) is a package that manages modals using routes.",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.umd.cjs",
@@ -27,38 +27,37 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc && vite build",
-    "build:demo": "vite build",
-    "preview": "vite preview",
-    "test": "vitest",
-    "prepare": "husky"
-  },
-  "dependencies": {
-    "@unocss/reset": "^0.63.2",
-    "vue": "^3.4.38"
+    "play:vite": "pnpm --filter @vmr/playground-vite dev",
+    "play:build:vite": "pnpm --filter @vmr/playground-vite build",
+    "play:vite-uvr": "pnpm --filter @vmr/playground-vite-uvr dev",
+    "play:build:vite-uvr": "pnpm --filter @vmr/playground-vite-uvr build",
+    "build:core": "pnpm --filter @vmr/vue-modal-route build",
+    "stub:core": "pnpm --filter @vmr/vue-modal-route stub",
+    "dev:nuxt": "pnpm --filter @vmr/nuxt dev",
+    "prepare:nuxt": "pnpm --filter @vmr/nuxt dev:prepare",
+    "dev:build:nuxt": "pnpm --filter @vmr/nuxt dev:build",
+    "prepack:nuxt": "pnpm --filter @vmr/nuxt prepack"
   },
   "devDependencies": {
-    "@element-plus/icons-vue": "^2.1.0",
-    "@eslint/js": "^9.9.1",
+    "@eslint/js": "^9.14.0",
     "@stylistic/eslint-plugin": "^2.6.4",
-    "@vitejs/plugin-vue": "^4.2.3",
-    "@vue/test-utils": "^2.4.1",
-    "element-plus": "^2.3.14",
+    "@types/node": "^22.8.1",
+    "@typescript-eslint/eslint-plugin": "8.15.0",
+    "@typescript-eslint/parser": "8.15.0",
     "eslint-plugin-vue": "^9.27.0",
-    "happy-dom": "^12.2.1",
     "husky": "^9.1.5",
     "lint-staged": "^15.2.9",
     "typescript": "^5.0.2",
     "typescript-eslint": "^8.2.0",
-    "unocss": "^0.63.2",
-    "vite": "^4.4.5",
-    "vite-plugin-dts": "^3.6.0",
-    "vitest": "^0.34.6",
-    "vue-router": "^4.4.3",
     "vue-tsc": "^1.8.15"
   },
   "files": [
     "dist"
-  ]
+  ],
+  "pnpm": {
+    "overrides": {
+      "@typescript-eslint/eslint-plugin": "8.15.0",
+      "@typescript-eslint/parser": "8.15.0"
+    }
+  }
 }

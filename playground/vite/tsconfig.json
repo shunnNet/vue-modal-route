@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+  ],
+  "compilerOptions": {
+    "types": [
+      "element-plus/global.d.ts"
+    ],
+    "paths": {
+      "~/*": [
+        "./src/*"
+      ],
+      "@vmr/vue-modal-route": [
+        "../../packages/modal-route/src/index"
+      ]
+    }
+  },
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ],
+}

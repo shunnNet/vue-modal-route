@@ -1,0 +1,44 @@
+{
+  "name": "@vmr/vue-modal-route",
+  "description": "VMR (Vue Modal Route) is a package that manages modals using routes.",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "repository": "https://github.com/shunnNet/vrm",
+  "bugs": {
+    "url": "https://github.com/shunnNet/vrm/issues"
+  },
+  "keywords": [
+    "vue",
+    "modal",
+    "vue-router"
+  ],
+  "author": "shunnNet",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "eslint && unbuild",
+    "stub": "unbuild --stub",
+    "lint": "eslint"
+  },
+  "peerDependencies": {
+    "vue": "^3",
+    "vue-router": "^4"
+  },
+  "devDependencies": {
+    "unbuild": "^2.0.0"
+  },
+  "files": [
+    "dist"
+  ]
+}
