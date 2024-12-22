@@ -1,6 +1,6 @@
 {
   "name": "@vmr/vue-modal-route",
-  "description": "VRM (Vue Route Modal) is a package that manages modals using routes.",
+  "description": "VMR (Vue Modal Route) is a package that manages modals using routes.",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.mjs",

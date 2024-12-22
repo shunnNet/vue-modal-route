@@ -27,13 +27,19 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc && vite build",
-    "build:demo": "vite build",
-    "preview": "vite preview"
+    "play:vite": "pnpm --filter @vmr/playground-vite dev",
+    "play:build:vite": "pnpm --filter @vmr/playground-vite build",
+    "play:vite-uvr": "pnpm --filter @vmr/playground-vite-uvr dev",
+    "play:build:vite-uvr": "pnpm --filter @vmr/playground-vite-uvr build",
+    "build:core": "pnpm --filter @vmr/vue-modal-route build",
+    "stub:core": "pnpm --filter @vmr/vue-modal-route stub",
+    "dev:nuxt": "pnpm --filter @vmr/nuxt dev",
+    "prepare:nuxt": "pnpm --filter @vmr/nuxt dev:prepare",
+    "dev:build:nuxt": "pnpm --filter @vmr/nuxt dev:build",
+    "prepack:nuxt": "pnpm --filter @vmr/nuxt prepack"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.1",
+    "@eslint/js": "^9.14.0",
     "@stylistic/eslint-plugin": "^2.6.4",
     "@types/node": "^22.8.1",
     "eslint-plugin-vue": "^9.27.0",
