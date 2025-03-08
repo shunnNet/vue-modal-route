@@ -1,13 +1,10 @@
-import { App, computed, inject, onScopeDispose } from 'vue'
+import { App, computed, onScopeDispose } from 'vue'
 import { TModalData, TModalHashRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TOpenModalOptions } from './types'
 import {
   Router,
   RouteRecordNormalized,
-  matchedRouteKey,
   RouteRecordRaw,
   RouteLocationNormalizedGeneric,
-  createRouterMatcher,
-  RouteParamsGeneric,
   useRoute,
   NavigationFailure,
   RouterHistory,
@@ -20,6 +17,7 @@ import { createQueryRoutes } from './query'
 import { createPathRoutes } from './path'
 import { createContext } from './context'
 import { createContext as createVueContext } from '@vue-use-x/common'
+import { useMatchedRoute, useRouterUtils } from './router'
 
 type TModalNavigationGuardAfterEach = (context: {
   to: RouteLocationNormalizedGeneric
@@ -51,15 +49,11 @@ export const createModalRoute = (
   }
 
   const currentRoute = router.currentRoute
-  const routerMatcher = createRouterMatcher(router.getRoutes(), router.options)
-  const routeParamsToPath = (
-    r: RouteRecordNormalized | RouteLocationNormalizedGeneric,
-    params: RouteParamsGeneric,
-  ) => {
-    return routerMatcher.getRecordMatcher(r.name as string)?.stringify(params) || r.path
-  }
+
+  const { paramsToPath } = useRouterUtils(router)
 
   const store = createModalStore()
+
   const {
     goHistory,
     getNavigationInfo,
@@ -338,12 +332,12 @@ export const createModalRoute = (
     else {
       const [first, ...rest] = steps
       rest.pop() // remove the last route because it should be replaced by "to.fullPath" to keep query/hash
-      replaceHistory(routeParamsToPath(first, to.params))
+      replaceHistory(paramsToPath(first, to.params))
       tagIfRouteModal(first, getCurrentPosition() - 1)
 
       rest.forEach((r) => {
         tagIfRouteModal(r, getCurrentPosition())
-        pushHistory(routeParamsToPath(r, to.params))
+        pushHistory(paramsToPath(r, to.params))
       })
       tagIfRouteModal(to, getCurrentPosition())
       pushHistory(to.fullPath)
@@ -561,7 +555,7 @@ export const setupModal = <ReturnValue = any>(
   } = modalRouteContext.ensureInjection('setupModal must be used inside a ModalRoute component')
 
   // useModal can not target nested modal
-  const matchedRoute = inject(matchedRouteKey)
+  const matchedRoute = useMatchedRoute()
   const currentRoute = useRoute()
   const relatedModalInfo = getRelatedModalsByRouteName(name)
 

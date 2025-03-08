@@ -1,8 +1,8 @@
-import { defineComponent, h, PropType, watch, computed, reactive, ref, inject, toValue } from 'vue'
-import { matchedRouteKey } from 'vue-router'
+import { defineComponent, h, PropType, watch, computed, reactive, ref, toValue } from 'vue'
 import { isPlainObject } from './helpers'
 import { modalRouteContext, useModalRoute } from './modalRoute'
 import { TComponent } from './types'
+import { useMatchedRoute } from './router'
 
 type TModalMap = Record<string, {
   _component: TComponent
@@ -122,7 +122,7 @@ export default defineComponent({
   setup(props, { slots }) {
     const { setModal, componentMap } = setupModalRoute()
     const { closeModal } = useModalRoute()
-    const matchedRoute = inject(matchedRouteKey, null)
+    const matchedRoute = useMatchedRoute()
     const {
       getModalItemUnsafe,
       setModalReturnValue,

@@ -1,6 +1,7 @@
 import { computed, defineComponent, h, inject, provide, resolveComponent } from 'vue'
-import { useRoute, viewDepthKey, matchedRouteKey } from 'vue-router'
+import { useRoute, viewDepthKey } from 'vue-router'
 import ModalRoute from './ModalRouteView'
+import { useMatchedRoute } from './router'
 export default defineComponent({
   components: {
     ModalRoute,
@@ -14,7 +15,7 @@ export default defineComponent({
   setup(props, { slots }) {
     const routes = useRoute()
     const hashRouteDepth = computed(() => routes.matched?.findIndex(r => r?.meta?.modalHashRoot === true))
-    const inRouterView = inject(matchedRouteKey, null)
+    const inRouterView = useMatchedRoute()
     const inModalHashRoute = inject('ModalHashContext', false)
     if (inModalHashRoute) {
       console.warn('ModalHashView should not be nested in another ModalHashView, use `ModalPathView` instead')
