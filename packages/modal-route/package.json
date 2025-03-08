@@ -40,5 +40,8 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "@vue-use-x/common": "^1.0.1"
+  }
 }

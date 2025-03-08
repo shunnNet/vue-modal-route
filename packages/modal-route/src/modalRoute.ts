@@ -1,5 +1,5 @@
 import { App, computed, inject, onScopeDispose } from 'vue'
-import { TModalData, TModalHashRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TModalRouteContextKey, TOpenModalOptions } from './types'
+import { TModalData, TModalHashRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TOpenModalOptions } from './types'
 import {
   Router,
   RouteRecordNormalized,
@@ -12,13 +12,14 @@ import {
   NavigationFailure,
   RouterHistory,
 } from 'vue-router'
-import { ensureArray, ensureInjection, isPlainObject, noop, transformToModalRoute } from './helpers'
+import { ensureArray, isPlainObject, noop, transformToModalRoute } from './helpers'
 import { createHashRoutes } from './hash'
 import { useModalHistory } from './history'
 import { createModalStore } from './store'
 import { createQueryRoutes } from './query'
 import { createPathRoutes } from './path'
 import { createContext } from './context'
+import { createContext as createVueContext } from '@vue-use-x/common'
 
 type TModalNavigationGuardAfterEach = (context: {
   to: RouteLocationNormalizedGeneric
@@ -28,7 +29,8 @@ type TModalNavigationGuardAfterEach = (context: {
 }) => any | Promise<any>
 
 // Note: find some way to mark modal open by openModal/closeModal
-export const modalRouteContextKey: TModalRouteContextKey = Symbol('modalRouteContext')
+
+export const modalRouteContext = createVueContext<TModalRouteContext>()
 
 export const createModalRoute = (
   options: Partial<{
@@ -502,7 +504,7 @@ export const createModalRoute = (
     return modal.isActive(name)
   }
 
-  const modalRouteContext = {
+  const _ctx = {
     store: modalMap,
     push,
     pop,
@@ -523,7 +525,7 @@ export const createModalRoute = (
 
   return {
     install(app: App) {
-      app.provide(modalRouteContextKey, modalRouteContext)
+      modalRouteContext.provideByApp(app, _ctx)
     },
   } as Router
 }
@@ -533,7 +535,7 @@ export const useModalRoute = () => {
     closeModal,
     openModal,
     isModalActive,
-  } = ensureInjection(modalRouteContextKey, 'useModalRoute must be used inside a ModalRoute component')
+  } = modalRouteContext.ensureInjection('useModalRoute must be used inside a ModalRoute component')
 
   return {
     setupModal,
@@ -556,10 +558,10 @@ export const setupModal = <ReturnValue = any>(
     isModalActive,
     getRelatedModalsByRouteName,
     modalExists,
-  } = ensureInjection(modalRouteContextKey, 'useModal must be used inside a ModalRoute component')
+  } = modalRouteContext.ensureInjection('setupModal must be used inside a ModalRoute component')
 
   // useModal can not target nested modal
-  const matchedRoute = inject(matchedRouteKey, null)
+  const matchedRoute = inject(matchedRouteKey)
   const currentRoute = useRoute()
   const relatedModalInfo = getRelatedModalsByRouteName(name)
 
@@ -638,13 +640,13 @@ export const setupModal = <ReturnValue = any>(
 }
 
 export const useModalReturnValue = <T>(name: string) => {
-  const { store } = ensureInjection(modalRouteContextKey, 'useModalReturnValue must be used inside a ModalRoute component')
+  const { store } = modalRouteContext.ensureInjection('useModalReturnValue must be used inside a ModalRoute component')
 
   return computed(() => store[name].returnValue as T)
 }
 
 export const useModalActive = (name: string) => {
-  const { isModalActive } = ensureInjection(modalRouteContextKey, 'useModalActive must be used inside a ModalRoute component')
+  const { isModalActive } = modalRouteContext.ensureInjection('useModalActive must be used inside a ModalRoute component')
 
   return computed(() => isModalActive(name))
 }
@@ -654,7 +656,7 @@ export const useModal = <ReturnValue>(name: string) => {
     closeModal,
     openModal,
     isModalActive,
-  } = ensureInjection(modalRouteContextKey, 'useModal must be used inside a ModalRoute component')
+  } = modalRouteContext.ensureInjection('useModal must be used inside a ModalRoute component')
   const returnValue = useModalReturnValue<ReturnValue>(name)
 
   return {

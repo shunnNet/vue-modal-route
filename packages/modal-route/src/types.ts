@@ -1,4 +1,4 @@
-import { Component, InjectionKey, RendererElement, RendererNode, VNode } from 'vue'
+import { Component, RendererElement, RendererNode, VNode } from 'vue'
 import { NavigationFailure, RouteRecordRaw } from 'vue-router'
 import { TDefer } from './helpers'
 
@@ -66,8 +66,6 @@ export type TModalRouteContext = {
   getRelatedModalsByRouteName: (name: string) => { type: 'path' | 'hash' | 'query', modal: string[] } | undefined
   setModalLock: (name: string, lock: boolean) => void
 }
-
-export type TModalRouteContextKey = InjectionKey<TModalRouteContext>
 
 export type TModalData = Record<string, any>
 

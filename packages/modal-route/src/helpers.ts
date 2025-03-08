@@ -1,17 +1,6 @@
-import { inject, InjectionKey } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
 
 export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-
-export const ensureInjection = <T = unknown>(injectKey: string | InjectionKey<T>, errorMsg: string) => {
-  const injection = inject(injectKey)
-
-  if (!injection) {
-    throw new Error(errorMsg)
-  }
-
-  return injection
-}
 
 export const isPlainObject = (value: unknown): value is Record<string, any> => {
   return !!value && typeof value === 'object' && !Array.isArray(value)

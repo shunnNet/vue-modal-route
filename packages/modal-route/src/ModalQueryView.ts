@@ -1,7 +1,6 @@
 import { computed, defineComponent, h, inject } from 'vue'
 import ModalRoute from './ModalRouteView'
-import { ensureInjection } from './helpers'
-import { modalRouteContextKey, useModalRoute } from './modalRoute'
+import { useModalRoute, modalRouteContext } from './modalRoute'
 import { matchedRouteKey } from 'vue-router'
 
 export default defineComponent({
@@ -9,7 +8,7 @@ export default defineComponent({
     ModalRoute,
   },
   setup(_, { slots }) {
-    const ctx = ensureInjection(modalRouteContextKey, 'useModalRoute must be used inside a ModalRoute component')
+    const ctx = modalRouteContext.ensureInjection('useModalRoute must be used inside a ModalRoute component')
     const { isModalActive } = useModalRoute()
     const inModalQueryRoute = inject('ModalQueryContext', false)
     const inRouterView = inject(matchedRouteKey, null)

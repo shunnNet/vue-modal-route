@@ -1,7 +1,7 @@
 import { defineComponent, h, PropType, watch, computed, reactive, ref, inject, toValue } from 'vue'
 import { matchedRouteKey } from 'vue-router'
-import { ensureInjection, isPlainObject } from './helpers'
-import { modalRouteContextKey, useModalRoute } from './modalRoute'
+import { isPlainObject } from './helpers'
+import { modalRouteContext, useModalRoute } from './modalRoute'
 import { TComponent } from './types'
 
 type TModalMap = Record<string, {
@@ -17,7 +17,7 @@ type TModalMap = Record<string, {
 }>
 
 const setupModalRoute = () => {
-  const { pop, getModalItem } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRoute component')
+  const { pop, getModalItem } = modalRouteContext.ensureInjection('ModalRoute must be used inside a ModalRoute component')
   const { closeModal, isModalActive } = useModalRoute()
 
   const componentMap: TModalMap = reactive({})
@@ -126,7 +126,7 @@ export default defineComponent({
     const {
       getModalItemUnsafe,
       setModalReturnValue,
-    } = ensureInjection(modalRouteContextKey, 'ModalRoute must be used inside a ModalRouteContext')
+    } = modalRouteContext.ensureInjection('ModalRoute must be used inside a ModalRouteContext')
 
     const setupModalIfExist = (cmp: TComponent, name?: string) => {
       if (!cmp) {
