@@ -1,5 +1,5 @@
 import { App, computed, onScopeDispose } from 'vue'
-import { TModalData, TModalGlobalRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TOpenModalOptions } from './types'
+import { TModalData, TModalGlobalRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TModalType, TOpenModalOptions } from './types'
 import {
   Router,
   RouteRecordNormalized,
@@ -111,7 +111,7 @@ export const createModalRoute = (
     setModalLock,
   } = store
 
-  const modalRouteCollection: Map<string, { type: 'path' | 'global' | 'query', modal: string[] }> = new Map()
+  const modalRouteCollection: Map<string, { type: TModalType, modal: string[] }> = new Map()
   const getRelatedModalsByRouteName = (name: string) => modalRouteCollection.get(name)
 
   registerQueryRoutes(_options.query)

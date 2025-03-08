@@ -2,10 +2,12 @@ import { Component, RendererElement, RendererNode, VNode } from 'vue'
 import { NavigationFailure, RouteRecordRaw } from 'vue-router'
 import { TDefer } from './helpers'
 
+export type TModalType = 'global' | 'query' | 'path'
+
 export type TModalMapItem = {
   name: string
   data: Record<string, any> | null
-  type: 'global' | 'query' | 'path' | string
+  type: TModalType | string
 
   /**
    * Allow enter when init navigation
@@ -63,7 +65,7 @@ export type TModalRouteContext = {
   getModalItemUnsafe: (name: string) => TModalMapItem | undefined
   unlockModal: (name: string) => void
   setModalReturnValue: (name: string, value: unknown) => void
-  getRelatedModalsByRouteName: (name: string) => { type: 'path' | 'global' | 'query', modal: string[] } | undefined
+  getRelatedModalsByRouteName: (name: string) => { type: TModalType, modal: string[] } | undefined
   setModalLock: (name: string, lock: boolean) => void
 }
 

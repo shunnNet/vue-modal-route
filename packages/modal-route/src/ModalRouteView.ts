@@ -1,7 +1,7 @@
 import { defineComponent, h, PropType, watch, computed, reactive, ref, toValue } from 'vue'
 import { isPlainObject } from './helpers'
 import { modalRouteContext, useModalRoute } from './modalRoute'
-import { TComponent } from './types'
+import { TComponent, TModalType } from './types'
 import { useMatchedRoute } from './router'
 
 type TModalMap = Record<string, {
@@ -114,7 +114,7 @@ export default defineComponent({
       default: () => [],
     },
     modalType: {
-      type: String as PropType<'path' | 'global' | 'query'>,
+      type: String as PropType<TModalType>,
       required: true,
     },
   },
