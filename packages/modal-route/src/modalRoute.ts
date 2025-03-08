@@ -1,5 +1,5 @@
 import { App, computed, onScopeDispose } from 'vue'
-import { TModalData, TModalHashRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TOpenModalOptions } from './types'
+import { TModalData, TModalGlobalRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TOpenModalOptions } from './types'
 import {
   Router,
   RouteRecordNormalized,
@@ -10,7 +10,7 @@ import {
   RouterHistory,
 } from 'vue-router'
 import { ensureArray, isPlainObject, noop, applyModalPrefixToRoutes } from './helpers'
-import { createHashRoutes } from './hash'
+import { createGlobalRoutes, isGlobalModalRootRoute } from './global'
 import { useModalHistory } from './history'
 import { createModalStore } from './store'
 import { createQueryRoutes } from './query'
@@ -33,7 +33,7 @@ export const modalRouteContext = createVueContext<TModalRouteContext>()
 export const createModalRoute = (
   options: Partial<{
     query: TModalQueryRoute[]
-    hash: TModalHashRoute[]
+    global: TModalGlobalRoute[]
     direct: boolean
   }> & {
     router: Router
@@ -45,7 +45,7 @@ export const createModalRoute = (
   const _options = {
     direct: options.direct || false,
     query: ensureArray(options.query as TModalQueryRoute[]),
-    hash: applyModalPrefixToRoutes(ensureArray(options.hash as TModalHashRoute[])),
+    global: applyModalPrefixToRoutes(ensureArray(options.global as TModalGlobalRoute[])),
   }
 
   const currentRoute = router.currentRoute
@@ -69,7 +69,7 @@ export const createModalRoute = (
 
   // NOTE: It's better to bind the context with something like navigation instance for every navigation
   // ! the global context will not correct when run "await route.push" in afterEach
-  // or make a hash id by "to" and "from" ?
+  // or make a global id by "to" and "from" ?
   router.beforeEach((to, from) => {
     context.append(getNavigationInfo(to, from))
     let unregister: any = noop
@@ -80,10 +80,10 @@ export const createModalRoute = (
   })
 
   const {
-    registerHashRoutes,
-    prepareHashRoute,
-    openModal: openHashModal,
-  } = createHashRoutes(store, router)
+    registerGlobalRoutes,
+    prepareGlobalRoute,
+    openModal: openGlobalModal,
+  } = createGlobalRoutes(store, router)
 
   const {
     registerQueryRoutes,
@@ -111,13 +111,13 @@ export const createModalRoute = (
     setModalLock,
   } = store
 
-  const modalRouteCollection: Map<string, { type: 'path' | 'hash' | 'query', modal: string[] }> = new Map()
+  const modalRouteCollection: Map<string, { type: 'path' | 'global' | 'query', modal: string[] }> = new Map()
   const getRelatedModalsByRouteName = (name: string) => modalRouteCollection.get(name)
 
   registerQueryRoutes(_options.query)
-  registerHashRoutes(_options.hash)
+  registerGlobalRoutes(_options.global)
 
-  const registChildren = (type: string, parents: string[], children: TModalHashRoute[] | RouteRecordRaw[]) => {
+  const registChildren = (type: string, parents: string[], children: TModalGlobalRoute[] | RouteRecordRaw[]) => {
     children.forEach((route) => {
       const _parents = [...parents, ...(route.meta?.modal && route.name && route.components?.['modal-default'] ? [route.name as string] : [])]
       if (route.name) {
@@ -135,10 +135,10 @@ export const createModalRoute = (
       modalRouteCollection.set(route.name as string, { type: 'path', modal: [route.name as string] })
     }
   })
-  _options.hash.forEach((route) => {
+  _options.global.forEach((route) => {
     if (route.meta?.modal && route.name && route.components?.['modal-default']) {
-      registChildren('hash', [route.name as string], route.children || [])
-      modalRouteCollection.set(route.name as string, { type: 'hash', modal: [route.name as string] })
+      registChildren('global', [route.name as string], route.children || [])
+      modalRouteCollection.set(route.name as string, { type: 'global', modal: [route.name as string] })
     }
   })
   _options.query.forEach((route) => {
@@ -164,14 +164,14 @@ export const createModalRoute = (
       return false
     }
   })
-  // handle direct enter hash modal
+  // handle direct enter global modal
   // Note: seems like vue-router do something like route match when register plugin
   // It will report warning if put dynamic route registration when router.beforeEach
   // So we need to handle before that
-  const isHashRoute = routerHistory.location.includes('_modal')
-  if (isHashRoute) {
+  const isGlobalRoute = routerHistory.location.includes('_modal')
+  if (isGlobalRoute) {
     const baseRoute = router.resolve(routerHistory.location.replace(/\/_modal.*/, ''))
-    prepareHashRoute(baseRoute.name as string)
+    prepareGlobalRoute(baseRoute.name as string)
   }
 
   // Not allow directly enter if modal didn't has "meta.modal.direct: true" or global direct: true
@@ -265,7 +265,7 @@ export const createModalRoute = (
       r => r.meta.modal && !to.matched.some(r2 => r2.name === r.name),
     )?.name as string | undefined
 
-    // path or hash modal take precedence over query modal
+    // path or global modal take precedence over query modal
     const closingModalName = (firstClosedModalName || firstClosedQueryModalName) as string
 
     if (!closingModalName) {
@@ -303,9 +303,9 @@ export const createModalRoute = (
       return
     }
     // ! Note: the history already changed
-    // Only handle opening "path, hash" modal by OpenModal()
+    // Only handle opening "path, global" modal by OpenModal()
 
-    console.log('Opening modal (path/hash) by openModal...')
+    console.log('Opening modal (path/global) by openModal...')
 
     // do nothing if same route
     const isSameRoute = to.name === from.name
@@ -322,7 +322,7 @@ export const createModalRoute = (
     // e.g 1: A->B->C => A->D
     // e.g 2: X->Y => A->D
     const index = to.matched.findIndex(r => r.name === from.name)
-    const steps = to.matched.slice(index + 1).filter(r => !r.meta.modalHashRoot)
+    const steps = to.matched.slice(index + 1).filter(r => !isGlobalModalRootRoute(r))
 
     if (steps.length === 1) {
       replaceHistory(to.fullPath)
@@ -331,7 +331,7 @@ export const createModalRoute = (
     }
     else {
       const [first, ...rest] = steps
-      rest.pop() // remove the last route because it should be replaced by "to.fullPath" to keep query/hash
+      rest.pop() // remove the last route because it should be replaced by "to.fullPath" to keep query/global
       replaceHistory(paramsToPath(first, to.params))
       tagIfRouteModal(first, getCurrentPosition() - 1)
 
@@ -358,7 +358,7 @@ export const createModalRoute = (
     name: string,
     options?: {
       query?: Record<string, any>
-      hash?: string
+      global?: string
       params?: Record<string, any>
       data?: TModalData | [string, TModalData][]
     },
@@ -371,8 +371,8 @@ export const createModalRoute = (
     if (!modalsNeedActivate.length) {
       throw new Error(`Not allow open modal which is already opened: ${modalInfo.modal.join(',')}.`)
     }
-    if (typeof options?.hash === 'string' && options.hash.startsWith('#modal')) {
-      throw new Error('Not allow open modal with hash start with "#modal"')
+    if (typeof options?.global === 'string' && options.global.startsWith('#modal')) {
+      throw new Error('Not allow open modal with global start with "#modal"')
     }
     if (isPlainObject(options?.query) && Object.keys(options?.query).some(k => k.startsWith(mqprefix))) {
       throw new Error(`Not allow open modal with query key start with ${mqprefix}"`)
@@ -394,12 +394,12 @@ export const createModalRoute = (
       case 'path':
         openPathModal(name, {
           query: options?.query,
-          hash: options?.hash,
+          global: options?.global,
           params: options?.params,
         }).catch(noop)
         break
-      case 'hash':
-        openHashModal(name, {
+      case 'global':
+        openGlobalModal(name, {
           query: options?.query,
           params: options?.params,
         }).catch(noop)
@@ -460,13 +460,13 @@ export const createModalRoute = (
     }
     // pad history from root base route, but only back to closing modal base route
     if (rootBaseRoute) {
-      const matched = currentRoute.value.matched.filter(r => !r.meta.modalHashRoot)
+      const matched = currentRoute.value.matched.filter(r => !isGlobalModalRootRoute(r))
       const rootBaseIndex = matched.findIndex(r => r.name === rootBaseRoute.name)
       const baseIndex = matched.findIndex(r => r.name === baseRoute.name)
       if (rootBaseIndex !== -1) {
         replaceHistory(rootBaseRoute.path)
         matched.slice(rootBaseIndex + 1)
-          .filter(r => !r.meta.modalHashRoot)
+          .filter(r => !isGlobalModalRootRoute(r))
           .forEach((r) => {
             const name = r.name as string
             if (modalExists(name)) tagHistory(name)
@@ -559,15 +559,15 @@ export const setupModal = <ReturnValue = any>(
   const currentRoute = useRoute()
   const relatedModalInfo = getRelatedModalsByRouteName(name)
 
-  const inModalHashRoute = currentRoute.matched.some(r => r.meta.modalHashRoot)
+  const inModalGlobalRoute = currentRoute.matched.some(r => isGlobalModalRootRoute(r))
 
   if (!relatedModalInfo) {
     throw new Error(`Can not find related modals for ${name}`)
   }
 
   if (matchedRoute?.value) {
-    if (relatedModalInfo.type === 'hash' && !inModalHashRoute) {
-      throw new Error(`useModal for first layer hash modal must be used outside <RouterView>`)
+    if (relatedModalInfo.type === 'global' && !inModalGlobalRoute) {
+      throw new Error(`useModal for first layer global modal must be used outside <RouterView>`)
     }
     if (relatedModalInfo.type === 'query') {
       throw new Error(`useModal for query modal must be used outside <RouterView>`)
@@ -587,7 +587,7 @@ export const setupModal = <ReturnValue = any>(
   let modalNameToOpen = name
   if (
     relatedModalInfo.type === 'path'
-    || (inModalHashRoute && relatedModalInfo.type === 'hash')
+    || (inModalGlobalRoute && relatedModalInfo.type === 'global')
   ) {
     if (!checkIfModalIsChild(matchedRoute?.value?.children || [])) {
       throw new Error(`useModal ${name} must be used in a parent route of the modal.`)

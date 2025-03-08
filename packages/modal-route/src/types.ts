@@ -5,7 +5,7 @@ import { TDefer } from './helpers'
 export type TModalMapItem = {
   name: string
   data: Record<string, any> | null
-  type: 'hash' | 'query' | 'path' | string
+  type: 'global' | 'query' | 'path' | string
 
   /**
    * Allow enter when init navigation
@@ -44,7 +44,7 @@ export type TModalMapBackToParent = (
 export type TOpenModalOptions = {
   data: Record<string, any>
   query: Record<string, any>
-  hash: string
+  global: string
   params: Record<string, any>
 }
 export type TModalRouteContext = {
@@ -63,14 +63,14 @@ export type TModalRouteContext = {
   getModalItemUnsafe: (name: string) => TModalMapItem | undefined
   unlockModal: (name: string) => void
   setModalReturnValue: (name: string, value: unknown) => void
-  getRelatedModalsByRouteName: (name: string) => { type: 'path' | 'hash' | 'query', modal: string[] } | undefined
+  getRelatedModalsByRouteName: (name: string) => { type: 'path' | 'global' | 'query', modal: string[] } | undefined
   setModalLock: (name: string, lock: boolean) => void
 }
 
 export type TModalData = Record<string, any>
 
 export type TModalPathRoute = RouteRecordRaw & { name: string }
-export type TModalHashRoute = RouteRecordRaw & { name: string }
+export type TModalGlobalRoute = RouteRecordRaw & { name: string }
 export type TModalQueryRoute = { name: string, component: Component, meta?: Record<string, any> }
 
 export type TComponent = VNode<RendererNode, RendererElement, {

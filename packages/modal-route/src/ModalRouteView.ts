@@ -114,7 +114,7 @@ export default defineComponent({
       default: () => [],
     },
     modalType: {
-      type: String as PropType<'path' | 'hash' | 'query'>,
+      type: String as PropType<'path' | 'global' | 'query'>,
       required: true,
     },
   },

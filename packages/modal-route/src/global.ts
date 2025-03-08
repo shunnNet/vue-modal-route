@@ -1,16 +1,23 @@
 import { createRouterMatcher, Router, RouteRecordRaw } from 'vue-router'
-import { TModalHashRoute } from './types'
+import { TModalGlobalRoute } from './types'
 import { createModalStore } from './store'
 
-export const createHashRoutes = (
+const rootMetaName = 'globalModalRoot'
+
+/**
+ * If the route is a global modal root
+ */
+export const isGlobalModalRootRoute = (route: RouteRecordRaw) => route.meta?.[rootMetaName] === true
+
+export const createGlobalRoutes = (
   store: ReturnType<typeof createModalStore>,
   router: Router,
 ) => {
-  const children: TModalHashRoute[] = []
+  const children: TModalGlobalRoute[] = []
   const currentRoute = router.currentRoute
-  let hashRootBaseName = ''
+  let globalRootBaseName = ''
 
-  const addRoutes = (routes: TModalHashRoute[]) => {
+  const addRoutes = (routes: TModalGlobalRoute[]) => {
     routes.forEach((route) => {
       children.push(route)
     })
@@ -19,21 +26,21 @@ export const createHashRoutes = (
 
   function openModal(name: string, options?: {
     query?: Record<string, any>
-    hash?: string
+    global?: string
     params?: Record<string, any>
   }) {
-    prepareHashRoute()
+    prepareGlobalRoute()
     return router.push({
       name,
       ...(options?.params ? { params: options.params } : {}),
       ...(options?.query ? { query: options.query } : {}),
     })
   }
-  function prepareHashRoute(target?: string) {
+  function prepareGlobalRoute(target?: string) {
     const base = target || currentRoute.value.name
-    if (hashRootBaseName !== base) {
-      hashRootBaseName = base as string
-      router.addRoute(hashRootBaseName as string, hashRoute)
+    if (globalRootBaseName !== base) {
+      globalRootBaseName = base as string
+      router.addRoute(globalRootBaseName as string, globalRoute)
     }
   }
 
@@ -41,7 +48,7 @@ export const createHashRoutes = (
     const modalRoute = router.resolve({ name, params })
     const selfIndex = modalRoute.matched.findIndex(route => route.name === name)
     if (selfIndex > 0) {
-      if (modalRoute.matched[selfIndex - 1].name === 'modal-hash-root') {
+      if (modalRoute.matched[selfIndex - 1].name === 'modal-root-global') {
         return modalRoute.matched[selfIndex - 2]
       }
       else {
@@ -54,7 +61,7 @@ export const createHashRoutes = (
     }
   }
 
-  function registerHashRoutes(routes: RouteRecordRaw[]) {
+  function registerGlobalRoutes(routes: RouteRecordRaw[]) {
     routes.map((aRoute) => {
       if (!aRoute.meta?.modal) {
         return
@@ -63,13 +70,13 @@ export const createHashRoutes = (
         console.error('Modal route must have a name', aRoute)
         throw new Error('Modal route must have a name')
       }
-      store.registerModal(aRoute.name as string, 'hash', {
+      store.registerModal(aRoute.name as string, 'global', {
         ...aRoute.meta,
         isActive: defineActive,
         findBase,
       })
       if (aRoute.children?.length) {
-        registerHashRoutes(aRoute.children)
+        registerGlobalRoutes(aRoute.children)
       }
       return aRoute
     })
@@ -77,25 +84,26 @@ export const createHashRoutes = (
     addRoutes(routes)
   }
 
-  const resolveHashRoute = (pathWithHash: string) => {
+  const resolveGlobalRoute = (path: string) => {
+    // todo: use routerUtils ?
     const matcher = createRouterMatcher(router.getRoutes(), router.options)
-    return matcher.resolve({ path: pathWithHash }, currentRoute.value)
+    return matcher.resolve({ path }, currentRoute.value)
   }
-  const hashRoute = {
-    name: 'modal-hash-root',
+  const globalRoute = {
+    name: 'modal-root-global',
     path: '_modal',
     meta: {
-      modalHashRoot: true,
+      [rootMetaName]: true,
     },
     children,
   }
 
   return {
-    routes: hashRoute,
+    routes: globalRoute,
     addRoutes,
-    registerHashRoutes,
-    resolveHashRoute,
-    prepareHashRoute,
+    registerGlobalRoutes,
+    resolveGlobalRoute,
+    prepareGlobalRoute,
     openModal,
   }
 }

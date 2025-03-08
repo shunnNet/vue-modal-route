@@ -1,9 +1,9 @@
 import { h, resolveComponent, defineComponent, inject } from 'vue'
-import ModalRoute from './ModalRouteView'
+import ModalRouteView from './ModalRouteView'
 
 export default defineComponent({
   components: {
-    ModalRoute,
+    ModalRouteView,
   },
   props: {
     name: {
@@ -13,7 +13,7 @@ export default defineComponent({
   },
   setup(props, { slots }) {
     const RouterView = resolveComponent('RouterView')
-    const inModalHashRoute = inject('ModalHashContext', false)
+    const inGlobalModalRoute = inject('GlobalModalContext', false)
     const inModalQueryRoute = inject('ModalQueryContext', false)
     if (inModalQueryRoute) {
       console.warn('ModalPathView should not be nested in ModalQueryView.')
@@ -25,8 +25,8 @@ export default defineComponent({
         { name: `modal-${props.name}` },
         {
           default: (scope: any) => {
-            return h(ModalRoute, {
-              modalType: inModalHashRoute ? 'hash' : 'path',
+            return h(ModalRouteView, {
+              modalType: inGlobalModalRoute ? 'global' : 'path',
               components: [scope.Component],
             }, slots)
           },

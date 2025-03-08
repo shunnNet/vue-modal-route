@@ -12,12 +12,13 @@ export const createPathRoutes = (
 
   function openModal(name: string, options?: {
     query?: Record<string, any>
-    hash?: string
+    global?: string
     params?: Record<string, any>
   }) {
     return router.push({
       name,
-      ...(options?.hash ? { hash: options.hash } : {}),
+      // TODO
+      // ...(options?.global ? { global: options.global } : {}),
       ...(options?.params ? { params: options.params } : {}),
       ...(options?.query ? { query: options.query } : {}),
     })

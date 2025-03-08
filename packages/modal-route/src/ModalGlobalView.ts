@@ -2,6 +2,7 @@ import { computed, defineComponent, h, inject, provide, resolveComponent } from 
 import { useRoute, viewDepthKey } from 'vue-router'
 import ModalRoute from './ModalRouteView'
 import { useMatchedRoute } from './router'
+import { isGlobalModalRootRoute } from './global'
 export default defineComponent({
   components: {
     ModalRoute,
@@ -14,25 +15,25 @@ export default defineComponent({
   },
   setup(props, { slots }) {
     const routes = useRoute()
-    const hashRouteDepth = computed(() => routes.matched?.findIndex(r => r?.meta?.modalHashRoot === true))
+    const globalModalRootRouteDepth = computed(() => routes.matched?.findIndex(r => isGlobalModalRootRoute(r)))
     const inRouterView = useMatchedRoute()
-    const inModalHashRoute = inject('ModalHashContext', false)
-    if (inModalHashRoute) {
-      console.warn('ModalHashView should not be nested in another ModalHashView, use `ModalPathView` instead')
+    const inGlobalModalRoute = inject('GlobalModalContext', false)
+    if (inGlobalModalRoute) {
+      console.warn('ModalGlobalView should not be nested in another ModalGlobalView, use `ModalPathView` instead')
       return () => null
     }
     if (inRouterView !== null) {
-      console.warn('ModalHashView should not be nested inside router view.')
+      console.warn('ModalGlobalView should not be nested inside router view.')
       return () => null
     }
-    provide(viewDepthKey, hashRouteDepth)
-    provide('ModalHashContext', true)
+    provide(viewDepthKey, globalModalRootRouteDepth)
+    provide('GlobalModalContext', true)
     const RouterView = resolveComponent('RouterView')
 
     // routerView accept route as prop, which will used to get the matched route component
     // when there is no matched route component, it will fallback to use slot content
-    // We need to prevent render other route component after leave hash route
-    // so we pass an empty route when hash route is not matched
+    // We need to prevent render other route component after leave global route
+    // so we pass an empty route when global route is not matched
     const emptyRoute = {
       matched: [],
     }
@@ -41,13 +42,13 @@ export default defineComponent({
       return h(
         RouterView,
         {
-          route: hashRouteDepth.value === -1 ? emptyRoute : null,
+          route: globalModalRootRouteDepth.value === -1 ? emptyRoute : null,
           name: `modal-${props.name}`,
         },
         {
           default: (scope: any) => {
             return h(ModalRoute, {
-              modalType: 'hash',
+              modalType: 'global',
               components: [scope.Component],
             }, slots)
           },
