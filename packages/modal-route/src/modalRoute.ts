@@ -12,7 +12,7 @@ import {
   NavigationFailure,
   RouterHistory,
 } from 'vue-router'
-import { ensureArray, isPlainObject, noop, transformToModalRoute } from './helpers'
+import { ensureArray, isPlainObject, noop, applyModalPrefixToRoutes } from './helpers'
 import { createHashRoutes } from './hash'
 import { useModalHistory } from './history'
 import { createModalStore } from './store'
@@ -47,7 +47,7 @@ export const createModalRoute = (
   const _options = {
     direct: options.direct || false,
     query: ensureArray(options.query as TModalQueryRoute[]),
-    hash: transformToModalRoute(ensureArray(options.hash as TModalHashRoute[])),
+    hash: applyModalPrefixToRoutes(ensureArray(options.hash as TModalHashRoute[])),
   }
 
   const currentRoute = router.currentRoute

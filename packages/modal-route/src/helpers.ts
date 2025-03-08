@@ -81,23 +81,31 @@ export const noop = () => { }
 export const deepClone = (obj: any) => JSON.parse(JSON.stringify(obj))
 
 export const isModalRoute = (route: RouteRecordRaw) => {
-  return route.meta?.modal
+  return route.meta?.modal && route.name
 }
-export const transformToModalRoute = (routes: RouteRecordRaw[], inModalRoute: boolean = false) => {
+/**
+ * Recursively formalize the route views name with prefix "modal-"
+ *
+ * if "it is a modal route" / or "is modal route's child" with components specified.
+ */
+export const applyModalPrefixToRoutes = (routes: RouteRecordRaw[], inModalRoute: boolean = false) => {
   const prefix = 'modal-'
   return routes.map((aRoute) => {
     const result = {
       ...aRoute,
     } as RouteRecordRaw
-    const children = Array.isArray(result.children)
-      ? transformToModalRoute(result.children || [], true)
-      : undefined
-    result.children = children as RouteRecordRaw[]
-    if (
-      !(inModalRoute || (aRoute.meta?.modal && aRoute.name))
-    ) {
+
+    result.children = (
+      Array.isArray(result.children)
+        ? applyModalPrefixToRoutes(result.children, true)
+        : undefined
+    ) as RouteRecordRaw[]
+
+    // Do nothing if it is not modal route or not in modal route
+    if (!inModalRoute && !isModalRoute(result)) {
       return result
     }
+
     if (aRoute.component) {
       result.components = {
         default: aRoute.component,
@@ -105,9 +113,11 @@ export const transformToModalRoute = (routes: RouteRecordRaw[], inModalRoute: bo
       }
       delete result.component
     }
+    // Do nothing if it doesn't have components
     if (!(isPlainObject(result.components) && result.components.default)) {
       return result
     }
+    // Append prefix to the named views
     result.components = Object.keys(result.components).reduce(
       (acc, key) => {
         acc[`${prefix}${key}`] = result.components![key]
