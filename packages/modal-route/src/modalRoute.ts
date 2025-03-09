@@ -2,7 +2,6 @@ import { App, computed, onScopeDispose } from 'vue'
 import { TModalData, TModalGlobalRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TModalType, TOpenModalOptions } from './types'
 import {
   Router,
-  RouteRecordNormalized,
   RouteRecordRaw,
   RouteLocationNormalizedGeneric,
   useRoute,
@@ -57,9 +56,9 @@ export const createModalRoute = (
   const {
     goHistory,
     getNavigationInfo,
-    pushHistory,
-    replaceHistory,
     tagHistory,
+    writeHistory,
+    rewriteFrom,
     getCurrentPosition,
     getPositionByTag,
     initPosition,
@@ -187,11 +186,7 @@ export const createModalRoute = (
     )
     // when direct: true, undefined means use _options.direct
     if (notAllowRoute) {
-      const basePosition = getPositionByTag(notAllowRoute.name as string)
-      if (basePosition !== null) {
-        console.log('go back to base position', basePosition)
-        await goHistory(basePosition - getCurrentPosition(), false)
-      }
+      await goHistory(notAllowRoute.name as string).catch(noop)
       const modal = getModalItem(notAllowRoute.name as string)
       const base = modal.findBase({ params: to.params })
       console.warn(`Not allow open modal ${notAllowRoute.name as string} with directly enter`)
@@ -227,16 +222,6 @@ export const createModalRoute = (
       return false
     }
   })
-  const backToBase = async (name: string, go: boolean = false) => {
-    const basePosition = getPositionByTag(name)
-    if (basePosition !== null) {
-      const backSteps = basePosition - getCurrentPosition()
-      if (backSteps !== 0) {
-        console.log(`go ${backSteps} steps back to base position`, basePosition)
-        return go ? await router.go(backSteps) : await goHistory(backSteps, false)
-      }
-    }
-  }
 
   // close modal and
   // go to other route (e.g: router.push / modal.open)
@@ -276,15 +261,12 @@ export const createModalRoute = (
 
     console.log('closing modal', closingModalName, hasBasePosition)
     if (hasBasePosition) {
-      if (closingModalName) {
-        console.log('is not init navigation, go back to base route', closingModalName)
-        await backToBase(closingModalName, ctx.closeByCloseModal ? true : false)
-      }
-      if (to.name !== from.name) {
-        // Because router.push/openModal will close modal then go to other route, so we need recover the "to" history
-        routerHistory.push(to.fullPath)
-        console.log('recover history', to.fullPath)
-      }
+      console.log('is not init navigation, go back to base route', closingModalName)
+      await rewriteFrom(
+        closingModalName,
+        to.name !== from.name ? [to.fullPath] : [],
+        !!ctx.closeByCloseModal,
+      )
     }
     else {
       // For cases which close modal because go to other page
@@ -312,38 +294,23 @@ export const createModalRoute = (
     if (isSameRoute) {
       return
     }
-    const tagIfRouteModal = (r: RouteRecordNormalized | RouteLocationNormalizedGeneric, position: number) => {
-      if (modalExists(r.name as string)) {
-        tagHistory(r.name as string, position)
-      }
-    }
+
     // Find shared parent route in "to" matched
     // if not found, use all "to" matched routes to pad history
     // e.g 1: A->B->C => A->D
     // e.g 2: X->Y => A->D
     const index = to.matched.findIndex(r => r.name === from.name)
     const steps = to.matched.slice(index + 1).filter(r => !isGlobalModalRootRoute(r))
-
-    if (steps.length === 1) {
-      replaceHistory(to.fullPath)
-      tagIfRouteModal(steps[0], getCurrentPosition() - 1)
-      return
-    }
-    else {
-      const [first, ...rest] = steps
-      rest.pop() // remove the last route because it should be replaced by "to.fullPath" to keep query/global
-      replaceHistory(paramsToPath(first, to.params))
-      tagIfRouteModal(first, getCurrentPosition() - 1)
-
-      rest.forEach((r) => {
-        tagIfRouteModal(r, getCurrentPosition())
-        pushHistory(paramsToPath(r, to.params))
-      })
-      tagIfRouteModal(to, getCurrentPosition())
-      pushHistory(to.fullPath)
-
-      return
-    }
+    writeHistory(
+      steps.map((r) => {
+        return {
+          path: paramsToPath(r, to.params),
+          tag: () => modalExists(r.name as string) && r.name as string,
+          tagOffset: -1,
+        }
+      }),
+      true,
+    )
   }) satisfies TModalNavigationGuardAfterEach
 
   // afterEach guards will not keep the register order when meet "await", its execution order will decided by event loop
@@ -434,7 +401,7 @@ export const createModalRoute = (
     // TODO: This may breaks when leave site, and go back from other site to modal route
     if (hasBasePosition) {
       // normal close and refresh enter
-      await backToBase(name, true)
+      await goHistory(name, true)
     }
     else {
       await padHistoryWhenInitModal(name)
@@ -447,7 +414,6 @@ export const createModalRoute = (
     const closingModal = getModalItem(closingModalName)
     let rootBaseRoute = closingModal.findBase({ params: currentRoute.value.params })
 
-    const baseRoute = rootBaseRoute
     while (rootBaseRoute && rootBaseRoute.meta?.modal) {
       rootBaseRoute = getModalItem(rootBaseRoute.name as string).findBase({ params: currentRoute.value.params })
     }
@@ -462,19 +428,18 @@ export const createModalRoute = (
     if (rootBaseRoute) {
       const matched = currentRoute.value.matched.filter(r => !isGlobalModalRootRoute(r))
       const rootBaseIndex = matched.findIndex(r => r.name === rootBaseRoute.name)
-      const baseIndex = matched.findIndex(r => r.name === baseRoute.name)
       if (rootBaseIndex !== -1) {
-        replaceHistory(rootBaseRoute.path)
-        matched.slice(rootBaseIndex + 1)
-          .filter(r => !isGlobalModalRootRoute(r))
-          .forEach((r) => {
-            const name = r.name as string
-            if (modalExists(name)) tagHistory(name)
-            pushHistory(r.path)
-          })
-
-        console.log(`go ${1 - matched.slice(baseIndex).length} back to base route`, baseRoute.name)
-        router.go(1 - matched.slice(baseIndex).length)
+        writeHistory(
+          [
+            { path: rootBaseRoute.path, stay: true },
+            ...matched.slice(rootBaseIndex + 1).filter(r => !isGlobalModalRootRoute(r))
+              .map(r => ({
+                path: r.path,
+                tag: () => modalExists(r.name as string) ? r.name as string : null,
+                tagOffset: -1,
+              })),
+          ], true,
+        )
       }
       else {
         throw new Error('No modal base route not found')
@@ -482,10 +447,10 @@ export const createModalRoute = (
     }
     else {
       console.log('go back to "/", and pad history to closing modal')
-      replaceHistory('/')
-      pushHistory(currentRoute.value.fullPath)
-      tagHistory(closingModalName)
-      goHistory(-1)
+      writeHistory([
+        '/',
+        { path: currentRoute.value.fullPath, tag: closingModalName, tagOffset: -1 },
+      ], true)
     }
   }
 

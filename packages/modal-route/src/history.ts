@@ -1,9 +1,7 @@
 import { HistoryState, RouteLocationNormalizedGeneric, Router, RouterHistory, START_LOCATION } from 'vue-router'
-import { deepClone, defer, TDefer } from './helpers'
-import { useSessionStorage } from './storage'
+import { useTimemachine } from './timeMachine'
 
 export type TModalHistory = ReturnType<typeof useModalHistory>
-type TvmrtTags = Record<string, string>
 
 // Note: enter the same url as current => position not change => same as refresh
 // enter different url => position + 1 => forward
@@ -18,139 +16,45 @@ export const useModalHistory = (options: {
   const router = _options.router
   const routerHistory = _options.routerHistory
   const getCurrentPosition = () => routerHistory.state.position as number
-
   const initPosition = { value: getCurrentPosition() ?? 0 }
   const position = { value: initPosition.value }
+
   router.afterEach((_to, _from, failure) => {
     if (failure) {
       return
     }
     position.value = getCurrentPosition()
-
-    // TODO: make it no need to do this twice
-    let needSave = false
-    Object.keys(_tags).forEach((key) => {
-      if (parseFloat(key) >= position.value) {
-        delete _tags[key]
-        needSave = true
-      }
-    })
-    Object.keys(tags).forEach((key) => {
-      if (parseFloat(key) >= position.value) {
-        delete tags[key]
-        needSave = true
-      }
-    })
-    if (needSave) {
-      saveTags()
-    }
   })
 
-  window.addEventListener('beforeunload', () => {
-    tags[`${getCurrentPosition()}`] = 'unload'
-    saveTags()
-  })
-  const vmrtStorage = useSessionStorage<TvmrtTags>('vmrt')
-  const { tags, _tags } = initTags()
-  saveTags()
-
-  function initTags() {
-    const _tags: TvmrtTags = vmrtStorage.get() ?? {}
-    let unloadPosition = -1
-    Object.entries(_tags).forEach(([key, value]) => {
-      if (parseFloat(key) >= initPosition.value) {
-        // e.g: unload position, include unload position set by refresh
-        delete _tags[key]
-        return
-      }
-      if (value === 'unload') {
-        // get last unload position
-        unloadPosition = parseFloat(key)
-      }
-    })
-    const tags = Object.fromEntries(
-      Object.entries(deepClone(_tags) as TvmrtTags)
-        .filter(([key]) => parseFloat(key) > unloadPosition),
-    )
-
-    return { tags, _tags }
-  }
-
-  function saveTags() {
-    console.log('save', {
-      ..._tags,
-      ...tags,
-    })
-    vmrtStorage.set({
-      ..._tags,
-      ...tags,
-    })
-  }
-  const tagHistory = (name: string, position: number = getCurrentPosition()) => {
-    tags[`${position}`] = name
-    routerHistory.replace(
-      routerHistory.location,
-      { ...routerHistory.state, vmrTag: name },
-    )
-    saveTags()
-  }
-  // get most last position has tag name
-  const getPositionByTag = (name: string) => {
-    for (const [key, value] of Object.entries(tags).reverse()) {
-      if (value === name) {
-        return parseFloat(key)
-      }
-    }
-    return null
-  }
+  const push = routerHistory.push
+  const replace = routerHistory.replace
 
   const pushHistory: RouterHistory['push'] = (to: string, data?: HistoryState) => {
-    const r = routerHistory.push(to, data)
-    position.value = getCurrentPosition()
-    console.log('push', to, position.value)
+    const r = push(to, data)
+    position.value = position.value + 1
+    // console.log('push', to, position.value)
     return r
   }
   const replaceHistory: RouterHistory['replace'] = (to: string, data?: HistoryState) => {
-    const r = routerHistory.replace(to, data)
+    const r = replace(to, data)
     position.value = getCurrentPosition()
-    console.log('replace', to, position.value)
+    // console.log('replace', to, position.value)
     return r
   }
 
-  let _goPromise: null | TDefer<PopStateEvent['state']> = null
-  window.addEventListener('popstate', (e) => {
-    // console.log('popstate', e.state)
-    if (_goPromise) {
-      _goPromise._resolve(e.state)
-      _goPromise = null
-    }
-  })
-  const goHistory = (deltaOrTag: number | string, triggerListener: boolean = false) => {
-    let delta = 0
-    if (typeof deltaOrTag === 'number') {
-      delta = deltaOrTag
-    }
-    else if (typeof deltaOrTag === 'string') {
-      const p = getPositionByTag(deltaOrTag)
-      if (p !== null) {
-        delta = p - getCurrentPosition()
-      }
-      else {
-        return Promise.reject(new Error(`History tag ${deltaOrTag} not found.`))
-      }
-    }
-    else {
-      return Promise.reject(new Error('Invalid argument type.'))
-    }
+  routerHistory.push = pushHistory
+  routerHistory.replace = replaceHistory
 
-    _goPromise = defer()
-    console.log('go', delta, triggerListener)
-    routerHistory.go(delta, triggerListener)
-    _goPromise.then(() => {
-      position.value = getCurrentPosition()
-    })
-    return _goPromise
-  }
+  const {
+    goHistory,
+    tagHistory,
+    getPositionByTag,
+    write,
+    rewriteFrom,
+  } = useTimemachine(routerHistory,
+    // push: pushHistory,
+    // replace: replaceHistory,
+  )
 
   const getNavigationInfo = (
     _: RouteLocationNormalizedGeneric,
@@ -186,6 +90,8 @@ export const useModalHistory = (options: {
     tagHistory,
     getCurrentPosition,
     getPositionByTag,
+    writeHistory: write,
+    rewriteFrom,
     initPosition: initPosition.value,
   }
 }
