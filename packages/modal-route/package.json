@@ -36,7 +36,7 @@
     "vue-router": "^4"
   },
   "devDependencies": {
-    "unbuild": "^2.0.0"
+    "unbuild": "^3.5.0"
   },
   "files": [
     "dist"

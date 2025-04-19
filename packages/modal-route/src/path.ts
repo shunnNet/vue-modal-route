@@ -30,6 +30,8 @@ export const createPathRoutes = (
       return modalRoute.matched[selfIndex - 1]
     }
     else if (selfIndex === 0) {
+      // TODO: try back to "/" when "/user" (decrease 1 segment)
+      // This will occur when not nested routes
       return null
     }
     else {

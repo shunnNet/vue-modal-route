@@ -5,10 +5,8 @@ import { QueryModalA } from '~/modals'
 
 const { openModal, closeModal } = useModalRoute()
 
-const visible = defineModel({
-  type: Boolean,
-  default: false,
-})
+const visible = defineModel<boolean>()
+
 defineProps({
   message: {
     type: String,
@@ -16,12 +14,9 @@ defineProps({
   },
 })
 defineEmits(['return', 'message'])
-const onOpenHashModal = () => {
-  openModal('ModalHashA', {
-    // Hash should be ignore
-    hash: '#hash',
-  }).then((v) => {
-    console.log('ModalHashA return', v)
+const onOpenGlobalModal = () => {
+  openModal('ModalGlobalA').then((v) => {
+    console.log('ModalGlobalA return', v)
   })
 }
 const { open: openQueryModalA } = QueryModalA.use()
@@ -79,7 +74,7 @@ const onOpenQueryModal = () => {
       <ElButton
         type="warning"
         icon="close"
-        @click="closeModal('ModalPageSingleA')"
+        @click="closeModal('modal-a')"
       >
         Close with closeModal
       </ElButton>
@@ -92,9 +87,9 @@ const onOpenQueryModal = () => {
       </ElButton>
       <ElButton
         type="primary"
-        @click="onOpenHashModal"
+        @click="onOpenGlobalModal"
       >
-        OpenHashModal
+        OpenGlobalModal
       </ElButton>
       <ElButton
         type="primary"

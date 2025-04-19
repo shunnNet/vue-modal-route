@@ -32,11 +32,11 @@ const { open, unlock } = setupModal('PagePrepareModalC', {
   manual: true,
 
   // TODO: has bug when not allow open (the tag is not corrent)
-  validate(data) {
-    // Not allow pass any data
-    // TODO: click danger button twice will open modal route
-    return !data
-  },
+  // validate(data) {
+  //   // Not allow pass any data
+  //   // TODO: click danger button twice will open modal route
+  //   return !data
+  // },
   props: modalProps,
 })
 

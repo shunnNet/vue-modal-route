@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ModalHashView, ModalQueryView, useModalRoute} from '@vmr/vue-modal-route'
+import { ModalGlobalView, ModalQueryView, useModalRoute, ModalPathView} from '@vmr/vue-modal-route'
 import { ElButton } from 'element-plus'
 import { QueryModalA } from './modals'
 
@@ -23,10 +23,10 @@ const navs = [
 ]
 
 const { openModal } = useModalRoute()
-const onOpenHashModal = () => {
-  openModal('ModalHashA', {
+const onOpenGlobalModal = () => {
+  openModal('ModalGlobalA', {
     // Hash should be ignore
-    hash: '#hash',
+    // hash: '#hash',
   }).then((v) => {
     console.log('ModalHashA return', v)
   })
@@ -38,7 +38,7 @@ const onOpenQueryModal = () => {
     // Query should be append
     query: { additionQuery: 'query1' },
     // Hash should be ignore
-    hash: '#hash',
+    // hash: '#hash',
   }).then((v) => {
     console.log('ModalQueryA return', v)
   })
@@ -56,7 +56,8 @@ QueryModalA.setup({
 //   },
 // })
 
-console.log('app setup')
+// const { open: openModalTest } = ModalTest.use()
+
 // useModal()
 </script>
 <template>
@@ -72,9 +73,9 @@ console.log('app setup')
       </RouterLink>
       <ElButton
         type="primary"
-        @click="onOpenHashModal"
+        @click="onOpenGlobalModal"
       >
-        OpenHashModal
+        OpenGlobalModal
       </ElButton>
       <ElButton
         type="primary"
@@ -87,8 +88,9 @@ console.log('app setup')
       <RouterView />
     </div>
   </div>
-  <ModalHashView />
+  <ModalGlobalView />
   <ModalQueryView />
+  <ModalPathView />
 </template>
 <style>
 :root {

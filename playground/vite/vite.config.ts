@@ -1,16 +1,11 @@
-// import { configDefaults } from 'vitest/config'
-import UnoCSS from 'unocss/vite'
-import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import UnoCSS from 'unocss/vite'
+import { resolve } from 'node:path'
 
-// https://vitejs.dev/config/
-// https://vitejs.dev/guide/build.html#library-mode
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    vue(),
-    UnoCSS(),
-  ],
+  plugins: [vue(), UnoCSS()],
   define: {
     // enable hydration mismatch details in production build
     __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: 'true',

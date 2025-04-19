@@ -3,7 +3,7 @@ import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import zhTw from 'element-plus/es/locale/lang/zh-tw'
-import { Plugin } from 'vue'
+import type { Plugin } from 'vue'
 
 export default {
   install(app) {

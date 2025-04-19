@@ -31,6 +31,9 @@ const insertMessage = ref('Message from slot')
       <template #ModalPageSingleA-header>
         <span> header slot inserted from parent </span>
       </template>
+      <template #ModalTest-custom="{ custom }">
+        <div>custom message: {{ custom }}</div>
+      </template>
     </ModalPathView>
   </div>
 </template>

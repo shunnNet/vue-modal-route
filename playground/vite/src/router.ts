@@ -1,8 +1,9 @@
-import { createModalRoute, transformToModalRoute } from '@vmr/vue-modal-route'
-import { ModalA, ModalB, QueryModalA } from './modals'
+import { createModalRoute, applyModalPrefixToRoutes } from '@vmr/vue-modal-route'
+import { ModalA, ModalB, ModalTest, QueryModalA } from './modals'
 import { createRouter, createWebHistory } from 'vue-router'
 
-const routes = transformToModalRoute([
+const routes = applyModalPrefixToRoutes([
+
   {
     name: 'PageSingleModal',
     path: '/',
@@ -16,6 +17,26 @@ const routes = transformToModalRoute([
           component: () => import('./pages/page-single-modal/ModalB/child.vue'),
         },
       ]),
+      {
+        name: 'ModalTest',
+        path: 'modal-test/:foo',
+        component: () => import('./pages/ModalTest.vue'),
+        meta: {
+          modal: true,
+        },
+        children: [
+          {
+            name: "ModalTestChild",
+            path: 'test',
+            component: () => import('./pages/PageTest.vue'),
+          },
+          {
+            name: "ModalTestChild2",
+            path: 'test2',
+            component: () => import('./pages/PageTest2.vue'),
+          }
+        ]
+      },
     ],
   },
   {
@@ -92,11 +113,11 @@ export const router = createRouter({
 export const modalRoute = createModalRoute({
   router,
   history,
-  hash: [
+  global: [
     {
-      name: 'ModalHashA',
-      path: 'modal-hash-a',
-      component: () => import('~/components/ModalHashA.vue'),
+      name: 'ModalGlobalA',
+      path: 'modal-global-a',
+      component: () => import('~/components/ModalGlobalA.vue'),
       meta: {
         modal: true,
         direct: true,

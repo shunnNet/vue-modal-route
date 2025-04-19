@@ -1,4 +1,4 @@
-import { defineModalRoute, defineModalRouteQuery } from '@vmr/vue-modal-route'
+import { defineModalRoute, defineModalQueryRoute } from '@vmr/vue-modal-route'
 import ModalQueryA from './components/ModalQueryA.vue'
 
 export const ModalA = defineModalRoute<string>(
@@ -17,7 +17,12 @@ export const CrossModalA = defineModalRoute(
   () => import('./pages/cross-page/ModalA.vue'),
 )
 
-export const QueryModalA = defineModalRouteQuery(
+export const QueryModalA = defineModalQueryRoute(
   'query-modal-a',
   ModalQueryA,
+)
+
+export const ModalTest = defineModalRoute(
+  'modal-test',
+  () => import('./pages/ModalTest.vue'),
 )

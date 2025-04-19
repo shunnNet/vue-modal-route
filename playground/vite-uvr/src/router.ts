@@ -1,12 +1,13 @@
-import { createWebHistory, createRouter }  from "vue-router";
+import { createWebHistory, createRouter } from "vue-router";
 import { routes, handleHotUpdate } from "vue-router/auto-routes"
-import { transformToModalRoute, createModalRoute }  from "@vmr/vue-modal-route"
+import { applyModalPrefixToRoutes, createModalRoute } from "@vmr/vue-modal-route"
+import { ModalHashA } from "./components/HighlightText.vue"
 
 const history = createWebHistory()
 console.log(routes);
 export const router = createRouter({
   history,
-  routes: transformToModalRoute(routes),
+  routes: applyModalPrefixToRoutes(routes),
 })
 
 

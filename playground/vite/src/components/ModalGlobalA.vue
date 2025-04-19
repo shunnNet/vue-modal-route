@@ -42,7 +42,7 @@ const { openModal } = useModalRoute()
       </ElButton>
       <ElButton
         type="primary"
-        @click="openModal('ModalQueryA',{
+        @click="openModal('query-modal-a',{
           data: { message: 'Message from ModalHashA' },
         })"
       >

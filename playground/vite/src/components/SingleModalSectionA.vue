@@ -15,6 +15,7 @@ import { ModalA } from '~/modals'
 const router = useRouter()
 
 const { openModal, closeModal } = useModalRoute()
+
 const onAClick = async () => {
   const returnValue = await openModal('modal-a')
   ElMessage.success(`ModalPageSingleA return value: "${returnValue}"`)
@@ -68,6 +69,35 @@ const onCloseWithFailCase = async (name: string) => {
 const ModalAReturn = useModalReturnValue<any>('modal-a')
 const ModalAActive = useModalActive('modal-a')
 
+const { open: _openModalTest } = setupModal('ModalTest', {
+  props: {
+    message: 'bar',
+  },
+  slots: {
+    // custom: ({ custom }: { custom: string }) => h(HighlightText, { message: `(${custom}) This Slot passed from useModal. Should override the slot passed from template` }),
+    // () => h('div', 'This Slot passed from useModal. Should override the slot passed from template'),
+  },
+
+})
+const openModalTest = () => {
+  _openModalTest({
+    data: {
+      message: 'data from `openModal`',
+    },
+    params: {
+      foo: 'bar',
+    },
+  }).then((value) => {
+    ElMessage.success(`ModalTest return value: "${value}"`)
+  })
+}
+const openModalTestChild = () => {
+  openModal('ModalTestChild', {
+    params: {
+      foo: 'bar',
+    },
+  })
+}
 </script>
 <template>
   <PageSection
@@ -87,6 +117,19 @@ const ModalAActive = useModalActive('modal-a')
         </ElButton>
       </div>
     </Teleport>
+    <ElButton
+      type="success"
+      @click="openModalTest"
+    >
+      Open ModalTest
+    </ElButton>
+    <ElButton
+      type="success"
+      @click="openModalTestChild"
+    >
+      Open openModalTestChild
+    </ElButton>
+
     <ElButton
       type="primary"
       @click="onAClick"
