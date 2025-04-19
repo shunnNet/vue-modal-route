@@ -7,6 +7,8 @@ import {
   useRoute,
   NavigationFailure,
   RouterHistory,
+  createRouter,
+  createWebHistory,
 } from 'vue-router'
 import { ensureArray, isPlainObject, noop, applyModalPrefixToRoutes } from './helpers'
 import { createGlobalRoutes, isGlobalModalRootRoute } from './global'
@@ -17,6 +19,7 @@ import { createPathRoutes } from './path'
 import { createContext } from './context'
 import { createContext as createVueContext } from '@vue-use-x/common'
 import { useMatchedRoute, useRouterUtils } from './router'
+import type { RouterOptions } from 'vue-router'
 
 type TModalNavigationGuardAfterEach = (context: {
   to: RouteLocationNormalizedGeneric
@@ -30,16 +33,21 @@ type TModalNavigationGuardAfterEach = (context: {
 export const modalRouteContext = createVueContext<TModalRouteContext>()
 
 export const createModalRoute = (
-  options: Partial<{
-    query: TModalQueryRoute[]
-    global: TModalGlobalRoute[]
-    direct: boolean
-  }> & {
-    router: Router
-    history: RouterHistory
+  options: {
+    query?: TModalQueryRoute[]
+    global?: TModalGlobalRoute[]
+    direct?: boolean
+    routes: RouteRecordRaw[]
+    routerOptions?: Omit<RouterOptions, 'routes' | 'history'>
   },
 ) => {
-  const { router, history: routerHistory } = options
+  const routes = applyModalPrefixToRoutes(options.routes)
+  const routerHistory = createWebHistory()
+  const router = createRouter({
+    routes,
+    history: routerHistory,
+    ...options.routerOptions,
+  })
 
   const _options = {
     direct: options.direct || false,
@@ -483,8 +491,10 @@ export const createModalRoute = (
   } satisfies TModalRouteContext
 
   return {
+    ...router,
     install(app: App) {
       modalRouteContext.provideByApp(app, _ctx)
+      app.use(router)
     },
   } as Router
 }
