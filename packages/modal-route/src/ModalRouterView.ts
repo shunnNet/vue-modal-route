@@ -1,10 +1,14 @@
-import { defineComponent, h } from 'vue'
-import { RouterView } from 'vue-router'
+import { h, resolveComponent, defineComponent } from 'vue'
+import ModalRouteView from './ModalRouteView'
+import { globalModalContext } from './ModalGlobalView'
+import { modalQueryContext } from './ModalQueryView'
+import { useNextRoute } from './router'
+import { isModalRouteNormalized } from './helpers'
 
-/**
- * Component to display the current route the user is at.
- */
 export default defineComponent({
+  components: {
+    ModalRouteView,
+  },
   props: {
     name: {
       type: String,
@@ -12,13 +16,33 @@ export default defineComponent({
     },
   },
   setup(props, { slots }) {
+    const inModalQueryRoute = modalQueryContext.inject(false)
+    if (inModalQueryRoute) {
+      console.warn('ModalRouterView should not be nested in ModalQueryView.')
+      return () => null
+    }
+
+    const { nextRoute } = useNextRoute()
+
+    const RouterView = resolveComponent('RouterView')
+    const inGlobalModalRoute = globalModalContext.inject(false)
+
     return () => {
+      const children = nextRoute.value && isModalRouteNormalized(nextRoute.value)
+        ? {
+            default: (scope: any) => {
+              return h(ModalRouteView, {
+                modalType: inGlobalModalRoute ? 'global' : 'path',
+                components: [scope.Component],
+              }, slots)
+            },
+          }
+        : slots
       return h(
         RouterView,
         { name: `modal-${props.name}` },
-        typeof slots.default === 'function'
-          ? { default: (scope: any) => slots?.default?.(scope) || null }
-          : undefined)
+        children,
+      )
     }
   },
 })

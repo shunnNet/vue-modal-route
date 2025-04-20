@@ -1,4 +1,4 @@
-import { RouteRecordRaw } from 'vue-router'
+import { RouteRecordNormalized, RouteRecordRaw } from 'vue-router'
 
 export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -82,6 +82,34 @@ export const deepClone = (obj: any) => JSON.parse(JSON.stringify(obj))
 
 export const isModalRoute = (route: RouteRecordRaw) => {
   return route.meta?.modal && route.name
+}
+
+type ModalRouteRecordRaw = RouteRecordRaw & {
+  name: string
+  meta: {
+    modal: boolean
+  }
+  components: { 'modal-default': any }
+}
+
+type ModalRouteRecordNormalized = RouteRecordNormalized & {
+  name: string
+  meta: {
+    modal: boolean
+  }
+  components: { 'modal-default': any }
+}
+
+export const isModalRouteRaw = (route: RouteRecordRaw): route is ModalRouteRecordRaw => {
+  return typeof route.name === 'string'
+    && !!route.meta?.modal
+    && !!route.components?.['modal-default']
+}
+
+export const isModalRouteNormalized = (route: RouteRecordNormalized): route is ModalRouteRecordNormalized => {
+  return typeof route.name === 'string'
+    && !!route.meta?.modal
+    && !!route.components?.['modal-default']
 }
 /**
  * Recursively formalize the route views name with prefix "modal-"

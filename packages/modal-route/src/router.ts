@@ -1,5 +1,5 @@
-import { inject } from 'vue'
-import { createRouterMatcher, matchedRouteKey, RouteLocationNormalizedGeneric, RouteParamsGeneric, Router, RouteRecordNormalized } from 'vue-router'
+import { computed, inject, unref } from 'vue'
+import { createRouterMatcher, matchedRouteKey, RouteLocationMatched, RouteLocationNormalizedGeneric, RouteParamsGeneric, Router, RouteRecordNormalized, useRoute, viewDepthKey } from 'vue-router'
 
 export function useRouterUtils(router: Router) {
   const routerMatcher = createRouterMatcher(router.getRoutes(), router.options)
@@ -17,4 +17,32 @@ export function useRouterUtils(router: Router) {
 
 export function useMatchedRoute() {
   return inject(matchedRouteKey, null)
+}
+
+export function useNextRoute() {
+  const route = useRoute()
+  const injectedDepth = inject(viewDepthKey, 0)
+
+  // From vue-router v4
+  const depthNext = computed<number>(() => {
+    let initialDepth = unref(injectedDepth)
+    const { matched } = route
+    let matchedRoute: RouteLocationMatched | undefined
+    while (
+      (matchedRoute = matched[initialDepth])
+      && !matchedRoute.components
+    ) {
+      initialDepth++
+    }
+    return initialDepth
+  })
+  const nextRoute = computed(() => {
+    const { matched } = route
+    return matched[depthNext.value]
+  })
+
+  return {
+    depthNext,
+    nextRoute,
+  }
 }

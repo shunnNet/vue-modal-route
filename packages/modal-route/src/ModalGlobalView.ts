@@ -23,7 +23,7 @@ export default defineComponent({
 
     const inGlobalModalRoute = globalModalContext.inject()
     if (inGlobalModalRoute) {
-      console.warn('ModalGlobalView should not be nested in another ModalGlobalView, use `ModalPathView` instead')
+      console.warn('ModalGlobalView should not be nested in another ModalGlobalView, use `ModalRouterView` instead')
       return () => null
     }
 
