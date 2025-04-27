@@ -1,5 +1,5 @@
 import { Router, RouteRecordRaw } from 'vue-router'
-import { TModalGlobalRoute } from './types'
+import { TModalRouteRecordRaw } from './types'
 import { createModalStore } from './store'
 
 const rootMetaName = 'globalModalRoot'
@@ -13,7 +13,7 @@ export const createGlobalRoutes = (
   store: ReturnType<typeof createModalStore>,
   router: Router,
 ) => {
-  const children: TModalGlobalRoute[] = []
+  const children: TModalRouteRecordRaw[] = []
   const currentRoute = router.currentRoute
   let globalRootBaseName = ''
 

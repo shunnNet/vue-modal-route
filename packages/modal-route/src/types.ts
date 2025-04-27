@@ -56,7 +56,7 @@ export type TModalRouteContext = {
   getModalItem: (name: string) => TModalMapItem
   _setupModal: (name: string, options?: TModalMapItem['options']) => void
   _unsetModal: (name: string) => void
-  queryRoutes: TModalQueryRoute[]
+  queryRoutes: TModalQueryRouteRecord[]
   // FIXME: my type is not concise
   openModal: (name: string, options?: Partial<TOpenModalOptions>) => Promise<any>
   closeModal: (name: string) => void
@@ -72,9 +72,8 @@ export type TModalRouteContext = {
 
 export type TModalData = Record<string, any>
 
-export type TModalPathRoute = RouteRecordRaw & { name: string }
-export type TModalGlobalRoute = RouteRecordRaw & { name: string }
-export type TModalQueryRoute = { name: string, component: Component, meta?: Record<string, any> }
+export type TModalRouteRecordRaw = RouteRecordRaw & { name: string }
+export type TModalQueryRouteRecord = { name: string, component: Component, meta?: Record<string, any> }
 
 export type TComponent = VNode<RendererNode, RendererElement, {
   [key: string]: any

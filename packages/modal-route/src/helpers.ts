@@ -12,7 +12,7 @@ export const isPlainObject = (value: unknown): value is Record<string, any> => {
  * @param v - The value to check.
  * @returns True if the value is null or undefined, false otherwise.
  */
-export const isNullish = (v: any) => v === null || v === undefined
+export const isNullish = (v: any): v is null | undefined => v === null || v === undefined
 
 /**
  * Ensures that the input value is converted to an array.
@@ -23,7 +23,7 @@ export const isNullish = (v: any) => v === null || v === undefined
  * @param v - The value to ensure as an array.
  * @returns An array containing the input value or a wrapped version of it.
  */
-export const ensureArray = <T>(v: T | T[]) => isNullish(v) ? [] : Array.isArray(v) ? v : [v]
+export const ensureArray = <T>(v: T | T[] | undefined | null) => isNullish(v) ? [] as T[] : Array.isArray(v) ? v : [v]
 
 export type TDefer<T = any> = Promise<T> & {
   _resolve: (value: T) => void
@@ -80,10 +80,6 @@ export const noop = () => { }
 
 export const deepClone = (obj: any) => JSON.parse(JSON.stringify(obj))
 
-export const isModalRoute = (route: RouteRecordRaw) => {
-  return route.meta?.modal && route.name
-}
-
 type ModalRouteRecordRaw = RouteRecordRaw & {
   name: string
   meta: {
@@ -100,39 +96,49 @@ type ModalRouteRecordNormalized = RouteRecordNormalized & {
   components: { 'modal-default': any }
 }
 
-export const isModalRouteRaw = (route: RouteRecordRaw): route is ModalRouteRecordRaw => {
-  return typeof route.name === 'string'
-    && !!route.meta?.modal
+export const shouldBeModalRouteRecord = (route: RouteRecordRaw) => {
+  return !!route.meta?.modal && typeof route.name === 'string'
+}
+
+export const isModalRouteRecordRawNormalized = (route: RouteRecordRaw): route is ModalRouteRecordRaw => {
+  return shouldBeModalRouteRecord(route)
     && !!route.components?.['modal-default']
 }
 
-export const isModalRouteNormalized = (route: RouteRecordNormalized): route is ModalRouteRecordNormalized => {
-  return typeof route.name === 'string'
-    && !!route.meta?.modal
+export const isModalRouteRecordNormalized = (route: RouteRecordNormalized): route is ModalRouteRecordNormalized => {
+  return shouldBeModalRouteRecord(route)
     && !!route.components?.['modal-default']
 }
 /**
+ * @Internal
+ *
  * Recursively formalize the route views name with prefix "modal-"
  *
- * if "it is a modal route" / or "is modal route's child" with components specified.
+ * when "modal route" or "route in modal route"
+ *
+ * Can optionally customize route record when it is modal route (by directly modifying the route record).
  */
-export const applyModalPrefixToRoutes = (routes: RouteRecordRaw[], inModalRoute: boolean = false) => {
+export const formalizeRouteRecords = (
+  routes: RouteRecordRaw[],
+  inModalRoute: boolean = false,
+  customize?: (route: RouteRecordRaw) => void,
+): RouteRecordRaw[] => {
   const prefix = 'modal-'
+
   return routes.map((aRoute) => {
+    // Children may be modal route even if the parent route is not.
+    if (Array.isArray(aRoute.children)) {
+      aRoute.children = formalizeRouteRecords(aRoute.children, true)
+    }
+
+    // Do nothing if it is not modal route or not in modal route
+    if (!inModalRoute && !shouldBeModalRouteRecord(aRoute)) {
+      return aRoute
+    }
+
     const result = {
       ...aRoute,
     } as RouteRecordRaw
-
-    result.children = (
-      Array.isArray(result.children)
-        ? applyModalPrefixToRoutes(result.children, true)
-        : undefined
-    ) as RouteRecordRaw[]
-
-    // Do nothing if it is not modal route or not in modal route
-    if (!inModalRoute && !isModalRoute(result)) {
-      return result
-    }
 
     if (aRoute.component) {
       result.components = {
@@ -153,6 +159,10 @@ export const applyModalPrefixToRoutes = (routes: RouteRecordRaw[], inModalRoute:
       },
       {} as Record<string, NonNullable<RouteRecordRaw['component']>>,
     )
+
+    if (typeof customize === 'function') {
+      customize(result)
+    }
 
     return result
   })

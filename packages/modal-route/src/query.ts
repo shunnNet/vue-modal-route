@@ -1,5 +1,5 @@
 import { defineAsyncComponent, markRaw } from 'vue'
-import { TModalQueryRoute } from './types'
+import { TModalQueryRouteRecord } from './types'
 import { createModalStore } from './store'
 import { ensureArray } from './helpers'
 import { Router } from 'vue-router'
@@ -8,7 +8,7 @@ export const createQueryRoutes = (
   store: ReturnType<typeof createModalStore>,
   router: Router,
 ) => {
-  const _routes: TModalQueryRoute[] = []
+  const _routes: TModalQueryRouteRecord[] = []
   const currentRoute = router.currentRoute
   const mqprefix = 'm-'
   const mQName = (name: string) => `${mqprefix}${name}`
@@ -16,7 +16,7 @@ export const createQueryRoutes = (
   // const isMQuery = (name: string) => name.startsWith(mqprefix)
   const getNameFromMQuery = (name: string) => name.startsWith(mqprefix) ? name.slice(mqprefix.length) : ''
 
-  function registerQueryRoutes(routeOrRouteList: TModalQueryRoute | TModalQueryRoute[]) {
+  function registerQueryRoutes(routeOrRouteList: TModalQueryRouteRecord | TModalQueryRouteRecord[]) {
     const routes = ensureArray(routeOrRouteList)
     routes.forEach((aRoute) => {
       if (!aRoute.name) {
@@ -34,7 +34,7 @@ export const createQueryRoutes = (
     return routes
   }
 
-  const addRoutes = (newRoutes: TModalQueryRoute[]) => {
+  const addRoutes = (newRoutes: TModalQueryRouteRecord[]) => {
     newRoutes.forEach((aRoute) => {
       aRoute.component = markRaw(
         typeof aRoute.component === 'function'

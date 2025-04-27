@@ -3,7 +3,7 @@ import ModalRouteView from './ModalRouteView'
 import { globalModalContext } from './ModalGlobalView'
 import { modalQueryContext } from './ModalQueryView'
 import { useNextRoute } from './router'
-import { isModalRouteNormalized } from './helpers'
+import { isModalRouteRecordNormalized } from './helpers'
 
 export default defineComponent({
   components: {
@@ -28,7 +28,7 @@ export default defineComponent({
     const inGlobalModalRoute = globalModalContext.inject(false)
 
     return () => {
-      const children = nextRoute.value && isModalRouteNormalized(nextRoute.value)
+      const children = nextRoute.value && isModalRouteRecordNormalized(nextRoute.value)
         ? {
             default: (scope: any) => {
               return h(ModalRouteView, {

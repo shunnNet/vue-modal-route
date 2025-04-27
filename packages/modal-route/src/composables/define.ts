@@ -1,5 +1,5 @@
 import { RouteRecordRaw } from 'vue-router'
-import { TModalMapItem, TModalQueryRoute } from '../types'
+import { TModalMapItem, TModalQueryRouteRecord } from '../types'
 import { setupModal, useModal } from '../modalRoute'
 
 /**
@@ -55,7 +55,7 @@ export const defineModalRoute = <ReturnValue = any>(
  */
 export const defineModalQueryRoute = <ReturnValue = any>(
   path: string,
-  component: TModalQueryRoute['component'],
+  component: TModalQueryRouteRecord['component'],
 ) => {
   const name = path
   return {
