@@ -1,4 +1,4 @@
-import { defineComponent, h, PropType, watch, computed, reactive, ref, toValue } from 'vue'
+import { defineComponent, h, PropType, watch, computed, reactive, ref, toValue, provide, toRefs, InjectionKey, Ref, ComputedRef } from 'vue'
 import { isPlainObject } from './helpers'
 import { modalRouteContext, useModalRoute } from './modalRoute'
 import { TComponent, TModalType } from './types'
@@ -171,8 +171,7 @@ export default defineComponent({
           }),
         )
         const modal = componentMap[name]
-        return h(_component, {
-          ...modal.props,
+        return h(modalProvider, {
           'modelValue': modal.visible,
           'onUpdate:modelValue': (value: boolean) => modal.visible = value,
           'loading': modal.loading,
@@ -180,8 +179,58 @@ export default defineComponent({
             setModalReturnValue(name, $event)
             closeModal(name)
           },
-        }, Object.assign(_slots, modal.slots))
+          'modalName': name,
+        }, {
+          default: () => h(
+            _component,
+            modal.props,
+            Object.assign(_slots, modal.slots),
+          ),
+        })
       })
     }
+  },
+})
+
+export const ModalRouteViewKey: InjectionKey<{
+  modelValue: Ref<boolean>
+  loading: Ref<boolean>
+  closeThenReturn: (value: any) => void
+  name: ComputedRef<string>
+}> = Symbol('modal-route-view')
+
+const modalProvider = defineComponent({
+  props: {
+    modelValue: {
+      type: Boolean,
+      required: true,
+    },
+    loading: {
+      type: Boolean,
+      required: true,
+    },
+    modalName: {
+      type: String,
+      required: true,
+    },
+  },
+  emits: ['return', 'update:modelValue'],
+  setup(props, { slots, emit }) {
+    const { modelValue, loading } = toRefs(props)
+    const closeThenReturn = (value: unknown) => {
+      emit('return', value)
+      emit('update:modelValue', false)
+    }
+    const visible = computed({
+      get: () => modelValue.value,
+      set: value => emit('update:modelValue', value),
+    })
+    provide(ModalRouteViewKey, {
+      modelValue: visible,
+      loading,
+      closeThenReturn,
+      name: computed(() => props.modalName),
+    })
+    return () => slots.default?.()
   },
 })

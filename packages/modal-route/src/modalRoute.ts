@@ -1,4 +1,4 @@
-import { App, computed, onScopeDispose } from 'vue'
+import { App, Component, computed, inject, markRaw, onScopeDispose } from 'vue'
 import { TModalData, TModalGlobalRoute, TModalMapItem, TModalQueryRoute, TModalRouteContext, TModalType, TOpenModalOptions } from './types'
 import {
   Router,
@@ -6,7 +6,6 @@ import {
   RouteLocationNormalizedGeneric,
   useRoute,
   NavigationFailure,
-  RouterHistory,
   createRouter,
   createWebHistory,
 } from 'vue-router'
@@ -19,7 +18,8 @@ import { createPathRoutes } from './path'
 import { createContext } from './context'
 import { createContext as createVueContext } from '@vue-use-x/common'
 import { useMatchedRoute, useRouterUtils } from './router'
-import type { RouterOptions } from 'vue-router'
+import type { RouterHistory, RouterOptions } from 'vue-router'
+import { ModalRouteViewKey } from './ModalRouteView'
 
 type TModalNavigationGuardAfterEach = (context: {
   to: RouteLocationNormalizedGeneric
@@ -32,6 +32,8 @@ type TModalNavigationGuardAfterEach = (context: {
 
 export const modalRouteContext = createVueContext<TModalRouteContext>()
 
+export const modalLayoutContext = createVueContext<Record<string, Component>>()
+
 export const createModalRoute = (
   options: {
     query?: TModalQueryRoute[]
@@ -39,6 +41,7 @@ export const createModalRoute = (
     direct?: boolean
     routes: RouteRecordRaw[]
     routerOptions?: Omit<RouterOptions, 'routes' | 'history'>
+    layout?: Record<string, Component>
   },
 ) => {
   const routes = applyModalPrefixToRoutes(options.routes)
@@ -470,6 +473,27 @@ export const createModalRoute = (
     }
     return modal.isActive(name)
   }
+  if (options.layout) {
+    for (const name in options.layout) {
+      const comp = options.layout[name]
+      /**
+       * (Note, maybe need more consideration)
+       *
+       * Support defineAsyncComponent and normal component.
+       *
+       * If user want to use async modal component with loading control,
+       *
+       * they can use `defineAsyncComponent` in modal layout component instead.
+       *
+       * We do not support dynamic import like vue-router does.
+       *
+       * Because we don't need to interact with navigation guard currently.
+       *
+       * https://github.com/vuejs/router/issues/1469
+       * */
+      options.layout[name] = markRaw(comp)
+    }
+  }
 
   const _ctx = {
     store: modalMap,
@@ -488,6 +512,7 @@ export const createModalRoute = (
     setModalReturnValue,
     getRelatedModalsByRouteName,
     queryRoutes,
+    layouts: options.layout ?? {},
   } satisfies TModalRouteContext
 
   return {
@@ -918,6 +943,7 @@ export const createNuxtModalRoute = (
     setModalReturnValue,
     getRelatedModalsByRouteName,
     queryRoutes,
+    layouts: {},
   } satisfies TModalRouteContext
 
   return {
@@ -925,4 +951,18 @@ export const createNuxtModalRoute = (
       modalRouteContext.provideByApp(app, _ctx)
     },
   } as Router
+}
+
+export function useCurrentModal<ReturnValue = unknown>() {
+  const routeView = inject(ModalRouteViewKey)!
+  const modal = useModal<ReturnValue>(routeView.name.value)
+  const closeThenReturn = <R extends ReturnValue>(value: R) => {
+    routeView.closeThenReturn(value)
+  }
+  return {
+    ...modal,
+    modelValue: routeView.modelValue,
+    loading: routeView.loading,
+    closeThenReturn,
+  }
 }

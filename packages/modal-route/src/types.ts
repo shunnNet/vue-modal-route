@@ -67,6 +67,7 @@ export type TModalRouteContext = {
   setModalReturnValue: (name: string, value: unknown) => void
   getRelatedModalsByRouteName: (name: string) => { type: TModalType, modal: string[] } | undefined
   setModalLock: (name: string, lock: boolean) => void
+  layouts: Record<string, Component>
 }
 
 export type TModalData = Record<string, any>
