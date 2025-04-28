@@ -1,5 +1,6 @@
 import { Router, RouteRecordNormalized } from 'vue-router'
 import { createModalStore } from './store'
+import { isModalRouteRecordNormalized } from './helpers'
 
 export const createPathRoutes = (
   store: ReturnType<typeof createModalStore>,
@@ -40,17 +41,20 @@ export const createPathRoutes = (
     }
   }
 
-  function registerPathModalRoute(aRoute: RouteRecordNormalized) {
-    store.registerModal(aRoute.name as string, 'path', {
-      ...aRoute.meta,
-      isActive: defineActive,
-      findBase,
+  function registerPathModalRoutes(routes: RouteRecordNormalized[]) {
+    routes.forEach((aRoute) => {
+      if (isModalRouteRecordNormalized(aRoute)) {
+        store.registerModal(aRoute.name, 'path', {
+          ...aRoute.meta,
+          isActive: defineActive,
+          findBase,
+        })
+      }
     })
-    return aRoute
   }
 
   return {
-    registerPathModalRoute,
+    registerPathModalRoutes,
     openModal,
   }
 }

@@ -1,5 +1,5 @@
 import { App, Component, computed, inject, markRaw, onScopeDispose } from 'vue'
-import { TModalData, TModalRouteRecordRaw, TModalMapItem, TModalQueryRouteRecord, TModalRouteContext, TModalType, TOpenModalOptions } from './types'
+import { TModalData, TModalMapItem, TModalQueryRouteRecord, TModalRouteContext, TOpenModalOptions } from './types'
 import {
   Router,
   RouteRecordRaw,
@@ -9,7 +9,7 @@ import {
   createRouter,
   createWebHistory,
 } from 'vue-router'
-import { ensureArray, isPlainObject, noop, formalizeRouteRecords } from './helpers'
+import { ensureArray, isPlainObject, noop, traverseRouteRecords, formalizeRouteRecord } from './helpers'
 import { createGlobalRoutes, isGlobalModalRootRoute } from './global'
 import { useModalHistory } from './history'
 import { createModalStore } from './store'
@@ -18,8 +18,9 @@ import { createPathRoutes } from './path'
 import { createContext } from './context'
 import { createContext as createVueContext } from '@vue-use-x/common'
 import { useMatchedRoute, useRouterUtils } from './router'
-import type { RouterHistory, RouterOptions } from 'vue-router'
+import type { RouterOptions } from 'vue-router'
 import { ModalRouteViewKey } from './ModalRouteView'
+import { createModalRelation, registerModalRoutesRelation, registerModalRoutesRelationQuery } from './relation'
 
 type TModalNavigationGuardAfterEach = (context: {
   to: RouteLocationNormalizedGeneric
@@ -51,8 +52,8 @@ export function formalizeOptions(options: TModalRouteOptions): TModalRouteOption
     throw new Error('routes is required')
   }
   return {
-    routes: formalizeRouteRecords(options.routes),
-    global: formalizeRouteRecords(ensureArray(options.global)),
+    routes: options.routes,
+    global: ensureArray(options.global),
     query: ensureArray(options.query),
     direct: options.direct || false,
     layout: options.layout ?? {},
@@ -63,15 +64,21 @@ export function formalizeOptions(options: TModalRouteOptions): TModalRouteOption
 export const createModalRoute = (options: TModalRouteOptions) => {
   const _options = formalizeOptions(options)
 
+  const formalizedRoutes = traverseRouteRecords(
+    _options.routes,
+    (route, inModalRoute) => formalizeRouteRecord(route, inModalRoute),
+  )
+
   const routerHistory = createWebHistory()
   const router = createRouter({
-    routes: _options.routes,
+    routes: formalizedRoutes,
     history: routerHistory,
     ..._options.routerOptions,
   })
 
   const currentRoute = router.currentRoute
   const store = createModalStore()
+  const relation = createModalRelation()
 
   const {
     registerGlobalRoutes,
@@ -88,43 +95,16 @@ export const createModalRoute = (options: TModalRouteOptions) => {
     openModal: openQueryModal,
   } = createQueryRoutes(store, router)
 
-  const { registerPathModalRoute, openModal: openPathModal } = createPathRoutes(store, router)
+  const { registerPathModalRoutes, openModal: openPathModal } = createPathRoutes(store, router)
 
-  registerQueryRoutes(_options.query)
+  // TODO: Should group modal registration to store same as relation?
+
+  registerPathModalRoutes(router.getRoutes())
+  registerModalRoutesRelation(relation, formalizedRoutes, 'path')
   registerGlobalRoutes(_options.global)
-
-  const modalRouteCollection: Map<string, { type: TModalType, modal: string[] }> = new Map()
-  const getRelatedModalsByRouteName = (name: string) => modalRouteCollection.get(name)
-
-  const registChildren = (type: string, parents: string[], children: TModalRouteRecordRaw[] | RouteRecordRaw[]) => {
-    children.forEach((route) => {
-      const _parents = [...parents, ...(route.meta?.modal && route.name && route.components?.['modal-default'] ? [route.name as string] : [])]
-      if (route.name) {
-        modalRouteCollection.set(route.name as string, { type: 'path', modal: [..._parents] })
-      }
-      if (Array.isArray(route.children)) {
-        registChildren(type, _parents, route.children)
-      }
-    })
-  }
-  router.getRoutes().forEach((route) => {
-    if (route.meta?.modal && route.name && route.components?.['modal-default']) {
-      registerPathModalRoute(route)
-      registChildren('path', [route.name as string], route.children || [])
-      modalRouteCollection.set(route.name as string, { type: 'path', modal: [route.name as string] })
-    }
-  })
-  _options.global.forEach((route) => {
-    if (route.meta?.modal && route.name && route.components?.['modal-default']) {
-      registChildren('global', [route.name as string], route.children || [])
-      modalRouteCollection.set(route.name as string, { type: 'global', modal: [route.name as string] })
-    }
-  })
-  _options.query.forEach((route) => {
-    if (route.name) {
-      modalRouteCollection.set(route.name as string, { type: 'query', modal: [route.name as string] })
-    }
-  })
+  registerModalRoutesRelation(relation, _options.global, 'global')
+  registerQueryRoutes(_options.query)
+  registerModalRoutesRelationQuery(relation, _options.query)
 
   const {
     goHistory,
@@ -353,14 +333,13 @@ export const createModalRoute = (options: TModalRouteOptions) => {
       data?: TModalData | [string, TModalData][]
     },
   ) {
-    const modalInfo = getRelatedModalsByRouteName(name)
-    if (!modalInfo) {
-      throw new Error(`Modal ${name} is not found.`)
-    }
-    const modalsNeedActivate = modalInfo.modal.filter(m => !isModalActive(m))
+    const modalInfo = relation.get(name)
+
+    const modalsNeedActivate = modalInfo.modals.filter(m => !isModalActive(m))
     if (!modalsNeedActivate.length) {
-      throw new Error(`Not allow open modal which is already opened: ${modalInfo.modal.join(',')}.`)
+      throw new Error(`Not allow open modal which is already opened: ${modalInfo.modals.join(',')}.`)
     }
+    // TODO: remove / rewrite hash part...
     if (typeof options?.global === 'string' && options.global.startsWith('#modal')) {
       throw new Error('Not allow open modal with global start with "#modal"')
     }
@@ -520,7 +499,7 @@ export const createModalRoute = (options: TModalRouteOptions) => {
     setModalLock,
     getModalItemUnsafe,
     setModalReturnValue,
-    getRelatedModalsByRouteName,
+    relation,
     queryRoutes,
     layouts: _options.layout,
   } satisfies TModalRouteContext
@@ -560,20 +539,16 @@ export const setupModal = <ReturnValue = any>(
     unlockModal,
     setModalLock,
     isModalActive,
-    getRelatedModalsByRouteName,
+    relation,
     modalExists,
   } = modalRouteContext.ensureInjection('setupModal must be used inside a ModalRoute component')
 
   // useModal can not target nested modal
   const matchedRoute = useMatchedRoute()
   const currentRoute = useRoute()
-  const relatedModalInfo = getRelatedModalsByRouteName(name)
+  const relatedModalInfo = relation.get(name)
 
   const inModalGlobalRoute = currentRoute.matched.some(r => isGlobalModalRootRoute(r))
-
-  if (!relatedModalInfo) {
-    throw new Error(`Can not find related modals for ${name}`)
-  }
 
   if (matchedRoute?.value) {
     if (relatedModalInfo.type === 'global' && !inModalGlobalRoute) {
@@ -607,7 +582,7 @@ export const setupModal = <ReturnValue = any>(
       matchedRoute?.value?.name === r.name && matchedRoute?.value?.path === r.path,
     )
     const openedModals = currentRoute.matched.slice(0, parentIndex + 1).flatMap(r => r.meta.modal ? [r.name as string] : [])
-    const targetModals = relatedModalInfo.modal.filter(name => !openedModals.includes(name))
+    const targetModals = relatedModalInfo.modals.filter(name => !openedModals.includes(name))
 
     if (targetModals.length > 1) {
       throw new Error(`Multiple modals found for ${name}, useModal can only be used for single modal.`)

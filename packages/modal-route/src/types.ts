@@ -1,6 +1,7 @@
 import { Component, RendererElement, RendererNode, VNode } from 'vue'
 import { NavigationFailure, RouteRecordRaw } from 'vue-router'
 import { TDefer } from './helpers'
+import { TCreateModalRelationReturn } from './relation'
 
 export type TModalType = 'global' | 'query' | 'path'
 
@@ -65,7 +66,7 @@ export type TModalRouteContext = {
   getModalItemUnsafe: (name: string) => TModalMapItem | undefined
   unlockModal: (name: string) => void
   setModalReturnValue: (name: string, value: unknown) => void
-  getRelatedModalsByRouteName: (name: string) => { type: TModalType, modal: string[] } | undefined
+  relation: TCreateModalRelationReturn
   setModalLock: (name: string, lock: boolean) => void
   layouts: Record<string, Component>
 }
