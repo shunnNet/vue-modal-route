@@ -121,7 +121,7 @@ export const traverseRouteRecords = (
       result.children = traverseRouteRecords(
         result.children,
         callback,
-        inModalRoute || isModalRouteRecordRawNormalized(route),
+        inModalRoute || isModalRouteRecordRawNormalized(result),
       )
     }
     return result
