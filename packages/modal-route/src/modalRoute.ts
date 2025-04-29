@@ -947,7 +947,6 @@ export function useCurrentModal<ReturnValue = unknown>() {
   return {
     ...modal,
     modelValue: routeView.modelValue,
-    loading: routeView.loading,
     closeThenReturn,
   }
 }

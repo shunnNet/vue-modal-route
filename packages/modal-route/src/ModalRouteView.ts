@@ -9,7 +9,6 @@ type TModalMap = Record<string, {
   visible: boolean
   props: Record<string, any>
   propsInited: boolean
-  loading: boolean
   setVisible: (value: boolean) => Promise<void>
   _visible: boolean
   slots: Record<string, any>
@@ -63,8 +62,6 @@ const setupModalRoute = () => {
         }
       })
 
-      const loading = ref(false)
-
       const modalSlots = isPlainObject(modalItem?.options?.slots)
         ? modalItem?.options?.slots
         : {}
@@ -74,7 +71,6 @@ const setupModalRoute = () => {
         _component: component,
         visible: visible as unknown as boolean,
         setVisible,
-        loading: loading as unknown as boolean,
         props: computed(() => {
           let result = componentMap[name]._data
           if (typeof modalItem?.options?.props === 'function') {
@@ -174,7 +170,6 @@ export default defineComponent({
         return h(modalProvider, {
           'modelValue': modal.visible,
           'onUpdate:modelValue': (value: boolean) => modal.visible = value,
-          'loading': modal.loading,
           'onReturn': ($event: any) => {
             setModalReturnValue(name, $event)
             closeModal(name)
@@ -194,7 +189,6 @@ export default defineComponent({
 
 export const ModalRouteViewKey: InjectionKey<{
   modelValue: Ref<boolean>
-  loading: Ref<boolean>
   closeThenReturn: (value: any) => void
   name: ComputedRef<string>
 }> = Symbol('modal-route-view')
@@ -205,10 +199,6 @@ const modalProvider = defineComponent({
       type: Boolean,
       required: true,
     },
-    loading: {
-      type: Boolean,
-      required: true,
-    },
     modalName: {
       type: String,
       required: true,
@@ -216,10 +206,9 @@ const modalProvider = defineComponent({
   },
   emits: ['return', 'update:modelValue'],
   setup(props, { slots, emit }) {
-    const { modelValue, loading } = toRefs(props)
+    const { modelValue } = toRefs(props)
     const closeThenReturn = (value: unknown) => {
       emit('return', value)
-      emit('update:modelValue', false)
     }
     const visible = computed({
       get: () => modelValue.value,
@@ -227,7 +216,6 @@ const modalProvider = defineComponent({
     })
     provide(ModalRouteViewKey, {
       modelValue: visible,
-      loading,
       closeThenReturn,
       name: computed(() => props.modalName),
     })
