@@ -392,7 +392,7 @@ export const createModalRoute = (options: TModalRouteOptions) => {
 
   async function closeModal(name: string) {
     const modal = getModalItem(name)
-    if (!modal.isActive(name)) {
+    if (!modal.isActive) {
       throw new Error(`Not allow close modal ${name} because it is not opened.`)
     }
     context.append({ closeByCloseModal: true })
@@ -462,7 +462,7 @@ export const createModalRoute = (options: TModalRouteOptions) => {
     if (modal.options?.manual && locked) {
       return false
     }
-    return modal.isActive(name)
+    return modal.isActive
   }
   for (const name in _options.layout) {
     const comp = _options.layout[name]
@@ -940,13 +940,13 @@ export const useModal = <ReturnValue>(name: string) => {
 
 export function useCurrentModal<ReturnValue = unknown>() {
   const routeView = inject(ModalRouteViewKey)!
-  const modal = useModal<ReturnValue>(routeView.name.value)
+  const modal = useModal<ReturnValue>(routeView.name)
   const closeThenReturn = <R extends ReturnValue>(value: R) => {
     routeView.closeThenReturn(value)
   }
   return {
     ...modal,
-    modelValue: routeView.modelValue,
+    modelValue: routeView.visible,
     closeThenReturn,
   }
 }

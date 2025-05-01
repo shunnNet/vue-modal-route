@@ -19,7 +19,7 @@ export type TModalMapItem = {
   returnValue: unknown
   _openPromise: TDefer<unknown> | null
   _openPosition: number
-  isActive: (name: string) => boolean
+  isActive: boolean
   activate: (name: string, data: Record<string, any>) => TDefer<unknown>
   deactivate: () => void
   findBase: (options?: {
@@ -60,7 +60,7 @@ export type TModalRouteContext = {
   queryRoutes: TModalQueryRouteRecord[]
   // FIXME: my type is not concise
   openModal: (name: string, options?: Partial<TOpenModalOptions>) => Promise<any>
-  closeModal: (name: string) => void
+  closeModal: (name: string) => Promise<void>
   modalExists: (name: string) => boolean
   isModalActive: (name: string) => boolean
   getModalItemUnsafe: (name: string) => TModalMapItem | undefined

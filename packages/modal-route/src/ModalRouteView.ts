@@ -1,109 +1,67 @@
-import { defineComponent, h, PropType, watch, computed, reactive, ref, toValue, provide, toRefs, InjectionKey, Ref, ComputedRef } from 'vue'
+import { defineComponent, h, PropType, watch, computed, toValue, provide, InjectionKey, Ref, ComputedRef, shallowReactive, WritableComputedRef } from 'vue'
 import { isPlainObject } from './helpers'
-import { modalRouteContext, useModalRoute } from './modalRoute'
-import { TComponent, TModalType } from './types'
+import { modalRouteContext } from './modalRoute'
+import { TComponent, TModalRouteContext, TModalType } from './types'
 import { useMatchedRoute } from './router'
 
-type TModalMap = Record<string, {
+type TModalState = {
   _component: TComponent
-  visible: boolean
-  props: Record<string, any>
-  propsInited: boolean
-  setVisible: (value: boolean) => Promise<void>
-  _visible: boolean
+  visible: WritableComputedRef<boolean>
+  props: ComputedRef<Record<string, any>>
   slots: Record<string, any>
-  _data: any
-}>
+  setVisible: (value: boolean) => void
+}
+type TModalStateMap = Record<string, TModalState>
 
-const setupModalRoute = () => {
-  const { pop, getModalItem } = modalRouteContext.ensureInjection('ModalRoute must be used inside a ModalRoute component')
-  const { closeModal, isModalActive } = useModalRoute()
+const createModalState = (name: string, modalRouteContext: TModalRouteContext) => {
+  const { getModalItem, closeModal } = modalRouteContext
+  const modal = getModalItem(name)
 
-  const componentMap: TModalMap = reactive({})
-
-  const createVisible = (
-    defineVisible: () => boolean,
-    closeAction: () => Promise<void>,
-  ) => {
-    const _visible = ref(false)
-    const visible = computed({
-      get: () => defineVisible() && _visible.value,
-      set: value => setVisible(value),
-    })
-    const setVisible = async (value: boolean) => {
-      if (value) {
-        _visible.value = true
+  const visible = computed({
+    get: () => !modal._manualLocked && modal.isActive,
+    set: (value) => {
+      // Depend on modal component, visible may be set to false after modal route deactivated
+      // So we need to check if value is different from modal.isActive
+      if (!value && value !== modal.isActive) {
+        closeModal(name)
       }
-      else {
-        await closeAction()
-        _visible.value = false
-      }
-    }
-    return { visible, setVisible, _visible }
+    },
+  })
+  const setVisible = (value: boolean) => {
+    visible.value = value
   }
 
-  const setModal = (name: string, component: TComponent) => {
-    const modalItem = getModalItem(name)
-    if (componentMap[name]) {
-      componentMap[name]._component = component
+  // TODO: Will slot updated when slot changed from setupModal ?
+  const slots = isPlainObject(modal.options?.slots)
+    ? modal.options.slots
+    : {}
+
+  const props = computed(() => {
+    // Allow "data" and "props" be `ref` or `reactive`
+    let result = {}
+    if (typeof modal?.options?.props === 'function') {
+      // TODO: Check if this may allow data, which is from A component, be modified from "props" function of B component
+      result = modal.options.props(toValue(modal.data))
     }
-    else {
-      const { visible, setVisible, _visible } = createVisible(
-        () => isModalActive(name),
-        async () => {
-          await closeModal(name)
-          componentMap[name].propsInited = false
-        },
-      )
-      watch(visible, (value) => {
-        if (value === false) {
-          _visible.value = false
-          componentMap[name].propsInited = false
-        }
-      })
-
-      const modalSlots = isPlainObject(modalItem?.options?.slots)
-        ? modalItem?.options?.slots
-        : {}
-
-      // TODO: How to handle reactive unwrap type ?
-      componentMap[name] = {
-        _component: component,
-        visible: visible as unknown as boolean,
-        setVisible,
-        props: computed(() => {
-          let result = componentMap[name]._data
-          if (typeof modalItem?.options?.props === 'function') {
-            result = modalItem.options.props(result)
-          }
-          else if (isPlainObject(modalItem?.options?.props)) {
-            result = modalItem?.options?.props
-          }
-          return toValue(result || {})
-        }),
-        slots: modalSlots,
-        _visible: _visible as unknown as boolean,
-        propsInited: false,
-        _data: {},
+    else if (isPlainObject(modal?.options?.props)) {
+      result = {
+        ...toValue(modal?.options?.props),
+        ...toValue(modal.data), // data has higher priority
       }
     }
-    if (!componentMap[name].propsInited) {
-      // TODO: FIXME: I will be ran twice because closeModal's query updated
-      const data = pop(name)
-      if (modalItem?.options?.validate?.(data)) {
-        componentMap[name].setVisible(false)
-        return
-      }
-      componentMap[name]._data = data
-      componentMap[name].setVisible(true)
-      componentMap[name].propsInited = true
-    }
+    return result || {}
+  })
+
+  return {
+    visible,
+    props,
+    slots,
+    setVisible,
   }
-
-  return { setModal, componentMap }
 }
 
 export default defineComponent({
+  name: 'ModalRouteView',
   props: {
     components: {
       type: Array as PropType<TComponent[] | { modalName: string, component: TComponent }[]>,
@@ -116,15 +74,20 @@ export default defineComponent({
   },
 
   setup(props, { slots }) {
-    const { setModal, componentMap } = setupModalRoute()
-    const { closeModal } = useModalRoute()
     const matchedRoute = useMatchedRoute()
-    const {
-      getModalItemUnsafe,
-      setModalReturnValue,
-    } = modalRouteContext.ensureInjection('ModalRoute must be used inside a ModalRouteContext')
+    const context = modalRouteContext.ensureInjection('ModalRoute must be used inside a ModalRouteContext')
+    const { getModalItemUnsafe } = context
 
-    const setupModalIfExist = (cmp: TComponent, name?: string) => {
+    const componentMap: TModalStateMap = shallowReactive({})
+
+    watch(() => props.components, (val) => {
+      val.filter(Boolean).forEach(cmp => 'modalName' in cmp
+        ? setupModalIfExist(cmp.component, cmp.modalName)
+        : setupModalIfExist(cmp),
+      )
+    }, { immediate: true })
+
+    function setupModalIfExist(cmp: TComponent, name?: string) {
       if (!cmp) {
         return
       }
@@ -133,92 +96,66 @@ export default defineComponent({
         throw new Error('modalName not provided')
       }
       const modal = getModalItemUnsafe(_name)
-      if (modal && modal.type === props.modalType) {
-        setModal(_name, cmp)
-      }
-    }
-
-    props.components.filter(Boolean).forEach(
-      cmp => 'modalName' in cmp
-        ? setupModalIfExist(cmp.component, cmp.modalName)
-        : setupModalIfExist(cmp),
-    )
-
-    watch(() => props.components, (val) => {
-      if (!val.length) {
+      if (!(modal && modal.type === props.modalType)) {
         return
       }
-      val.filter(Boolean).forEach(cmp => 'modalName' in cmp
-        ? setupModalIfExist(cmp.component, cmp.modalName)
-        : setupModalIfExist(cmp),
-      )
-    })
+      componentMap[_name] = {
+        ...componentMap[_name] || createModalState(_name, context),
+        _component: cmp,
+      }
+    }
     return () => {
-      return Object.entries(componentMap).map(([name, { _component }]) => {
-        const _slots = Object.fromEntries(
-          Object.entries(slots).flatMap(([key, value]) => {
-            const [parsedKey, slotName] = key.split('-')
-            if (parsedKey === name) {
-              return [[slotName, value]]
-            }
-            else {
-              return []
-            }
-          }),
-        )
-        const modal = componentMap[name]
-        return h(modalProvider, {
-          'modelValue': modal.visible,
-          'onUpdate:modelValue': (value: boolean) => modal.visible = value,
-          'onReturn': ($event: any) => {
-            setModalReturnValue(name, $event)
-            closeModal(name)
-          },
-          'modalName': name,
-        }, {
-          default: () => h(
-            _component,
-            modal.props,
-            Object.assign(_slots, modal.slots),
-          ),
-        })
+      return Object.keys(componentMap).map((name) => {
+        return h(
+          modalProvider,
+          { modal: componentMap[name], name },
+          Object.fromEntries(
+            Object.entries(slots).flatMap(([key, value]) => {
+              const [parsedKey, slotName] = key.split('-')
+              return parsedKey === name ? [[slotName, value]] : []
+            }),
+          ))
       })
     }
   },
 })
 
 export const ModalRouteViewKey: InjectionKey<{
-  modelValue: Ref<boolean>
+  visible: Ref<boolean>
   closeThenReturn: (value: any) => void
-  name: ComputedRef<string>
+  name: string
 }> = Symbol('modal-route-view')
 
 const modalProvider = defineComponent({
+  name: 'ModalRouteProvider',
   props: {
-    modelValue: {
-      type: Boolean,
-      required: true,
-    },
-    modalName: {
+    name: {
       type: String,
       required: true,
     },
+    modal: {
+      type: Object as PropType<TModalState>,
+      required: true,
+    },
   },
-  emits: ['return', 'update:modelValue'],
-  setup(props, { slots, emit }) {
-    const { modelValue } = toRefs(props)
+  setup(props, { slots }) {
+    const { setModalReturnValue } = modalRouteContext.ensureInjection('ModalRoute must be used inside a ModalRouteContext')
     const closeThenReturn = (value: unknown) => {
-      emit('return', value)
+      setModalReturnValue(props.name, value)
+      props.modal.setVisible(false)
     }
-    const visible = computed({
-      get: () => modelValue.value,
-      set: value => emit('update:modelValue', value),
-    })
+
     provide(ModalRouteViewKey, {
-      modelValue: visible,
+      visible: props.modal.visible,
       closeThenReturn,
-      name: computed(() => props.modalName),
+      name: props.name,
     })
-    return () => slots.default?.()
+    return () => {
+      return h(
+        props.modal._component,
+        props.modal.props.value,
+        Object.assign(slots, props.modal.slots),
+      )
+    }
   },
 })
