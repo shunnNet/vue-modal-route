@@ -68,7 +68,13 @@ export const createModalRoute = (options: TCreateModalRouteOptions) => {
 
   const formalizedRoutes = traverseRouteRecords(
     _options.routes,
-    (route, inModalRoute) => formalizeRouteRecord(route, inModalRoute),
+    (route, inModalRoute) => {
+      if (!route.name) {
+        // Note: The name is required for `findBase` and global route base
+        console.warn(`Route "${route.path}" must have a name, otherwise modal route will not work correctly.`)
+      }
+      return formalizeRouteRecord(route, inModalRoute)
+    },
   )
 
   const routerHistory = createWebHistory()
