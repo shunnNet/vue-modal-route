@@ -113,10 +113,14 @@ export const createModalRoute = (options: TCreateModalRouteOptions) => {
 
   // TODO: Should group modal registration to store same as relation?
 
+  const globalRoutesFormalized = traverseRouteRecords(
+    _options.global,
+    (route, inModalRoute) => formalizeRouteRecord(route, inModalRoute),
+  )
   pathRoutes.register(router.getRoutes())
   registerModalRoutesRelation(relation, formalizedRoutes, 'path')
-  globalRoutes.register(_options.global)
-  registerModalRoutesRelation(relation, _options.global, 'global')
+  globalRoutes.register(globalRoutesFormalized)
+  registerModalRoutesRelation(relation, globalRoutesFormalized, 'global')
   queryRoutes.register(_options.query)
   registerModalRoutesRelationQuery(relation, _options.query)
 
