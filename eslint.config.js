@@ -38,6 +38,7 @@ export default [
         },
       ],
       '@typescript-eslint/no-dynamic-delete': 'off',
+      'vue/one-component-per-file': 'off',
     },
   },
 ]
