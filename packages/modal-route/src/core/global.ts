@@ -30,8 +30,8 @@ export const createGlobalRoutes = (
       ...(options?.query ? { query: options.query } : {}),
     })
   }
-  function prepareGlobalRoute(target?: RouteRecordNameGeneric, force?: boolean) {
-    if (currentRoute.value.matched.find(r => r.name === globalRoute.name) && !force) {
+  function prepareGlobalRoute(target?: RouteRecordNameGeneric) {
+    if (currentRoute.value.matched.find(r => r.name === globalRoute.name)) {
       // Do nothing if global root route already exists
       return
     }
