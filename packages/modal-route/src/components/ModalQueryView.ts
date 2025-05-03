@@ -6,6 +6,11 @@ import { createContext } from '@vue-use-x/common'
 
 export const modalQueryContext = createContext<boolean>()
 
+/**
+ * A component that renders query modal route.
+ *
+ * Please put this component at root of App e.g: App.vue
+ */
 export default defineComponent({
   components: {
     ModalRoute,

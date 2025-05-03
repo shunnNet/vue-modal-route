@@ -7,6 +7,11 @@ import { createContext } from '@vue-use-x/common'
 
 export const globalModalContext = createContext<boolean>()
 
+/**
+ * A component that renders global modal route.
+ *
+ * Please put this component at root of App e.g: App.vue
+ */
 export default defineComponent({
   components: {
     ModalRoute,

@@ -10,18 +10,59 @@ import { inject, onScopeDispose } from 'vue'
 import { ModalRouteViewKey } from './components/ModalRouteView'
 import { useMatchedRoute } from './utils'
 
+/**
+ * Get functions to open and close modal route.
+ *
+ * @returns functions to open and close modal route
+ *
+ * @example
+ * const { openModal, closeModal, setupModal } = useModalRoute()
+ *
+ * openModal('ModalA')
+ * closeModal('ModalA')
+ * setupModal('ModalA', {
+ *   props: (data) => {
+ *     return {
+ *       foo: data.foo,
+ *     }
+ *   },
+ * })
+ *
+ */
 export const useModalRoute = () => {
   const {
     closeModal,
     openModal,
   } = modalRouteContext.ensureInjection('useModalRoute must be used inside a ModalRoute component')
-
   return {
     setupModal,
     closeModal,
     openModal,
   }
 }
+
+/**
+ * Setup a single modal route.
+ *
+ * Can setup props, slots, and other options for modal route.
+ *
+ * @param name name of modal route
+ * @param options options to setup modal route
+ * @returns functions to open and close modal route, and computed objects representing modal states
+ *
+ * @example
+ * const { open, close, isActive, returnValue } = setupModal('ModalA', {
+ *   props: (data) => {
+ *     return {
+ *       foo: data.foo,
+ *     }
+ *   },
+ *   slots: {
+ *     default: () => h('div', 'Hello'),
+ *   },
+ * })
+ *
+ */
 export const setupModal = <ReturnValue = any>(
   name: string,
   options?: TModalRouteOptions,
@@ -109,6 +150,23 @@ export const setupModal = <ReturnValue = any>(
   }
 }
 
+/**
+ * A composition function which target **current** modal route.
+ *
+ * Returns functions to open and close modal route, and computed objects representing modal states.
+ *
+ * @param name name of modal route
+ * @returns functions to open and close modal route, and computed objects representing modal states
+ *
+ * @example
+ * const { open, close, isActive, returnValue, closeThenReturn } = useCurrentModal()
+ *
+ * open()
+ * close()
+ * isActive.value
+ * returnValue.value
+ * closeThenReturn('foo')
+ */
 export function useCurrentModal<ReturnValue = unknown>() {
   const routeView = inject(ModalRouteViewKey)!
   const modal = useModal<ReturnValue>(routeView.name)
@@ -122,6 +180,22 @@ export function useCurrentModal<ReturnValue = unknown>() {
   }
 }
 
+/**
+ * A composition function which target a single modal route.
+ *
+ * Returns functions to open and close modal route, and computed objects representing modal states.
+ *
+ * @param name name of modal route
+ * @returns functions to open and close modal route, and computed objects representing modal states
+ *
+ * @example
+ * const { open, close, isActive, returnValue } = useModal('ModalA')
+ *
+ * open()
+ * close()
+ * isActive.value
+ * returnValue.value
+ */
 export const useModal = <ReturnValue>(name: string) => {
   const {
     closeModal,
@@ -129,9 +203,24 @@ export const useModal = <ReturnValue>(name: string) => {
   } = modalRouteContext.ensureInjection('useModal must be used inside a ModalRoute component')
 
   return {
+    /**
+     * Open a modal route.
+     *
+     * @param options options to open modal route
+     * @returns promise of modal route
+     */
     open: (options?: Partial<TOpenModalOptions>) => openModal(name, options),
+    /**
+     * Close a modal route.
+     */
     close: () => closeModal(name),
+    /**
+     * Computed object which value is true when modal route is active.
+     */
     isActive: useModalActive(name),
+    /**
+     * Computed object which value is return value of modal route.
+     */
     returnValue: useModalReturnValue<ReturnValue>(name),
   }
 }
@@ -142,6 +231,21 @@ export const useModalReturnValue = <T>(name: string) => {
   return computed(() => modal.state.value.returnValue as T)
 }
 
+/**
+ * Get a computed object which value is true when modal route is active.
+ *
+ * @param name name of modal route
+ * @returns computed object which value is true when modal route is active
+ *
+ * @example
+ * const isActive = useModalActive('ModalA')
+ *
+ * watch(isActive, (value) => {
+ *   if (value) {
+ *     console.log('ModalA is active')
+ *   }
+ * })
+ */
 export const useModalActive = (name: string) => {
   const { defineActive } = modalRouteContext.ensureInjection('useModalActive must be used inside a ModalRoute component')
   return computed(() => defineActive(name))

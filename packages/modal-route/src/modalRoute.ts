@@ -9,7 +9,7 @@ import {
   createWebHistory,
 } from 'vue-router'
 import type { RouterOptions } from 'vue-router'
-import { ensureArray, isPlainObject, noop, traverseRouteRecords, formalizeRouteRecord, createContext, useRouterUtils, isModalRouteRecordNormalized, isModalRouteRecordRawNormalized } from './utils'
+import { ensureArray, isPlainObject, noop, traverseRouteRecords, formalizeRouteRecord, createContext, useRouterUtils, isModalRouteRecordRawNormalized } from './utils'
 import { useModalHistory } from './history/index'
 import { createContext as createVueContext } from '@vue-use-x/common'
 import {

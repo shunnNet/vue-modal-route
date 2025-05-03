@@ -3,6 +3,13 @@ import ModalRouteView from './ModalRouteView'
 import { globalModalContext } from './ModalGlobalView'
 import { modalQueryContext } from './ModalQueryView'
 
+/**
+ * A component that renders path modal route.
+ *
+ * Use this when you want to render path modal route.
+ *
+ * For normal children routes of modal route, use `ModalRouterView` instead.
+ */
 export default defineComponent({
   components: {
     ModalRouteView,

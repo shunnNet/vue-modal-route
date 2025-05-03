@@ -1,4 +1,4 @@
-export * from './modalRoute'
+export { createModalRoute } from './modalRoute'
 export * from './composables'
 
 export { default as ModalRouterView } from './components/ModalRouterView'
