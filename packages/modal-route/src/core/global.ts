@@ -1,4 +1,4 @@
-import { Router, RouteRecordRaw } from 'vue-router'
+import { Router, RouteRecordNameGeneric, RouteRecordRaw } from 'vue-router'
 import type { TModalRouteRecordRaw } from '../types'
 import { createModalRouteStore } from './store'
 
@@ -15,7 +15,7 @@ export const createGlobalRoutes = (
 ) => {
   const children: TModalRouteRecordRaw[] = []
   const currentRoute = router.currentRoute
-  let globalRootBaseName = ''
+  let globalRootBaseName: RouteRecordNameGeneric = ''
 
   function openModal(name: string, options?: {
     query?: Record<string, any>
@@ -30,10 +30,17 @@ export const createGlobalRoutes = (
       ...(options?.query ? { query: options.query } : {}),
     })
   }
-  function prepareGlobalRoute(target?: string) {
+  function prepareGlobalRoute(target?: RouteRecordNameGeneric, force?: boolean) {
+    if (currentRoute.value.matched.find(r => r.name === globalRoute.name) && !force) {
+      // Do nothing if global root route already exists
+      return
+    }
     const base = target || currentRoute.value.name
+
     if (globalRootBaseName !== base) {
-      globalRootBaseName = base as string
+      globalRootBaseName = base
+      // TODO: Actually, all route must has name (even not modal route)
+      // Allow symbol as name because this may not be modal route
       router.addRoute(globalRootBaseName as string, globalRoute)
     }
   }
