@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ModalRouterView, useCurrentModal, ModalLayout } from '@vmr/vue-modal-route'
+import { ModalRouterView, useCurrentModal, ModalLayout } from '@vmr/core'
 import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 

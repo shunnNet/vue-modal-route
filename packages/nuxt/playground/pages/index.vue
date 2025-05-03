@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useModalRoute, ModalPathView } from '@vmr/vue-modal-route'
+import { useModalRoute, ModalPathView } from '@vmr/core'
 definePageMeta({
   name: "hello",
 })

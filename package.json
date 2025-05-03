@@ -1,27 +1,12 @@
 {
   "name": "vmr",
-  "description": "VMR (Vue Modal Route) is a package that manages modals using routes.",
+  "description": "A Vue 3 package that integrates vue-router with modal state management, enabling modal dialogs to be controlled via routes.",
   "version": "0.1.0",
   "type": "module",
-  "main": "dist/index.umd.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.umd.cjs"
-    }
+  "author": {
+    "name": "shunnNet",
+    "url": "https://github.com/shunnNet"
   },
-  "repository": "https://github.com/shunnNet/vrm",
-  "bugs": {
-    "url": "https://github.com/shunnNet/vrm/issues"
-  },
-  "keywords": [
-    "vue",
-    "modal",
-    "vue-router"
-  ],
-  "author": "shunnNet",
   "license": "MIT",
   "engines": {
     "node": ">=20.0.0"
@@ -31,8 +16,8 @@
     "play:build:vite": "pnpm --filter @vmr/playground-vite build",
     "play:vite-uvr": "pnpm --filter @vmr/playground-vite-uvr dev",
     "play:build:vite-uvr": "pnpm --filter @vmr/playground-vite-uvr build",
-    "build:core": "pnpm --filter @vmr/vue-modal-route build",
-    "stub:core": "pnpm --filter @vmr/vue-modal-route stub",
+    "build:core": "pnpm --filter @vmr/core build",
+    "stub:core": "pnpm --filter @vmr/core stub",
     "dev:nuxt": "pnpm --filter @vmr/nuxt dev",
     "prepare:nuxt": "pnpm --filter @vmr/nuxt dev:prepare",
     "dev:build:nuxt": "pnpm --filter @vmr/nuxt dev:build",

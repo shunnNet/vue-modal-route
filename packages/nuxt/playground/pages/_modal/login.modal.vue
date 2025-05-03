@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useModalRoute } from '@vmr/vue-modal-route'
+import { useModalRoute } from '@vmr/core'
 const visible = defineModel<boolean>()
 
 const { openModal } = useModalRoute()

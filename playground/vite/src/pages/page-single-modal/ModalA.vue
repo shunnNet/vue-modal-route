@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton } from 'element-plus'
-import { useCurrentModal, useModalRoute } from '@vmr/vue-modal-route'
+import { useCurrentModal, useModalRoute } from '@vmr/core'
 import { QueryModalA } from '~/modals'
 import LayoutDialog from '~/components/LayoutDialog'
 

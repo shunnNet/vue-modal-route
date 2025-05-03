@@ -7,5 +7,5 @@
 </template>
 
 <script setup lang="ts">
-import { ModalGlobalView } from '@vmr/vue-modal-route'
+import { ModalGlobalView } from '@vmr/core'
 </script>

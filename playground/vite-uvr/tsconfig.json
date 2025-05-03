@@ -16,7 +16,7 @@
       "~/*": [
         "./src/*"
       ],
-      "@vmr/vue-modal-route": [
+      "@vmr/core": [
         "../../packages/modal-route/src/index"
       ]
     }

@@ -8,7 +8,7 @@ import {
   useModalReturnValue,
   setupModal,
   useModalActive,
-} from '@vmr/vue-modal-route'
+} from '@vmr/core'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
