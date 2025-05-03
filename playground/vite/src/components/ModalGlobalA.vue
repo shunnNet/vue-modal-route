@@ -1,27 +1,22 @@
 <script setup lang="ts">
-import { ElButton, ElDialog } from 'element-plus'
-import { ModalPathView, useModalRoute } from '@vmr/vue-modal-route'
+import { ElButton } from 'element-plus'
+import { useModalRoute, ModalPathView } from '@vmr/vue-modal-route'
 import HighlightText from './HighlightText.vue'
+import LayoutDialog from './LayoutDialog'
 
-const visible = defineModel({
-  type: Boolean,
-  default: false,
-})
 defineProps({
   message: {
     type: String,
     default: '',
   },
 })
-defineEmits(['return', 'message'])
 // const { open } = useModal('ModalHashB')
 const { openModal } = useModalRoute()
 
 </script>
 <template>
-  <ElDialog
-    v-model="visible"
-    title="Hash Modal A"
+  <LayoutDialog
+    title="Global Modal A"
   >
     <div class="grid gap-2">
       <p v-if="message">
@@ -38,7 +33,7 @@ const { openModal } = useModalRoute()
           data: { message: 'Message from ModalHashA' },
         })"
       >
-        Open Hash Modal B
+        Open Global Modal B
       </ElButton>
       <ElButton
         type="primary"
@@ -52,6 +47,6 @@ const { openModal } = useModalRoute()
     <!-- TODO: problem -->
     <RouterView />
     <ModalPathView />
-  </ElDialog>
+  </LayoutDialog>
 </template>
 <style></style>

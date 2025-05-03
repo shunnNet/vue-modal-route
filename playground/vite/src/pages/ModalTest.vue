@@ -1,29 +1,23 @@
 <script setup lang="ts">
-import { useModalRoute, ModalPathView, ModalRouterView } from '@vmr/vue-modal-route'
-import { onMounted } from 'vue'
+import { ModalRouterView, useCurrentModal, ModalLayout } from '@vmr/vue-modal-route'
+import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-const visible = defineModel<boolean>()
 
 const route = useRoute()
-const router = useRouter()
-console.log(router.getRoutes());
-
-onMounted(() => {
-  console.log(route.params)
-})
 
 defineProps<{
   message?: string
 }>()
 
-defineEmits<{
-  (e: 'return', value: string): void
-}>()
-
-const { closeModal } = useModalRoute()
+const { closeThenReturn, close } = useCurrentModal<string>()
+const router = useRouter()
+onMounted(() => {
+  console.log('ModalTest mounted')
+  console.log(router.getRoutes());
+})
 </script>
 <template>
-  <ElDialog v-model="visible" title="ModalTest">
+  <ModalLayout title="ModalTest">
     <div>
       Message from parent: {{ message }}
     </div>
@@ -41,7 +35,7 @@ const { closeModal } = useModalRoute()
       <RouterLink :to="{ name: 'ModalTestChild', params: { foo: 'bar' } }">
         Go to test
       </RouterLink>
-      <!-- <RouterView name="modal-default"/> -->
+      <RouterView name="modal-default"/>
       <ModalRouterView v-slot="{ Component }">
         <Transition name="fade" mode="out-in">
             <component :is="Component" />
@@ -49,14 +43,14 @@ const { closeModal } = useModalRoute()
       </ModalRouterView>
     </div>
     <template #footer>
-      <ElButton type="warning" @click="closeModal('ModalTest')">
+      <ElButton type="warning" @click="close()">
         Close
       </ElButton>
-      <ElButton type="success" @click="$emit('return', 'ModalTest return value')">
+      <ElButton type="success" @click="closeThenReturn('ModalTest return value')">
         Return
       </ElButton>
     </template>
-  </ElDialog>
+  </ModalLayout>
 </template>
 <style>
 .fade-enter-from,

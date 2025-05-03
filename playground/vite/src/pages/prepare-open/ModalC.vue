@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { ElButton, ElDialog, ElFormItem, ElForm, ElLoading } from 'element-plus'
-import { onMounted, ref, watch } from 'vue'
-import { sleep } from '@vmr/vue-modal-route'
+import { ElButton,  ElFormItem, ElForm, ElLoading } from 'element-plus'
+import {  ref, watch } from 'vue'
+import {  useCurrentModal } from '@vmr/vue-modal-route'
+import LayoutDialog from '~/components/LayoutDialog'
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-const visible = defineModel({
-  type: Boolean,
-  default: false,
-})
 const props = defineProps({
   name: {
     type: String,
@@ -17,21 +15,17 @@ const props = defineProps({
     default: 0,
   },
 })
-const $emit = defineEmits(['return', 'update'])
+const $emit = defineEmits([ 'update'])
 const form = ref({
   name: '',
   age: 0,
 })
-onMounted(() => {
-  form.value.name = props.name
-  form.value.age = props.age
-})
-watch(() => props.name, (val) => {
-  form.value.name = val
-})
-watch(() => props.age, (val) => {
-  form.value.age = val
-})
+const { close, closeThenReturn } = useCurrentModal()
+
+watch(() => [props.name, props.age], (val) => {
+  form.value.name = val[0] as string
+  form.value.age = val[1] as number
+}, { immediate: true })
 const onSubmit = async () => {
   const loading = ElLoading.service({
     fullscreen: true,
@@ -40,12 +34,10 @@ const onSubmit = async () => {
   await sleep(1000)
   $emit('update', form.value)
   loading.close()
-  visible.value = false
 }
 </script>
 <template>
-  <ElDialog
-    v-model="visible"
+  <LayoutDialog
     title="Page Prepare ModalC"
   >
     <ElForm
@@ -79,18 +71,18 @@ const onSubmit = async () => {
       <ElButton
         type="warning"
         icon="close"
-        @click="visible = false"
+        @click="close()"
       >
         Close
       </ElButton>
       <ElButton
         type="success"
         icon="check"
-        @click="$emit('return', 'ModalC return value')"
+        @click="closeThenReturn('ModalC return value')"
       >
         Confirm
       </ElButton>
     </template>
-  </ElDialog>
+  </LayoutDialog>
 </template>
 <style></style>

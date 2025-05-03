@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ModalPathView, useModalRoute } from '@vmr/vue-modal-route'
+import { ModalRouterView, useModalRoute } from '@vmr/vue-modal-route'
 import PageTitle from '~/components/PageTitle.vue'
 import PageSection from '~/components/PageSection.vue'
 
@@ -27,7 +27,7 @@ const { openModal } = useModalRoute()
       <div>
         <ElButton
           type="primary"
-          @click="openModal('ModalPageSingleA')"
+          @click="openModal('modal-a')"
         >
           Open ModalPageSingleA in "Single Modal"
         </ElButton>

@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { ElButton, ElDialog } from 'element-plus'
-import { onMounted } from 'vue'
+import { ElButton } from 'element-plus'
 import HighlightText from '~/components/HighlightText.vue'
 import { useModalRoute } from '@vmr/vue-modal-route'
+import LayoutDialog from '~/components/LayoutDialog'
 
-const visible = defineModel({
-  type: Boolean,
-  default: false,
-})
+
 defineProps({
   message: {
     type: String,
@@ -18,13 +15,9 @@ const { openModal } = useModalRoute()
 const onCrossPageOpenModal = () => {
   openModal('ModalNestedB')
 }
-onMounted(() => {
-  console.log('ModalA mounted')
-})
 </script>
 <template>
-  <ElDialog
-    v-model="visible"
+  <LayoutDialog
     title="Cross Page Modal A"
   >
     <p
@@ -42,6 +35,6 @@ onMounted(() => {
     >
       Open Nested Modal B in Page "Nested"
     </ElButton>
-  </ElDialog>
+  </LayoutDialog>
 </template>
 <style></style>

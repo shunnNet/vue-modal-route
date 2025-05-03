@@ -36,6 +36,7 @@ const {
 } = ModalA.setup({
   props: (data) => {
     return computed(() => {
+      console.log(data);
       return {
         ...modalProps.value,
         ...(data?.message ? { message: data?.message } : {}),
@@ -88,6 +89,7 @@ const openModalTest = () => {
       foo: 'bar',
     },
   }).then((value) => {
+
     ElMessage.success(`ModalTest return value: "${value}"`)
   })
 }
@@ -96,6 +98,9 @@ const openModalTestChild = () => {
     params: {
       foo: 'bar',
     },
+  }).then((value) => {
+
+    ElMessage.success(`ModalTest return value: "${value}"`)
   })
 }
 </script>

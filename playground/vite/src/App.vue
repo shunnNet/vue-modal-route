@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ModalGlobalView, ModalQueryView, useModalRoute, ModalPathView} from '@vmr/vue-modal-route'
+import { ModalGlobalView, ModalQueryView, useModalRoute, ModalRouterView} from '@vmr/vue-modal-route'
 import { ElButton } from 'element-plus'
 import { QueryModalA } from './modals'
 
 const navs = [
   {
-    name: 'PageSingleModal',
+    // name: 'PageSingleModal',
     title: 'Single Modal',
+    path: '/',
   },
   {
     name: 'PageCrossPage',
@@ -37,7 +38,6 @@ const onOpenQueryModal = () => {
   openQueryModalA({
     // Query should be append
     query: { additionQuery: 'query1' },
-    // Hash should be ignore
     // hash: '#hash',
   }).then((v) => {
     console.log('ModalQueryA return', v)
@@ -67,7 +67,7 @@ QueryModalA.setup({
         v-for="navItem in navs"
         :key="navItem.name"
         class="p-2 hover:bg-gray-800 hover:text-white rounded-xl text-center"
-        :to="{ name: navItem.name }"
+        :to="navItem.name ? { name: navItem.name } : { path: navItem.path }"
       >
         {{ navItem.title }}
       </RouterLink>
@@ -88,9 +88,8 @@ QueryModalA.setup({
       <RouterView />
     </div>
   </div>
-  <ModalGlobalView />
   <ModalQueryView />
-  <ModalPathView />
+  <ModalGlobalView />
 </template>
 <style>
 :root {

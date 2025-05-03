@@ -5,23 +5,25 @@ import {
   setupModal,
   useModalRoute,
 } from '@vmr/vue-modal-route'
+import { ModalB } from '~/modals'
 
 const { openModal } = useModalRoute()
 
-setupModal('ModalPageSingleBChild', {
+const { open: openModalB } = ModalB.setup({
   props: {
     message: 'message from props should override the message from open method',
   },
 })
+
 </script>
 <template>
   <PageSection title="ModalB">
     <p>Open With `modal-b/child?query1=query1#hash` params { id: 'ModalB ID'}</p>
     <ElButton
       type="primary"
-      @click="openModal('ModalPageSingleBChild',{
+      @click="openModalB({
         data: { message: 'data from `open` method' },
-        query: { query1: 'query1' },
+        // query: { query1: 'query1' },
         hash: '#hash',
         params: { id: 'ModalB-ID'}
       })"

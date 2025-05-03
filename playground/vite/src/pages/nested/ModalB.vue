@@ -1,20 +1,17 @@
 <script setup lang="ts">
 import { ElButton, ElMessage } from 'element-plus'
-import { useModalRoute } from '@vmr/vue-modal-route'
+import {  ModalRouterView, useCurrentModal, useModalRoute } from '@vmr/vue-modal-route'
 import HighlightText from '~/components/HighlightText.vue'
+import LayoutDialog from '~/components/LayoutDialog'
 
-const visible = defineModel({
-  type: Boolean,
-  default: false,
-})
 defineProps({
   message: {
     type: String,
     default: '',
   },
 })
-defineEmits(['return', 'message'])
 const { openModal, closeModal } = useModalRoute()
+const { close, closeThenReturn } = useCurrentModal()
 const onOpenFailedCase = async (name: string) => {
   try {
     await openModal(name)
@@ -27,8 +24,7 @@ const onOpenFailedCase = async (name: string) => {
 
 </script>
 <template>
-  <ElDrawer
-    v-model="visible"
+  <LayoutDialog
     title="Nested Modal B"
     class="max-w-400px !w-full"
   >
@@ -46,7 +42,7 @@ const onOpenFailedCase = async (name: string) => {
     </RouterLink>
 
     <div class="my-4">
-      <RouterView />
+      <ModalRouterView />
     </div>
 
     <div class="grid gap-4 max-w-200px">
@@ -82,7 +78,7 @@ const onOpenFailedCase = async (name: string) => {
         class="!ml-0"
         type="warning"
         icon="close"
-        @click="visible = false"
+        @click="close()"
       >
         Close
       </ElButton>
@@ -90,13 +86,13 @@ const onOpenFailedCase = async (name: string) => {
         class="!ml-0"
         type="success"
         icon="check"
-        @click="$emit('return', 'ModalB return value')"
+        @click="closeThenReturn('ModalB return value')"
       >
         Close (with Return Value)
       </ElButton>
     </div>
 
     <template #footer />
-  </ElDrawer>
+  </LayoutDialog>
 </template>
 <style></style>

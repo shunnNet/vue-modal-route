@@ -1,26 +1,19 @@
 <script setup lang="ts">
-import { ElButton, ElDialog } from 'element-plus'
-import { ModalPathView } from '@vmr/vue-modal-route'
+import LayoutDialog from './LayoutDialog'
 
-const visible = defineModel({
-  type: Boolean,
-  default: false,
-})
 defineProps({
   message: {
     type: String,
     default: '',
   },
 })
-defineEmits(['return', 'message'])
 </script>
 <template>
-  <ElDialog
-    v-model="visible"
+  <LayoutDialog
     title="Query Modal A"
   >
-    <div class="grid gap-2" />
-    <!-- <ModalPathView /> -->
-  </ElDialog>
+    <div class="grid gap-2">Query Modal A</div>
+    <div>Message: {{ message }}</div>
+  </LayoutDialog>
 </template>
 <style></style>

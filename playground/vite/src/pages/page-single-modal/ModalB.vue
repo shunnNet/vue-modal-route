@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { ElButton, ElDialog } from 'element-plus'
+import { ElButton } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import HighlightText from '~/components/HighlightText.vue'
-import { ModalRouterView } from '@vmr/vue-modal-route'
+import { ModalRouterView, useCurrentModal } from '@vmr/vue-modal-route'
+import LayoutDialog from '~/components/LayoutDialog'
 
-const visible = defineModel({
-  type: Boolean,
-  default: false,
-})
-defineEmits(['return'])
+
 defineProps({
   message: {
     type: String,
@@ -16,12 +13,11 @@ defineProps({
   },
 })
 const route = useRoute()
-const router = useRouter()
-console.log(router.getRoutes())
+
+const { closeThenReturn, close } = useCurrentModal()
 </script>
 <template>
-  <ElDialog
-    v-model="visible"
+  <LayoutDialog
     title="Page Single Modal B"
   >
     <p>Params.id: {{ route.params.id }}</p>
@@ -35,18 +31,18 @@ console.log(router.getRoutes())
       <ElButton
         type="warning"
         icon="close"
-        @click="visible = false"
+        @click="close()"
       >
         Close
       </ElButton>
       <ElButton
         type="success"
         icon="check"
-        @click="$emit('return', 'ModalB return value')"
+        @click="closeThenReturn('ModalB return value')"
       >
         Confirm
       </ElButton>
     </template>
-  </ElDialog>
+  </LayoutDialog>
 </template>
 <style></style>

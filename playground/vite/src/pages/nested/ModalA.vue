@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import { ElButton, ElDialog } from 'element-plus'
+import { ElButton } from 'element-plus'
 import HighlightText from '~/components/HighlightText.vue'
-import { setupModal, ModalPathView } from '@vmr/vue-modal-route'
+import { setupModal, ModalPathView, useCurrentModal } from '@vmr/vue-modal-route'
+import LayoutDialog from '~/components/LayoutDialog'
 
-const visible = defineModel({
-  type: Boolean,
-  default: false,
-})
 defineProps({
   message: {
     type: String,
@@ -15,12 +12,10 @@ defineProps({
 })
 defineEmits(['return', 'message'])
 const { open } = setupModal('ModalNestedB')
+const { close, closeThenReturn } = useCurrentModal()
 </script>
 <template>
-  <ElDialog
-    v-model="visible"
-    title="Nested Modal A"
-  >
+  <LayoutDialog title="Nested Modal A">
     <div class="grid gap-2">
       <HighlightText
         v-if="message"
@@ -46,18 +41,19 @@ const { open } = setupModal('ModalNestedB')
       <ElButton
         type="warning"
         icon="close"
-        @click="visible = false"
+        @click="close"
       >
         Close
       </ElButton>
       <ElButton
         type="success"
         icon="check"
-        @click="$emit('return', 'ModalA return value')"
+        @click="closeThenReturn('ModalA return value')"
       >
         Close (with Return Value)
       </ElButton>
     </template>
-  </ElDialog>
+
+</LayoutDialog>
 </template>
 <style></style>

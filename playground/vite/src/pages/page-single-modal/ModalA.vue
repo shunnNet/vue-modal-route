@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ElButton, ElDrawer } from 'element-plus'
-import { useModalRoute } from '@vmr/vue-modal-route'
+import { ElButton } from 'element-plus'
+import { useCurrentModal, useModalRoute } from '@vmr/vue-modal-route'
 import { QueryModalA } from '~/modals'
+import LayoutDialog from '~/components/LayoutDialog'
 
 const { openModal, closeModal } = useModalRoute()
+const { closeThenReturn, close } = useCurrentModal()
 
-const visible = defineModel<boolean>()
 
 defineProps({
   message: {
@@ -13,7 +14,7 @@ defineProps({
     default: '',
   },
 })
-defineEmits(['return', 'message'])
+defineEmits([ 'message'])
 const onOpenGlobalModal = () => {
   openModal('ModalGlobalA').then((v) => {
     console.log('ModalGlobalA return', v)
@@ -25,17 +26,14 @@ const onOpenQueryModal = () => {
     // Query should be append
     query: { additionQuery: 'query1' },
     // Hash should be ignore
-    hash: '#hash',
+    // hash: '#hash',
   }).then((v) => {
     console.log('ModalQueryA return', v)
   })
 }
 </script>
 <template>
-  <ElDrawer
-    v-model="visible"
-    title="Page Single Modal A"
-  >
+  <LayoutDialog title="Page Single Modal A">
     <header
       v-if="$slots.header"
       class="mb-4"
@@ -67,7 +65,7 @@ const onOpenQueryModal = () => {
       <ElButton
         type="warning"
         icon="close"
-        @click="visible = false"
+        @click="close"
       >
         Close
       </ElButton>
@@ -81,7 +79,7 @@ const onOpenQueryModal = () => {
       <ElButton
         type="success"
         icon="check"
-        @click="$emit('return', 'ModalA return value')"
+        @click="closeThenReturn('ModalA return value')"
       >
         Close (with returnValue)
       </ElButton>
@@ -98,6 +96,6 @@ const onOpenQueryModal = () => {
         OpenQueryModal
       </ElButton>
     </div>
-  </ElDrawer>
+  </LayoutDialog>
 </template>
 <style></style>

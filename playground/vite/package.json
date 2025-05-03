@@ -1,5 +1,5 @@
 {
-  "name": "vite-play",
+  "name": "@vmr/playground-vite",
   "private": true,
   "version": "0.0.0",
   "type": "module",
