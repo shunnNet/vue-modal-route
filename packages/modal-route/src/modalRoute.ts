@@ -9,7 +9,7 @@ import {
   createWebHistory,
 } from 'vue-router'
 import type { RouterOptions } from 'vue-router'
-import { ensureArray, isPlainObject, noop, traverseRouteRecords, formalizeRouteRecord, createContext, useRouterUtils } from './utils'
+import { ensureArray, isPlainObject, noop, traverseRouteRecords, formalizeRouteRecord, createContext, useRouterUtils, isModalRouteRecordNormalized, isModalRouteRecordRawNormalized } from './utils'
 import { useModalHistory } from './history/index'
 import { createContext as createVueContext } from '@vue-use-x/common'
 import {
@@ -68,12 +68,22 @@ export const createModalRoute = (options: TCreateModalRouteOptions) => {
 
   const formalizedRoutes = traverseRouteRecords(
     _options.routes,
-    (route, inModalRoute) => {
+    (route, inModalRoute, parent) => {
+      const r = formalizeRouteRecord(route, inModalRoute)
       if (!route.name) {
         // Note: The name is required for `findBase` and global route base
         console.warn(`Route "${route.path}" must have a name, otherwise modal route will not work correctly.`)
       }
-      return formalizeRouteRecord(route, inModalRoute)
+      if (
+        isModalRouteRecordRawNormalized(r)
+        && (!parent.length
+          || (parent.length && !parent.some(
+            p => !!p.component || (p.components && Object.keys(p.components).length),
+          )))
+      ) {
+        throw new Error('Modal route must have a parent route with component.')
+      }
+      return r
     },
   )
 

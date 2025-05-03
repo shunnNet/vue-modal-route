@@ -33,16 +33,18 @@ export const isModalRouteRecordNormalized = (route: RouteRecordNormalized): rout
 
 export const traverseRouteRecords = (
   routes: RouteRecordRaw[],
-  callback: (route: RouteRecordRaw, inModalRoute: boolean) => RouteRecordRaw | undefined,
+  callback: (route: RouteRecordRaw, inModalRoute: boolean, parents: RouteRecordRaw[]) => RouteRecordRaw | undefined,
   inModalRoute: boolean = false,
+  parents: RouteRecordRaw[] = [],
 ) => {
   return routes.map((route) => {
-    const result = callback(route, inModalRoute) ?? route
+    const result = callback(route, inModalRoute, parents) ?? route
     if (Array.isArray(result.children)) {
       result.children = traverseRouteRecords(
         result.children,
         callback,
         inModalRoute || isModalRouteRecordRawNormalized(result),
+        [...parents, result],
       )
     }
     return result
