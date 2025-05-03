@@ -27,11 +27,9 @@ export default defineComponent({
 
     modalQueryContext.provide(true)
 
-    const { isModalActive } = useModalRoute()
-
     const componentsBeRendered = computed(
       () => ctx.queryRoutes
-        .flatMap(modal => isModalActive(modal.name)
+        .flatMap(modal => ctx.defineActive(modal.name)
           ? [{ modalName: modal.name, component: modal.component }]
           : [],
         ),

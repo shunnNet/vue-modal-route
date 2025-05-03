@@ -19,12 +19,13 @@ export const createGlobalRoutes = (
 
   function openModal(name: string, options?: {
     query?: Record<string, any>
-    global?: string
+    hash?: string
     params?: Record<string, any>
   }) {
     prepareGlobalRoute()
     return router.push({
       name,
+      ...(options?.hash ? { hash: options.hash } : {}),
       ...(options?.params ? { params: options.params } : {}),
       ...(options?.query ? { query: options.query } : {}),
     })
@@ -42,15 +43,11 @@ export const createGlobalRoutes = (
       if (!aRoute.meta?.modal) {
         return
       }
-      if (!aRoute.name) {
+      if (typeof aRoute.name !== 'string') {
         console.error('Modal route must have a name', aRoute)
         throw new Error('Modal route must have a name')
       }
-      store.registerModal(aRoute.name as string, 'global', {
-        ...aRoute.meta,
-        isActive: defineActive,
-        findBase,
-      })
+      store.register(aRoute.name, 'global', aRoute.meta)
       if (aRoute.children?.length) {
         registerGlobalRoutes(aRoute.children)
       }
@@ -93,8 +90,10 @@ export const createGlobalRoutes = (
 
   return {
     routes: globalRoute,
-    registerGlobalRoutes,
-    prepareGlobalRoute,
-    openModal,
+    register: registerGlobalRoutes,
+    prepare: prepareGlobalRoute,
+    open: openModal,
+    findBase,
+    defineActive,
   }
 }

@@ -13,13 +13,12 @@ export const createPathRoutes = (
 
   function openModal(name: string, options?: {
     query?: Record<string, any>
-    global?: string
+    hash?: string
     params?: Record<string, any>
   }) {
     return router.push({
       name,
-      // TODO
-      // ...(options?.global ? { global: options.global } : {}),
+      ...(options?.hash ? { hash: options.hash } : {}),
       ...(options?.params ? { params: options.params } : {}),
       ...(options?.query ? { query: options.query } : {}),
     })
@@ -41,20 +40,22 @@ export const createPathRoutes = (
     }
   }
 
-  function registerPathModalRoutes(routes: RouteRecordNormalized[]) {
+  function register(routes: RouteRecordNormalized[]) {
     routes.forEach((aRoute) => {
       if (isModalRouteRecordNormalized(aRoute)) {
-        store.registerModal(aRoute.name, 'path', {
-          ...aRoute.meta,
-          isActive: defineActive,
-          findBase,
-        })
+        store.register(
+          aRoute.name,
+          'path',
+          { direct: aRoute.meta.direct },
+        )
       }
     })
   }
 
   return {
-    registerPathModalRoutes,
-    openModal,
+    register,
+    open: openModal,
+    findBase,
+    defineActive,
   }
 }

@@ -19,16 +19,11 @@ export const createQueryRoutes = (
   function registerQueryRoutes(routeOrRouteList: TModalQueryRouteRecord | TModalQueryRouteRecord[]) {
     const routes = ensureArray(routeOrRouteList)
     routes.forEach((aRoute) => {
-      if (!aRoute.name) {
+      if (typeof aRoute.name !== 'string') {
         console.error('Modal route must have a name', aRoute)
         throw new Error('Modal route must have a name')
       }
-      store.registerModal(aRoute.name, 'query', {
-        ...aRoute.meta,
-        isActive,
-        open: openModal,
-        findBase,
-      })
+      store.register(aRoute.name, 'query', aRoute.meta)
     })
     addRoutes(routes)
     return routes
@@ -47,8 +42,12 @@ export const createQueryRoutes = (
 
   function openModal(name: string, options?: {
     query?: Record<string, any>
+    hash?: string
+    params?: Record<string, any>
   }) {
     return router.push({
+      ...(options?.hash ? { hash: options.hash } : {}),
+      ...(options?.params ? { params: options.params } : {}),
       query: {
         ...currentRoute.value.query,
         ...options?.query,
@@ -57,9 +56,9 @@ export const createQueryRoutes = (
     })
   }
 
-  const isActive = (name: string) => mQName(name) in currentRoute.value.query
+  const defineActive = (name: string) => mQName(name) in currentRoute.value.query
 
-  function findBase(name: string) {
+  function findBase(name: string, params: Record<string, any> = {}) {
     const currentModalNames = getQueryModalsFromQuery(currentRoute.value.query).map(m => m.name)
     const index = currentModalNames.indexOf(name)
     if (index > -1) {
@@ -67,7 +66,7 @@ export const createQueryRoutes = (
       const newQuery = baseQueryNames.reduce((acc, name) => {
         return { ...acc, ...mQuery(name) }
       }, {})
-      return { ...currentRoute.value, query: newQuery }
+      return { ...currentRoute.value, query: newQuery, params }
     }
     else {
       return null
@@ -77,7 +76,7 @@ export const createQueryRoutes = (
   function getQueryModalsFromQuery(query: Record<string, any>) {
     return Object.keys(query).flatMap((name) => {
       const _name = getNameFromMQuery(name)
-      const modal = store.getModalItemUnsafe(_name)
+      const modal = store.getUnsafe(_name)
       return modal ? [modal] : []
     })
   }
@@ -90,12 +89,14 @@ export const createQueryRoutes = (
   return {
     routes: _routes,
     addRoutes,
-    registerQueryRoutes,
-    openModal,
+    register: registerQueryRoutes,
+    open: openModal,
     getQueryModalsFromQuery,
     mQName,
     mQuery,
     removeModalFromQuery,
     mqprefix,
+    findBase,
+    defineActive,
   }
 }
