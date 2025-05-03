@@ -2,8 +2,7 @@ import { h, resolveComponent, defineComponent } from 'vue'
 import ModalRouteView from './ModalRouteView'
 import { globalModalContext } from './ModalGlobalView'
 import { modalQueryContext } from './ModalQueryView'
-import { useNextRoute } from './router'
-import { isModalRouteRecordNormalized } from './helpers'
+import { isModalRouteRecordNormalized, useNextRoute } from '../utils'
 
 export default defineComponent({
   components: {

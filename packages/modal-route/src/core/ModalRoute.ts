@@ -1,8 +1,8 @@
-import { TModalData, TModalType } from './types'
-
-import type { TDefer } from './helpers'
-import { defer } from './helpers'
-import { computed, ComputedRef, Ref, ref } from 'vue'
+import type { TModalData, TModalType } from '../types'
+import type { TDefer } from '../utils'
+import { defer } from '../utils'
+import { computed, ref } from 'vue'
+import type { Ref, ComputedRef } from 'vue'
 
 export type TModalRouteOptions = {
   props?: TModalData | ((data: TModalData | null) => TModalData)

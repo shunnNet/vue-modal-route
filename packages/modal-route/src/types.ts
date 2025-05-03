@@ -1,7 +1,7 @@
 import { Component, RendererElement, RendererNode, VNode } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
-import { TCreateModalRelationReturn } from './relation'
-import { createModalStore } from './store'
+import type { TCreateModalRelationReturn } from './core'
+import { createModalRouteStore } from './core'
 
 export type TModalType = 'global' | 'query' | 'path'
 export type TModalData = Record<string, any>
@@ -19,7 +19,7 @@ export type TOpenModalOptions = {
   params: Record<string, any>
 }
 export type TModalRouteContext = {
-  store: ReturnType<typeof createModalStore>
+  store: ReturnType<typeof createModalRouteStore>
   queryRoutes: TModalQueryRouteRecord[]
   // FIXME: my type is not concise
   openModal: (name: string, options?: Partial<TOpenModalOptions>) => Promise<any>

@@ -1,9 +1,9 @@
 import { Router, RouteRecordNormalized } from 'vue-router'
-import { createModalStore } from './store'
-import { isModalRouteRecordNormalized } from './helpers'
+import { createModalRouteStore } from './store'
+import { isModalRouteRecordNormalized } from '../utils'
 
 export const createPathRoutes = (
-  store: ReturnType<typeof createModalStore>,
+  store: ReturnType<typeof createModalRouteStore>,
   router: Router,
 ) => {
   const currentRoute = router.currentRoute

@@ -1,5 +1,5 @@
 import { computed, defineComponent, h, toRef } from 'vue'
-import { modalRouteContext } from './modalRoute'
+import { modalRouteContext } from '../modalRoute'
 
 export default defineComponent({
   name: 'ModalLayout',

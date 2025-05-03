@@ -1,7 +1,7 @@
 import { computed, defineComponent, h } from 'vue'
 import ModalRoute from './ModalRouteView'
-import { useModalRoute, modalRouteContext } from './modalRoute'
-import { useMatchedRoute } from './router'
+import { modalRouteContext } from '../modalRoute'
+import { useMatchedRoute } from '../utils'
 import { createContext } from '@vue-use-x/common'
 
 export const modalQueryContext = createContext<boolean>()

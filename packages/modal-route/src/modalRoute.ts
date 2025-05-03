@@ -1,27 +1,28 @@
-import { App, Component, computed, inject, markRaw, onScopeDispose } from 'vue'
-import { TModalData, TModalQueryRouteRecord, TModalRouteContext, TOpenModalOptions } from './types'
+import { App, Component, markRaw } from 'vue'
+import { TModalData, TModalQueryRouteRecord, TModalRouteContext } from './types'
 import {
   Router,
   RouteRecordRaw,
   RouteLocationNormalizedGeneric,
-  useRoute,
   NavigationFailure,
   createRouter,
   createWebHistory,
 } from 'vue-router'
-import { ensureArray, isPlainObject, noop, traverseRouteRecords, formalizeRouteRecord } from './helpers'
-import { createGlobalRoutes, isGlobalModalRootRoute } from './global'
-import { useModalHistory } from './history'
-import { createModalStore } from './store'
-import { createQueryRoutes } from './query'
-import { createPathRoutes } from './path'
-import { createContext } from './context'
-import { createContext as createVueContext } from '@vue-use-x/common'
-import { useMatchedRoute, useRouterUtils } from './router'
 import type { RouterOptions } from 'vue-router'
-import { ModalRouteViewKey } from './ModalRouteView'
-import { createModalRelation, registerModalRoutesRelation, registerModalRoutesRelationQuery } from './relation'
-import { ModalRoute, TModalRouteOptions } from './modal'
+import { ensureArray, isPlainObject, noop, traverseRouteRecords, formalizeRouteRecord, createContext, useRouterUtils } from './utils'
+import { useModalHistory } from './history/index'
+import { createContext as createVueContext } from '@vue-use-x/common'
+import {
+  createModalRelation,
+  registerModalRoutesRelation,
+  registerModalRoutesRelationQuery,
+  createModalRouteStore,
+  ModalRoute,
+  createQueryRoutes,
+  createGlobalRoutes,
+  isGlobalModalRootRoute,
+  createPathRoutes,
+} from './core'
 
 type TModalNavigationGuardAfterEach = (context: {
   to: RouteLocationNormalizedGeneric
@@ -78,7 +79,7 @@ export const createModalRoute = (options: TCreateModalRouteOptions) => {
   })
 
   const currentRoute = router.currentRoute
-  const store = createModalStore()
+  const store = createModalRouteStore()
   const relation = createModalRelation()
 
   const globalRoutes = createGlobalRoutes(store, router)
@@ -496,146 +497,6 @@ export const createModalRoute = (options: TCreateModalRouteOptions) => {
       app.use(router)
     },
   } as Router
-}
-
-export const useModalRoute = () => {
-  const {
-    closeModal,
-    openModal,
-  } = modalRouteContext.ensureInjection('useModalRoute must be used inside a ModalRoute component')
-
-  return {
-    setupModal,
-    closeModal,
-    openModal,
-  }
-}
-export const setupModal = <ReturnValue = any>(
-  name: string,
-  options?: TModalRouteOptions,
-) => {
-  const {
-    closeModal,
-    openModal,
-    relation,
-    store,
-  } = modalRouteContext.ensureInjection('setupModal must be used inside a ModalRoute component')
-
-  // useModal can not target nested modal
-  const matchedRoute = useMatchedRoute()
-  const currentRoute = useRoute()
-  const relatedModalInfo = relation.get(name)
-
-  const inModalGlobalRoute = currentRoute.matched.some(r => isGlobalModalRootRoute(r))
-
-  if (matchedRoute?.value) {
-    if (relatedModalInfo.type === 'global' && !inModalGlobalRoute) {
-      throw new Error(`useModal for first layer global modal must be used outside <RouterView>`)
-    }
-    if (relatedModalInfo.type === 'query') {
-      throw new Error(`useModal for query modal must be used outside <RouterView>`)
-    }
-  }
-  const checkIfModalIsChild = (children: RouteRecordRaw[]) => {
-    for (const child of children) {
-      if (child.name === name) {
-        return true
-      }
-      if (child.children && checkIfModalIsChild(child.children)) {
-        return true
-      }
-    }
-    return false
-  }
-  let modalNameToOpen = name
-  if (
-    relatedModalInfo.type === 'path'
-    || (inModalGlobalRoute && relatedModalInfo.type === 'global')
-  ) {
-    if (!checkIfModalIsChild(matchedRoute?.value?.children || [])) {
-      throw new Error(`useModal ${name} must be used in a parent route of the modal.`)
-    }
-
-    const parentIndex = currentRoute.matched.findIndex(r =>
-      matchedRoute?.value?.name === r.name && matchedRoute?.value?.path === r.path,
-    )
-    const openedModals = currentRoute.matched.slice(0, parentIndex + 1).flatMap(r => r.meta.modal ? [r.name as string] : [])
-    const targetModals = relatedModalInfo.modals.filter(name => !openedModals.includes(name))
-
-    if (targetModals.length > 1) {
-      throw new Error(`Multiple modals found for ${name}, useModal can only be used for single modal.`)
-    }
-    modalNameToOpen = targetModals[0]
-  }
-
-  const modal = store.get(modalNameToOpen)
-
-  if (options) {
-    try {
-      modal.setOptions(options)
-    }
-    catch (_) {
-      throw new Error(`useModal ${name} may be called in multiple place in same times. useModal for a name can only be used in one place at a time.`)
-    }
-    onScopeDispose(() => {
-      modal.unsetOptions()
-    })
-    if (options?.manual) {
-      modal.lock()
-    }
-  }
-  const returnValue = useModalReturnValue<ReturnValue>(modalNameToOpen)
-  const isActive = useModalActive(modalNameToOpen)
-
-  return {
-    // TODO: data here should not accept array of data, because `open` only open single modal.
-    open: (options?: Partial<TOpenModalOptions>) => openModal(name, options),
-    close: () => closeModal(modalNameToOpen),
-    unlock: () => modal.unlock(),
-    isActive,
-    returnValue,
-  }
-}
-
-export function useCurrentModal<ReturnValue = unknown>() {
-  const routeView = inject(ModalRouteViewKey)!
-  const modal = useModal<ReturnValue>(routeView.name)
-  const closeThenReturn = <R extends ReturnValue>(value: R) => {
-    routeView.closeThenReturn(value)
-  }
-  return {
-    ...modal,
-    modelValue: routeView.visible,
-    closeThenReturn,
-  }
-}
-
-export const useModal = <ReturnValue>(name: string) => {
-  const {
-    closeModal,
-    openModal,
-  } = modalRouteContext.ensureInjection('useModal must be used inside a ModalRoute component')
-
-  return {
-    open: (options?: Partial<TOpenModalOptions>) => openModal(name, options),
-    close: () => closeModal(name),
-    isActive: useModalActive(name),
-    returnValue: useModalReturnValue<ReturnValue>(name),
-  }
-}
-
-export const useModalReturnValue = <T>(name: string) => {
-  const { store } = modalRouteContext.ensureInjection('useModalReturnValue must be used inside a ModalRoute component')
-
-  const modal = store.get(name)
-
-  return computed(() => modal.state.value.returnValue as T)
-}
-
-export const useModalActive = (name: string) => {
-  const { defineActive } = modalRouteContext.ensureInjection('useModalActive must be used inside a ModalRoute component')
-
-  return computed(() => defineActive(name))
 }
 
 // export const createNuxtModalRoute = (

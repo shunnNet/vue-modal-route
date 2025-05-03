@@ -1,5 +1,5 @@
-import { deepClone, defer, TDefer } from './helpers'
-import { useSessionStorage } from './storage'
+import { useSessionStorage, deepClone, defer } from '../utils'
+import type { TDefer } from '../utils'
 
 type TvmrtTags = Record<string, string>
 

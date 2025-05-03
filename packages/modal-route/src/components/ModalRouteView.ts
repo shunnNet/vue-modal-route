@@ -1,8 +1,7 @@
 import { defineComponent, h, PropType, watch, computed, toValue, provide, InjectionKey, Ref, shallowReactive } from 'vue'
-import { isPlainObject } from './helpers'
-import { modalRouteContext } from './modalRoute'
-import { TComponent, TModalType } from './types'
-import { useMatchedRoute } from './router'
+import { isPlainObject, useMatchedRoute } from '../utils'
+import { modalRouteContext } from '../modalRoute'
+import { TComponent, TModalType } from '../types'
 
 export default defineComponent({
   name: 'ModalRouteView',

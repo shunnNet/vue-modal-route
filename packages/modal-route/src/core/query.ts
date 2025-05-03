@@ -1,11 +1,11 @@
 import { defineAsyncComponent, markRaw } from 'vue'
-import { TModalQueryRouteRecord } from './types'
-import { createModalStore } from './store'
-import { ensureArray } from './helpers'
-import { Router } from 'vue-router'
+import type { Router } from 'vue-router'
+import type { TModalQueryRouteRecord } from '../types'
+import { createModalRouteStore } from './store'
+import { ensureArray } from '../utils'
 
 export const createQueryRoutes = (
-  store: ReturnType<typeof createModalStore>,
+  store: ReturnType<typeof createModalRouteStore>,
   router: Router,
 ) => {
   const _routes: TModalQueryRouteRecord[] = []

@@ -1,6 +1,6 @@
 import { RouteRecordRaw } from 'vue-router'
-import { TModalQueryRouteRecord, TModalRouteRecordRaw, TModalType } from './types'
-import { isModalRouteRecordRawNormalized } from './helpers'
+import type { TModalQueryRouteRecord, TModalRouteRecordRaw, TModalType } from '../types'
+import { isModalRouteRecordRawNormalized } from '../utils'
 
 export interface TModalRelation {
   type: TModalType

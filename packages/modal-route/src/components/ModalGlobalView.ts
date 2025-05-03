@@ -1,8 +1,8 @@
 import { computed, defineComponent, h, provide, resolveComponent } from 'vue'
 import { useRoute, viewDepthKey } from 'vue-router'
 import ModalRoute from './ModalRouteView'
-import { useMatchedRoute } from './router'
-import { isGlobalModalRootRoute } from './global'
+import { useMatchedRoute } from '../utils'
+import { isGlobalModalRootRoute } from '../core'
 import { createContext } from '@vue-use-x/common'
 
 export const globalModalContext = createContext<boolean>()
