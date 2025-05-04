@@ -1,6 +1,6 @@
 import { createWebHistory, createRouter } from "vue-router";
 import { routes, handleHotUpdate } from "vue-router/auto-routes"
-import { applyModalPrefixToRoutes, createModalRoute } from "@vmr/core"
+import { applyModalPrefixToRoutes, createModalRoute } from "@vmrh/core"
 import { ModalHashA } from "./components/HighlightText.vue"
 
 const history = createWebHistory()

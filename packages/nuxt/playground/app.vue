@@ -7,5 +7,5 @@
 </template>
 
 <script setup lang="ts">
-import { ModalGlobalView } from '@vmr/core'
+import { ModalGlobalView } from '@vmrh/core'
 </script>

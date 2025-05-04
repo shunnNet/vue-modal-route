@@ -1,5 +1,5 @@
 {
-  "name": "@vmr/nuxt",
+  "name": "@vmrh/nuxt",
   "version": "0.1.0",
   "description": "Nuxt module for VMR (Vue Modal Route)",
   "repository": "your-org/my-module",
@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@nuxt/kit": "^3.14.1592",
-    "@vmr/core": "workspace:^"
+    "@vmrh/core": "workspace:^"
   },
   "devDependencies": {
     "@nuxt/devtools": "^1.6.4",

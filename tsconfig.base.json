@@ -23,7 +23,7 @@
     "noFallthroughCasesInSwitch": true,
     "declaration": true,
     "paths": {
-      "@vmr/core": [
+      "@vmrh/core": [
         "./packages/modal-route/src/index.ts"
       ]
     }

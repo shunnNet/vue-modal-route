@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton, ElMessage } from 'element-plus'
-import {  ModalRouterView, useCurrentModal, useModalRoute } from '@vmr/core'
+import {  ModalRouterView, useCurrentModal, useModalRoute } from '@vmrh/core'
 import HighlightText from '~/components/HighlightText.vue'
 import LayoutDialog from '~/components/LayoutDialog'
 

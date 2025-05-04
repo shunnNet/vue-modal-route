@@ -5,7 +5,7 @@ import { defineComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SingleModalSectionA from '~/components/SingleModalSectionA.vue'
 import SingleModalSectionB from '~/components/SingleModalSectionB.vue'
-import { ModalRouterView, ModalPathView } from '@vmr/core'
+import { ModalRouterView, ModalPathView } from '@vmrh/core'
 
 const insertMessage = ref('Message from slot')
 

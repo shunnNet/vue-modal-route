@@ -1,5 +1,5 @@
 {
-  "name": "vmr",
+  "name": "vmrh",
   "description": "A Vue 3 package that integrates vue-router with modal state management, enabling modal dialogs to be controlled via routes.",
   "version": "0.1.0",
   "type": "module",
@@ -12,16 +12,16 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "play:vite": "pnpm --filter @vmr/playground-vite dev",
-    "play:build:vite": "pnpm --filter @vmr/playground-vite build",
-    "play:vite-uvr": "pnpm --filter @vmr/playground-vite-uvr dev",
-    "play:build:vite-uvr": "pnpm --filter @vmr/playground-vite-uvr build",
-    "build:core": "pnpm --filter @vmr/core build",
-    "stub:core": "pnpm --filter @vmr/core stub",
-    "dev:nuxt": "pnpm --filter @vmr/nuxt dev",
-    "prepare:nuxt": "pnpm --filter @vmr/nuxt dev:prepare",
-    "dev:build:nuxt": "pnpm --filter @vmr/nuxt dev:build",
-    "prepack:nuxt": "pnpm --filter @vmr/nuxt prepack"
+    "play:vite": "pnpm --filter @vmrh/playground-vite dev",
+    "play:build:vite": "pnpm --filter @vmrh/playground-vite build",
+    "play:vite-uvr": "pnpm --filter @vmrh/playground-vite-uvr dev",
+    "play:build:vite-uvr": "pnpm --filter @vmrh/playground-vite-uvr build",
+    "build:core": "pnpm --filter @vmrh/core build",
+    "stub:core": "pnpm --filter @vmrh/core stub",
+    "dev:nuxt": "pnpm --filter @vmrh/nuxt dev",
+    "prepare:nuxt": "pnpm --filter @vmrh/nuxt dev:prepare",
+    "dev:build:nuxt": "pnpm --filter @vmrh/nuxt dev:build",
+    "prepack:nuxt": "pnpm --filter @vmrh/nuxt prepack"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",

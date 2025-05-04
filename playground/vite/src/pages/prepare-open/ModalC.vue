@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ElButton,  ElFormItem, ElForm, ElLoading } from 'element-plus'
 import {  ref, watch } from 'vue'
-import {  useCurrentModal } from '@vmr/core'
+import {  useCurrentModal } from '@vmrh/core'
 import LayoutDialog from '~/components/LayoutDialog'
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 

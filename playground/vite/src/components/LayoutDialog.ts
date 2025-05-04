@@ -1,5 +1,5 @@
 import { defineComponent, h, resolveComponent } from "vue";
-import { useCurrentModal } from "@vmr/core";
+import { useCurrentModal } from "@vmrh/core";
 
 export default defineComponent({
   setup(props, { slots }) {

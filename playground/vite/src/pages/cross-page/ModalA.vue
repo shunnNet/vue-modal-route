@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ElButton } from 'element-plus'
 import HighlightText from '~/components/HighlightText.vue'
-import { useModalRoute } from '@vmr/core'
+import { useModalRoute } from '@vmrh/core'
 import LayoutDialog from '~/components/LayoutDialog'
 
 

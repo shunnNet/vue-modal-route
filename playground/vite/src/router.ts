@@ -1,4 +1,4 @@
-import { createModalRoute } from '@vmr/core'
+import { createModalRoute } from '@vmrh/core'
 import { ModalA, ModalB, QueryModalA } from './modals'
 import { defineAsyncComponent } from 'vue'
 

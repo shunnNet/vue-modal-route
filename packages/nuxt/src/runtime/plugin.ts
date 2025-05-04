@@ -1,5 +1,5 @@
 // import { defineNuxtPlugin } from '#build/imports'
-import { createNuxtModalRoute, createModalRoute } from '@vmr/core'
+import { createNuxtModalRoute, createModalRoute } from '@vmrh/core'
 import { history, globalModal } from './router.options'
 import { defineNuxtPlugin, useRouter } from 'nuxt/app'
 

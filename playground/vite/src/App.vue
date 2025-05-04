@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ModalGlobalView, ModalQueryView, useModalRoute } from '@vmr/core'
+import { ModalGlobalView, ModalQueryView, useModalRoute } from '@vmrh/core'
 import { ElButton } from 'element-plus'
 import { QueryModalA } from './modals'
 

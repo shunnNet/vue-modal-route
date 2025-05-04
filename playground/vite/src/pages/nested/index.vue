@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useModalRoute, ModalPathView } from '@vmr/core'
+import { useModalRoute, ModalPathView } from '@vmrh/core'
 import PageTitle from '~/components/PageTitle.vue'
 import { ref } from 'vue'
 

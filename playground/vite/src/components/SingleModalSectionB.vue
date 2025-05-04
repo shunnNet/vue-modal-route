@@ -4,7 +4,7 @@ import { ElButton } from 'element-plus'
 import {
   setupModal,
   useModalRoute,
-} from '@vmr/core'
+} from '@vmrh/core'
 import { ModalB } from '~/modals'
 
 const { openModal } = useModalRoute()

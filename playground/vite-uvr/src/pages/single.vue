@@ -4,7 +4,7 @@ import { ElDivider } from 'element-plus'
 import { ref } from 'vue'
 import SingleModalSectionA from '~/components/SingleModalSectionA.vue'
 // import SingleModalSectionB from '~/components/SingleModalSectionB.vue'
-import { ModalPathView } from '@vmr/core'
+import { ModalPathView } from '@vmrh/core'
 
 const insertMessage = ref('Message from slot')
 

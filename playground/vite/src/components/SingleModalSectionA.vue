@@ -8,7 +8,7 @@ import {
   useModalReturnValue,
   setupModal,
   useModalActive,
-} from '@vmr/core'
+} from '@vmrh/core'
 import { useRouter } from 'vue-router'
 import { ModalA } from '~/modals'
 

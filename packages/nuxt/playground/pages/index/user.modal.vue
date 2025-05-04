@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useModalRoute } from '@vmr/core'
+import { useModalRoute } from '@vmrh/core'
 definePageMeta({
   // name: "hello",
   direct: true,

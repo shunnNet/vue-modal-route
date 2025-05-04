@@ -2,7 +2,7 @@
 import { ElButton } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import HighlightText from '~/components/HighlightText.vue'
-import { ModalRouterView, useCurrentModal } from '@vmr/core'
+import { ModalRouterView, useCurrentModal } from '@vmrh/core'
 import LayoutDialog from '~/components/LayoutDialog'
 
 

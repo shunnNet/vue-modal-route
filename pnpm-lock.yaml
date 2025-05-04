@@ -83,7 +83,7 @@ importers:
       '@nuxt/kit':
         specifier: ^3.14.1592
         version: 3.14.1592(magicast@0.3.5)(rollup@4.29.1)
-      '@vmr/core':
+      '@vmrh/core':
         specifier: workspace:^
         version: link:../core
     devDependencies:
@@ -154,7 +154,7 @@ importers:
       '@unocss/reset':
         specifier: ^0.63.2
         version: 0.63.6
-      '@vmr/core':
+      '@vmrh/core':
         specifier: workspace:0.1.0-alpha.1
         version: link:../../packages/core
       vue:
@@ -194,7 +194,7 @@ importers:
       '@unocss/reset':
         specifier: ^0.63.2
         version: 0.63.6
-      '@vmr/core':
+      '@vmrh/core':
         specifier: workspace:^
         version: link:../../packages/core
       vue:

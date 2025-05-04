@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { ElButton, ElDrawer } from 'element-plus'
-import { useModalRoute } from '@vmr/core'
+import { useModalRoute } from '@vmrh/core'
 
 const {  closeModal } = useModalRoute()
 
