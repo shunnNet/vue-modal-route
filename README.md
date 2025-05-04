@@ -1,339 +1,931 @@
 # vue-modal-route
-[English](./README.md) | [繁體中文](./README.zh-tw.md)
+[English](./README.md) 
 
-`vue-modal-route` is a package that can help open/close modals with routes, manage its data and get its return value.
+`vue-modal-route` is a Vue 3 package that integrates modal state management with vue-router. It allows you to control modals via routes and pass complex data effortlessly — making modal handling more declarative, shareable, and router-friendly.
 
-By leveraging `vue-router`, it opens or closes modals when navigating to or from specific paths in a web application. Additionally, it allows for the transmission of complex data beyond just route parameters.
-
-This is not the same thing as `Next.js` modal route (twitter-style modal), but similar with different concern. If you are finding for package like `Next.js`, try [nuxt-page-plus](https://github.com/serkodev/nuxt-pages-plus) made by [SerKo](https://github.com/serkodev).
-
-> [!WARNING] This package is still in development and is not yet ready for production use. But you can clone the repository and test it out for yourself.
-
-- [vue-modal-route](#vue-modal-route)
-  - [Features](#features)
-  - [Demo](#demo)
-  - [Documentation (In progress)](#documentation-in-progress)
-  - [Development](#development)
-    - [Usage (very basic)](#usage-very-basic)
-      - [Declare modal route](#declare-modal-route)
-      - [Prepare modal component](#prepare-modal-component)
-      - [Open/Close Modal](#openclose-modal)
-      - [Setup Modal](#setup-modal)
-      - [Pending modal visibility](#pending-modal-visibility)
-  - [Intro](#intro)
-    - [Motivation](#motivation)
-    - [Current Status, Challenges, and Future Plans](#current-status-challenges-and-future-plans)
-    - [Navigation Logic](#navigation-logic)
-      - [Explanation](#explanation)
-  - [License](#license)
-
+Unlike Next.js-style modals, this package takes a different approach. If you're looking for route-driven modals similar to those in Next.js, consider using [nuxt-page-plus](https://nuxt-pages-plus.pages.dev/routing/modal-routes).
 
 ## Features
-- 🚀 Open/Close modal with route, access it by url.
-- 🚀 Pass data to the modal and receive a return value from it.
-- 🌴 Use full power of `router-view`, `navigation-guard` of `vue-router`.
-- ⬅️ Ensure a consistent navigation experience between the website and the mobile app.
-- 🪟 Not tied to any Modal implementation, you can use any library you like.
+This package is designed for more flexible modal scenarios and comes with several key features:
 
-## Demo
-You can visit the demo site to check the current working results.
+- ✅ Use full vue-router capabilities inside your modal components — including router-view, navigation guards, and nested routes.
+- 🔗 Open modals via URL navigation, enabling deep linking and browser history support.
+- 📦 Pass complex data objects to modals, beyond the limitations of URL-encoded types.
+- 🧩 Supports a wide range of use cases — from simple alerts, login dialogs, to modals embedded in single-page views.
+- 👍 Not limited to a specific ModalUI library, you can use any ModalUI.
 
-Demo: https://vue-modal-route-demo.netlify.app
+---
 
-Not all modal can be directly access from URL. That is controlled by option. 
+## Why and How ?
+If you need the motivation and implementation details for vue-modal-route, you can refer to this article.
 
-The modals allowed access by URL are: 
-- https://vue-modal-route-demo.netlify.app/_modal/modal-hash-a
-- https://vue-modal-route-demo.netlify.app/modal-a
-- https://vue-modal-route-demo.netlify.app/prepare/modal-c
+https://dev.to/shunnnet/implementing-vue-modal-route-58ff
 
-The `hash` modal is implemented by `#` previously, but it's not now. It's actually a global modal can opened from anywhere. It now work like normal modal route but with  `/_modal/` path prefix.
+## Usage
 
-If you encounter any weird behaviour after few actions, try to open a new tab to reset the page. (because its use `SessionStorage`)
+### Quick Start
+Install it. 
 
-The code of demo can be found in the `src/pages` directory. If you want to learn more about how it work, you can refer to the [Development](#development) section below. 
+And your project must already include vue-router:
 
-It's welcome to open an issue if you found any bug or issue.
-
-## Documentation (In progress)
-In progress...
-
-## Development
-```bash
-# Clone the repository
-git clone git@github.com:shunnNet/vrm.git
-
-# install
-pnpm install
-
-# run
-pnpm dev
+```sh
+npm install @vmrh/core vue-router
 ```
 
-Open `http://localhost:5173` in your browser. You can find some links and buttons to test the package.
+To get started, use `createModalRoute` to configure both `vue-router` and `@vmrh/core`.
 
-### Usage (very basic)
+Set up any page as usual, and define modal routes under the children property of that route. For example:
 
-#### Declare modal route
 ```ts
-import { createModalRouter } from '~/modal'
+// src/router.ts
+import { createModalRoute } from '@vmrh/core'
 
-export const router = createModalRouter({
+export const router = createModalRoute({
   routes: [
     {
-      name: 'PageSingleModal',
+      name: "Index",
       path: '/',
-      component: () => import('./pages/index.vue'),
+      component: () => import("./pages/Index.vue"),
       children: [
-        // Declare modal route
         {
-          name: "ModalA", // required
-          path: 'modal-a'
-          component: () => import('path/to/modal.vue'),
+          // <-- Modal route
+          name: "MyIndexModal", // <-- Modal route's name
+          path: 'index-modal',
+          component: () => import("./pages/IndexModal.vue"),
+            modal: true, // <-- This makes it modal route.
           meta: {
-            modal: true, // required for declare modal route
-            direct: true // allow directly access from url
+            direct: true, // <-- This enable diretly access from url.
           }
-        },
-      ],
+        }
+      ]
+    }
+  ]
+})
+```
+
+> [!NOTE]
+> When using `createModalRoute`, **all routes must have a name**, and **the name must be of type string**.
+
+Then, register the router as a plugin in your app just like you would with regular `vue-router`:
+
+```ts
+import App from './App.vue'
+import { createApp } from 'vue'
+
+const app = createApp(App)
+app
+  .use(router)
+  .mount('#app')
+```
+
+And add `<RouterView>` to your App.vue.
+
+```vue
+<template>
+  <RouterView />
+</template>
+```
+
+Next, set up your modal route component (in the previous example, this would be `./pages/IndexModal.vue`).
+
+You can use any modal component inside your modal route.
+By calling `useCurrentModal`, you can access the current modal’s visible state via `modelValue`, and pass it into your own modal like this:
+
+```vue
+<!-- ./pages/IndexModal.vue -->
+<script setup lang="ts">
+import Modal from './path-to-my-modal'
+import { useCurrentModal } from '@vmrh/core'
+
+const { modelValue } = useCurrentModal()
+</script>
+
+<template>
+  <Modal v-model="modelValue" title="Modal Route">
+    <p> Hello World</p>
+  </Modal>
+</template>
+```
+
+In `Index.vue`, just like how you use `<RouterView>` to render child routes,
+you'll need to add `<ModalPathView>` in order to render the corresponding modal route.
+
+```vue
+<!-- ./pages/Index.vue -->
+<script setup lang="ts">
+import { ModalPathView } from '@vmrh/core'
+
+</script>
+
+<template>
+  <div>
+    <h1>Index</h1>
+    <ModalPathView />
+  </div>
+</template>
+```
+
+That’s it — setup is complete!
+You can now open the modal by navigating to the `/index-modal` route.
+
+### Modal Types
+In `vue-modal-route`, there are three types of modals, each with different characteristics designed for specific use cases:
+
+- `Path`: Modals that are tied to a specific page and bound to a fixed URL.
+
+- `Global`: Modals that can be opened from any page, typically used for global features like login, preferences, etc. They do not have a fixed URL.
+
+- `Query`: Modals that can also be opened from any page, often used for functional dialogs like alerts or confirmations. These are triggered using specific query strings.
+
+In the example above, we demonstrated a path modal, which is associated with a fixed URL.
+
+### Programmatically Open / Close Modal
+You can use `useModalRoute` to open, close, or configure a modal route — from any component, not just the parent.
+
+To interact with a modal route, you must reference it by its route name.
+
+```vue
+<script setup lang="ts">
+import { useModalRoute } from '@vmrh/core'
+
+const { openModal, closeModal } = useModalRoute()
+
+openModal('modal-name') // use name of the route (e.g `MyIndexModal`)
+
+closeModal('modal-name')
+
+</script>
+```
+
+### Props / Data
+To pass props to a modal route component, provide a `data` object when calling `openModal`.
+
+```ts
+openModal('modal-name', {
+  data: {
+    message: "Hi from parent."
+  }
+})
+```
+
+Then, receive it as `props` in the modal route component.
+
+```vue
+<script setup lang="ts">
+const { modelValue } = useCurrentModal()
+defineProps<{
+  message?: string
+}>()
+</script>
+
+<template>
+  <Modal v-model="modelValue">
+    <div>Message: {{ message }} </div>
+  </Modal>
+</template>
+```
+
+### `ReturnValue`
+`openModal` returns a promise that resolves when the modal is closed. The resolved value is the `returnValue`.
+
+By default, the `returnValue` is null.
+
+The modal route component can return a value using `closeAndReturn`. When this function is called, the modal will close, and the promise from `openModal` will resolve with the returned value.
+
+```vue
+<script setup lang="ts">
+const { modelValue, closeAndReturn } = useCurrentModal()
+</script>
+
+<template>
+  <Modal v-model="modelValue">
+    <div>Message: {{ message }} </div>
+    <!-- returnValue will be 'Modal returnValue' -->
+    <button @click="closeAndReturn('Modal returnValue')">Close with value</button>
+  </Modal>
+</template>
+```
+
+```ts
+const returnValue = await openModal('modal-name')
+
+returnValue // 'Modal returnValue'
+```
+
+### Params / Hash / Query
+You can pass `params`, `query`, and `hash` to `openModal`, which will be used by `router.push`. This is particularly useful when your modal route path is dynamic. For example:
+
+```ts
+// dynamic route modal
+{
+  name: 'modal-name',
+  path: 'modal-name/:foo',
+  component: () => import('./pages/ModalName.vue'),
+  meta: {
+    modal: true,
+  },
+}
+```
+
+```ts
+openModal('modal-name', {
+  params: { foo: 'bar' },
+  query: /** ... */,
+  hash:  /** ... */,
+})
+```
+
+### `setupModal`
+The `setupModal` function is used to configure **child route modals**. It allows you to define the modal's `slot`, `props`, and initialization strategy.
+
+To set this up, simply call `setupModal` in the parent component.
+
+```vue
+<script setup lang="ts">
+const {
+  // Works like `openModal`, but only open `modal-name` you specified
+  open, 
+  // Works like `closeModal`, but only close `modal-name` you specified
+  close,
+  // Computed object. returnValue of `modal-name` you specified
+  returnValue
+} = setupModal('modal-name')
+
+
+open({ 
+  data: {},
+  params: {},
+  // ...
+}) 
+</script>
+<template>
+  <ModalPathView />
+</template>
+```
+
+
+#### `Props`
+Similar to the `data` parameter in the `openModal` function, you can pass `props` to `setupModal` to define the `props` for the modal route component.
+
+```ts
+const { open } = setupModal('modal-name', {
+  props: {
+    foo: 'bar'
+  }
+})
+```
+
+The `data` will be merged into `props`, **with `data` taking precedence over props**.
+
+```ts
+const { open } = setupModal('modal-name', {
+  props: {
+    foo: 'bar'
+  }
+})
+open({
+  data: {
+    foo: 'bar2'
+  }
+})
+
+// The final props will be { foo: 'bar2' }
+```
+
+Additionally, `props` can accept a function that receives the data passed into `openModal`, allowing you to manually merge them.
+
+```ts
+const { open } = setupModal('modal-name', {
+  props(data) {
+    return {
+      message: data.message ?? 'default message'
+    }
+  }
+})
+```
+
+`props` can return `ref`, `computed` or `reactive`.
+
+```ts
+const msg = ref('default message')
+const reactiveObj = reactive({
+  message: 'def message',
+  name: 'name'
+})
+
+const { open } = setupModal('modal-name', {
+  props(data) {
+    // Props will updated when msg.value changed
+    return {
+      message: msg.value
+    }
+  },
+
+  // Props will updated when reactiveObj changed
+  props: reactiveObj,
+})
+```
+
+
+#### `slots`
+You can pass `slots` in two ways:
+
+1. Through the slots property in `setupModal`.
+2. By inserting them directly into the `ModalRouterView` slots.
+
+For example, the modal route component might have a `custom` slot.
+
+```vue
+<script setup lang="ts">
+const { modelValue } = useCurrentModal()
+
+</script>
+
+<template>
+  <Modal v-model="modelValue">
+    <slot name="custom" :visible="modelValue" />
+  </Modal>
+</template>
+```
+
+The `slots` property accepts a function that returns a vnode (similar to usage with the Vue `h` function).
+
+
+You can insert the `custom` slot via `setupModal`. 
+
+```ts
+setupModal('modal-name', {
+  slots: {
+    custom: ({ visible }) => h('div', `custom message: ${visible}`)
+  }
+})
+```
+
+Alternatively, you can insert slots directly from `<ModalRouterView>`. To specify the slot, use the `modal-name-[slot-name]` format.
+
+
+```vue
+<template>
+    <ModalRouterView>
+      <template #modal-name-custom="{ visible }">
+        <div>custom message {{ visible }}</div>
+      </template>
+    </ModalRouterView>
+  </div>
+</template>
+```
+
+When both `setupModal` and `ModalRouterView` define the same slot name, the one in `setupModal` takes precedence.
+
+### Preparing Data Before Modal Open
+Modal routes can be opened from another page. In such cases, you might need to prepare data before the modal opens, such as fetching data.
+
+You can use `setupModal` and set `manual` option to `true` to prevent modal from opening immediately. 
+
+For example, consider opening the modal route `/user/info`, which is a child route of `/user`, from the homepage `/`.
+
+```ts
+// homepage `/`
+
+openModal(`UserInfo`)
+```
+
+In `/user`, you may want to prepare data before the modal opens and display it once the data is ready. Here’s how you can do it:
+
+```ts
+const userMeta = ref({
+  authorized: false
+})
+const { open } = setupModal('UserInfo', {
+  props: userMeta
+})
+
+onMouted(() => {
+  fetchUserMeta().then(res => {
+    userMeta.value.authorized = res.authorized
+  })
+})
+```
+
+To prevent the modal from opening before the data is fetched, pass the option `manual: true` to `setupModal`.
+
+```ts
+const { open } = setupModal('UserInfo', {
+  manual: true, // <-- prevent modal from opening
+  props: userMeta,
+})
+```
+
+Then, call `unlock` after the data is ready, and the modal will open.
+
+```ts
+const { open, unlock } = setupModal('UserInfo', {
+  manual: true, // <-- prevent modal from opening
+  props: userMeta,
+})
+
+onMouted(() => {
+  fetchUserMeta().then(res => {
+    userMeta.value.authorized = res.authorized
+    unlock() // modal show up when `unlock` called
+  })
+})
+```
+
+### Route Setup
+To setup a route for a modal route, for example:
+
+```ts
+export const router = createModalRoute({
+  routes: [
+    {
+      name: "Index", // <-- Base route
+      path: '/',
+      component: () => import("./pages/Index.vue"),
+      children: [
+        {
+          name: "MyIndexModal", // <-- Modal route
+          path: 'index-modal',
+          component: () => import("./pages/IndexModal.vue"),
+          meta: {
+            modal: true,
+          }
+        }
+      ]
+    }
+  ]
+})
+```
+
+A route will be treated as a modal route if it satisfies the following conditions:
+
+1. It has `name` (string)
+2. It has a `component` or `components.default`
+3. It has `meta.modal: true` 
+
+#### Base Route
+A modal route must have a **base route**. In the example above, the base route is `Index`.
+
+The **base route** is required because, when the modal is closed, the system needs a route to navigate back to. Which is **base route**.
+
+The base route must have a `component` or `components.default` defined to display content when the modal is not open.
+
+#### Route Must Have a Name
+Currently, modal routes heavily rely on the route name for navigation. Therefore, you must define a name for every route.
+
+### Allow / Disallow Direct Access from URL
+By default, modal routes do not allow direct access via URL.
+
+To enable direct access, add `direct: true` to the route’s meta.
+
+```ts
+export const router = createModalRoute({
+  routes: [
+    {
+      name: "Index", // <-- Base route. If MyIndexModal does not allow directly access, user will be redirected to here.
+      path: '/',
+      component: () => import("./pages/Index.vue"),
+      children: [
+        {
+          name: "MyIndexModal",
+          path: 'index-modal',
+          component: () => import("./pages/IndexModal.vue"),
+          meta: {
+            modal: true,
+            direct: true, // <--- This allow accessing from url
+          }
+        }
+      ]
+    }
+  ]
+})
+```
+
+If direct access is not enabled for a modal route, attempting to navigate to its URL and hitting enter will redirect you to its** base route** (which is `Index` in this example). If the **base route is also a modal route** that disallows direct access, you will be redirected again to its own base route, and so on.
+
+### Global Modal
+A global modal route works similarly to a path modal, except that it can be displayed on any page without transitioning to another page.
+
+The most common use case for a global modal is a `login` modal.
+
+#### Setup Global Modal
+To set up a global modal, pass the routes to the `global` option in `createModalRoute`.
+
+```ts
+export const router = createModalRoute({
+  routes: [
+    // ....
+  ],
+  global: [
+    {
+      name: 'Login',
+      path: 'login',
+      component: () => import('~/components/Login.vue'),
+      meta: {
+        modal: true,
+      },
+    },
+  ],
+})
+```
+
+Then, place `<ModalGlobalView>` outside of `<RouterView>`, typically at the root of the component tree, such as in `<App>`
+
+```vue
+<script setup lang="ts">
+import { ModalGlobalView } from '@vmrh/core'
+</script>
+<!-- App.vue -->
+<template>
+    <main>
+      <RouterView />
+    </main>
+    <ModalGlobalView />
+</template>
+```
+The global modal route component functions similarly to a path modal route component. For example:
+
+```vue
+<!-- Login.vue -->
+<script setup lang="ts">
+const { modelValue } = useCurrentModal()
+</script>
+
+<template>
+  <Modal v-model="modelValue">
+    <h2>Login</div>
+    <LoginForm />
+  </Modal>
+</template>
+```
+
+That's it, you can now open the login modal from anywhere.
+
+```vue
+<!-- /some/path/any -->
+<script setup lang="ts">
+const onLoginButtonClick = () => {
+  openModal('Login')
+}
+</script>
+```
+
+#### Path of Global Modal
+The global modal route path will be prefixed with `_modal` and appended to the current path. For example, if the current path is `/user/info` and you open a global modal route with the path `/login`, the resulting path will be `/user/info/_modal/login`.
+
+### Query Modal
+Similar to global modals, query modals can be opened from any page without changing the page. The key differences between query modals and global modals are:
+
+1. Query modals open and close with changing the query string.
+2. Query modals cannot have child views.
+3. Query modals cannot be accessed directly via URL; they must be opened using `openModal` or `open` from `setupModal`.
+
+Query modals are commonly used for utility purposes, such as alerts and confirmation dialogs.
+
+#### Setting Up a Query Modal
+To set up a query modal, pass the routes to the `query` option in `createModalRoute`.
+
+```ts
+export const router = createModalRoute({
+  routes: [
+    // ...
+  ],
+  query: [
+    {
+      name: 'Alert',
+      component: () => import('~/components/Alert.vue'),
+    },
+    {
+      name: 'Confirm',
+      component: () => import('~/components/Confirm.vue'),
     },
   ]
 })
 ```
 
-#### Prepare modal component
-This repository use `element-plus` as modal library, but you can install modal from others you like.
-
-No matter modal you use, you need ensure the modal component you register to modal route has:
-
-- `v-model`: accept `visible` state (Boolean), it will be true if the modal should be opened. 
-- `event: "return"`: if you call `emit("return", data)` inside modal component, the modal will close with `returnValue`.
-
-for example:
+Then place `<ModalQueryView>` outside of `<RouterView>`, typically at the root of the component tree, such as in `<App>`.
 
 ```vue
 <script setup lang="ts">
-const visible = defineModel({
-  type: Boolean,
-  default: false,
-})
-defineEmits(['return'])
-defineProps({
-  message: {
-    type: String,
-    default: '',
-  },
-})
+import { ModalQueryView } from '@vmrh/core'
 </script>
+<!-- App.vue -->
 <template>
-  <ElDialog
-    v-model="visible"
-    title="Page Single Modal B"
-  >
-    {{ message }}
-
-    <!-- You must use this as <RouterView> replacement if you need render child view **in modal route** -->
-    <ModalRouterView />
-  </ElDiable>
+    <main>
+      <RouterView />
+    </main>
+    <ModalQueryView />
 </template>
 ```
 
-#### Open/Close Modal 
+The query modal route component functions similarly to the path modal route component. For example:
+
 ```vue
-<!-- pages/index.vue -->
+<!-- Confirm.vue -->
 <script setup lang="ts">
-import { useModalRoute, ModalPathView } from "~/modal"
-import { onMounted } from "vue"
+const { modelValue, closeAndReturn } = useCurrentModal()
 
-const { openModal, closeModal } = useModalRoute()
+defineProps<{
+  title?: string,
+  message?: string
+}>()
+</script>
 
-onMounted(async () => {
-  const returnValue = await openModal(
-    'ModalA', // open with modal route name
-    {
-      // data will be directly passed as props of modal 
-      data: {
-        message: "I am message"
-      }
+<template>
+  <Modal v-model="modelValue" :title="title">
+    <p>{{ message }}</p>
+    <button @click="closeAndReturn(false)"> Cancel </button>
+    <button @click="closeAndReturn(true)"> Confirm </button>
+  </Modal>
+</template>
+```
+
+That's it, you can now open the Confirm modal from anywhere.
+
+```vue
+<!-- /some/path/any -->
+<script setup lang="ts">
+const onSubmit = () => {
+  const yes = await openModal('Confirm', {
+    data: {
+      title: "Notice",
+      message: "Are you sure to submit the form ?"
     }
-  )
-  console.log(returnValue) // returnValue from emit("return", "returnValue")
-})
-
-// closeModal("ModalA")
+  })
+  if (yes) {
+    // do something ...
+  }
+}
 </script>
-<template>
-    <div>Page Index</div>
-
-    <!-- You need render `<ModalPathView>` like `<RouterView>` -->
-    <ModalPathView /> 
-</template>
 ```
 
-The `openModal` / `closeModal` can be call from other page, no need to call them at the page that modal be rendered.
+### Child Views in Modal Route Component
+One of the key benefits of modal routes is that we can leverage the full power of Vue Router's `router-view` inside the modal.
 
-#### Setup Modal 
-To pass props, slots, handle data passed from `openModal`, use `setupModal`. `setupModal` must be called by the direct parent route of the modal route.
-
-```vue
-<!-- pages/index.vue -->
-<script setup lang="ts">
-import { setupModal, ModalPathView } from "~/modal"
-import { onMounted } from "vue"
-
-const {
-  open,
-  close,
-  returnValue,
-  isActive: isModalAActive,
-} = setupModal("ModalA", {
-  // props can be object or function return object, the object can be ref/computed/reactive ...
-  props: (data) => {
-    // You will get data from openModal
-    return computed(() => {
-      return {
-        ...modalProps.value,
-        ...(data?.message ? { message: data?.message } : {}),
-      }
-    })
-  },
-  // pass slots to modal 
-  slots: {
-    footer: () => (
-      h('span', 'This Slot passed from useModal. Should override the slot passed from template')
-    ),
-  },
-})
-</script>
-<template>
-    <div>Page Index</div>
-
-    <!-- Another way to pass slots -->
-    <ModalPathView>
-      <template #ModalA-footer>
-        <span>{{ insertMessage }}</span>
-      </template>
-      <template #ModalA-header>
-        <span> header slot inserted from parent </span>
-      </template>
-    </ModalPathView> 
-</template>
-```
-
-#### Pending modal visibility
-Check example in `src/components/SingleModalSectionC.vue`.
+You can register a route as a child route of the modal route.
 
 ```ts
-const { open, unlock } = setupModal('PagePrepareModalC', {
-  manual: true, // manual: true for pending modal 
-  props: modalProps,
-})
-
-onMounted(async () => {
-  await fetchUserData() // you can fetch data from API which is needed by modal
+export const router = createModalRoute(
+  {
+    routes: [
+      {
+        name: "Index",
+        path: '/',
+        component: () => import("./pages/Index.vue"),
+        children: [
+          {
+              name: 'User',
+              path: 'user',
+              component: () => import('./pages/user.vue'),
+              meta: {
+                modal: true
+              },
+              children: [
+                {
+                  name: "Info",
+                  path: 'info',
+                  component: () => import('./pages/user/info.vue'),
+                },
+                {
+                  name: "Photos",
+                  path: 'photos',
+                  component: () => import('./pages/user/photos.vue'),
+                },
+              ]
+            }
+        ]
+      }
+     
+    ]
+  }
   
-  // after data prepared
-  unlock() // to release modal
-})
+)
 ```
 
-## Intro
-### Motivation
-The behavior for toggling the modal is not complicated, for example:
+To render a child view within a modal route component, you can use `<ModalRouterView>`.
 
 ```vue
-<script lang="ts">
-const visible = ref(false)
-const modalData = ref({
-  id: null,
-})
-const open = (id: number) => {
-  modalData.value.id = id
-  visible.value = true
-}
-const close = () => {
-  visible.value = false
-  modalData.value.id = null
-}
+<script setup lang="ts">
+import { ModalRouterView } from '@vmrh/core'
+
+const { modelValue } = useCurrentModal()
+
 </script>
+
 <template>
-  <Modal
-    v-model="visible"
-    :id="modalData.id"
-  />
+  <Modal v-model="modelValue">
+    <!-- ... -->
+
+    <ModalRouterView />
+  </Modal>
 </template>
 ```
-This is a simple task.
 
-However, in a project, it might be repeated many times, or even multiple times within a single page. For example, I’ve personally encountered a page where I had to toggle around 10 Modals, and that kind of repetition can be exhausting. UI libraries often include Modal components, but they don’t come with composables for toggling Modals. To ease the burden of managing modal toggling, I started creating a modal state management package, and [vue-use-modal-context](https://github.com/shunnNet/vue-use-modal-context) was my first attempt.
+`<ModalRouterView>` is a simple wrapper around `<RouterView>`, and can be used just like `<RouterView>`
 
-After releasing `vue-use-modal-context` for some time, I realized it wasn’t the best approach, so I started improving it and also wanted to try adding a modal-route feature (which I thought would be simple).
+```vue
+<template>
+  <Modal v-model="visible">
+    <!-- ... -->
 
-I initially saw this modal + route functionality in `Next.js`, which some refer to as a **"twitter-style modal."** Its feature is that when the modal is toggled, the URL also changes, making the modal behave like a page. It can be toggled via the back and forward buttons, and the modal content can be accessed directly via a URL. For websites like Twitter (now called X), this makes it more convenient to display posts and share them via URLs.
+    <RouterLink :to="{ name: 'Info' }">
+      Go to Info
+    </RouterLink>
+    <RouterLink :to="{ name: 'Photos' }">
+      Go to Photos
+    </RouterLink>
+      
+    <ModalRouterView v-slot="{ Component }">
+        <Transition name="fade" mode="out-in">
+            <component :is="Component" />
+        </Transition>
+    </ModalRouterView>
+  </Modal>
+</template>
+```
 
-However, the implementation of this package did not reference Next.js, and the actual result differs slightly from the **"twitter-style modal."** but, the idea stuck in my mind.
+When you want to render a nested modal route, for example:
 
-What got me thinking about implementing this feature was the experience I often had while browsing mobile web pages on Android. After opening a modal, I would press the "prev" key to close the modal, only to unintentionally leave the page. This made me realize that the navigation experience in mobile apps differs from that provided by websites. In mobile apps, when a modal-like screen appears, pressing the "back" button usually closes the modal.
+```ts
+const routes = createModalRoute(
+  {
+    routes: [
+      {
+        name: "Index",
+        path: '/',
+        component: () => import("./pages/Index.vue"),
+        children: [
+          {
+              name: 'User',
+              path: 'user',
+              component: () => import('./pages/user.vue'),
+              meta: {
+                modal: true
+              },
+              children: [
+                {
+                  name: "UserEdit",
+                  path: 'edit',
+                  component: () => import('./pages/user/edit.vue'),
+                  meta: {
+                    modal: true
+                  }
+                },
+              ]
+            }
+        ]
+      }
+     
+    ]
+  }
+)
+```
 
-When developing mobile web pages, there's often a design that attempts to mimic the look and feel of a mobile app, with the design requiring full-screen modals and multi-step form within them. However, the navigation logic of browsers and mobile apps differs, and bridging this gap can be a hassle from an engineering perspective, and it’s often overlooked.
+Just like rendering any other modal route, use `<ModalPathView>`.
 
-Additionally, there are some scenarios where modal routes make sense:
+```vue
+<!-- ./pages/user.vue -->
+<script setup lang="ts">
+import { ModalRouterView } from '@vmrh/core'
 
-- Opening a Modal across pages: If the target page is opened with a specific query string, the modal will automatically open.
-- Adding multi-step pagination in the Modal: This is now possible by integrating with router-view, but it’s a bit awkward.
-- Automatically opening a Modal upon site entry: This is common for promotional events.
+const { modelValue } = useCurrentModal()
 
-With a modal route feature, I believe the above issues would be better addressed.
+</script>
+<template>
+  <Modal v-model="modelValue">
+    <!-- ... -->
 
-Moreover, I think if we’re going to implement a modal route feature, it’s best to maintain a consistent UX. There shouldn’t be modals that can be closed by pressing "prev" and others that cannot. From a DX (Developer Experience) perspective, it’s also preferable that all modals share a consistent interface. Therefore, the goal of this package is, in addition to having the modal route functionality, to inherit the concept from `vue-use-modal-context`: have modal open/close and data-passing functionality, ensuring it can be used in any situation without being tied to any UI library.
+    <ModalPathView />
+  </Modal>
+</template>
+```
 
-### Current Status, Challenges, and Future Plans
-At present, most of the core functionality of this package has been successfully implemented.
+### Modal Layout
+The modal you've chosen might not be the easiest to set up...
 
-- Binding the modal's open/close state with the route
-- Data transmission during modal toggling
-- In the future, further integration with Nuxt or unplugin will continue. The API may still undergo changes, and more testing and optimization are required before reaching a stable version.
+If you have a lot of modals, even simple configurations can quickly become overwhelming.
 
-Additionally, the initial goal of "maintaining a consistent experience with mobile apps" is not yet fully realized. It seems this requires further research.
+```vue
+<script setup lang="ts">
+const { modelValue } = useCurrentModal()
 
-Challenges in "maintaining a consistent experience with mobile apps":
+</script>
+<template>
+  <Modal v-model="modelValue">
+    <!-- ... -->
+  </Modal>
+</template>
+```
 
-The first challenge is the need to introduce some complex mechanisms into the current structure, which will complicate the scenarios.
-The second challenge is DX (Developer Experience). Although the modal route functionality is already in place, the current navigation logic is more closely aligned with the state of web apps, which becomes particularly apparent when opening modals across pages. When a modal can be toggled across pages and navigated through forward and backward actions, state persistence becomes a new technical burden. Therefore, this package adopts a progressive approach, with the default behavior being more web-centric, but with configurable settings to make the behavior closer to that of an app. It also considers the possibility of dynamically adjusting based on the situation to accommodate the needs of different devices.
+To simplify this setup, you can use `layouts`.
 
-These enhancements are planned to be gradually added in future versions.
+Start by creating a modal layout component.
 
-### Navigation Logic
-In Next.js, modal routes can be achieved through parallel route + intercepting route.
+```ts
+// ./src/modal/layout/default.vue
 
-The implementation path and considerations of vue-modal-route differ, particularly focusing on navigation logic, which balances several factors: the developer's workload, the current state of the web, and the navigation logic of mobile apps. Therefore, its implementation might seem a bit unconventional. This package makes heavy use of the History API and the underlying APIs of vue-router. This could be the most complex and controversial aspect of this package. Let me illustrate this with two scenarios:
+import { defineComponent, h, resolveComponent } from "vue";
+import { useCurrentModal } from "@vmrh/core";
+import Modal from "./path-to-my-modal"
 
-- Scenario 1: Nested Modals
-  - When opening nested modals at once, if the corresponding URL path is `page-a/modal-1/modal-1-1`, and we open it from page-a:
-    - **"twitter-style modal"**: The history is `page-a` -> `page-a/modal-1/modal-1-1`, so pressing "prev" or the close button (X) will return to `page-a`.
-    - `vue-modal-route`: The history is `page-a` -> `page-a/modal-1` -> ``page-a/modal-1`/modal-1-1`, so pressing "prev" or the close button (X) will return to `page-a/modal-1`.
+export default defineComponent({
+  setup(props, { slots }) {
+    const { modelValue } = useCurrentModal()
 
-- Scenario 2: Cross-page Modals
-  - When opening a modal across pages, if the original URL is `page-a/modal-1` and we open `page-b/modal-2`:
-    - **"twitter-style modal"**: The history is page-a -> `page-a/modal-1` -> page-b/modal-2, so pressing "prev" or the close button (X) will return to `page-a/modal-1`.
-    - `vue-modal-route`: The history is page-a -> page-b -> page-b/modal-2, so pressing "prev" or the close button (X) will return to page-b.
+    return () => h(Modal, {
+      modelValue: modelValue.value,
+      'onUpdate:modelValue': (value: boolean) => modelValue.value = value,
+      ...props,
+    }, slots)
+  },
+})
+```
 
-#### Explanation
-I believe the **"twitter-style modal"** is more intuitive for users. For users, "going back" naturally means "returning to the previous screen," which aligns more with the inherent behavior of browsers. `vue-modal-route` ultimately aims to achieve this form, but from a developer's perspective, this would make state management more challenging.
+Then, register these layouts in `createModalRoute`, where the keys represent the layout names.
 
-The approach taken by `vue-modal-route` places more emphasis on the dependency between the modal and its parent page. For example, when you open a modal across pages, it assumes that after closing the modal, the user should remain on the page where the modal was located. This is the same as opening a modal from within its parent page: the modal is part of a sub-process within a page or its parent component, so after closing, it should return to the parent component and continue its flow. I believe this is more aligned with most current modal use cases and fits the habits of web developers today, even if it feels counterintuitive on mobile devices.
+```ts
+import { createModalRoute } from '@vmrh/core'
+import { defineAsyncComponent } from 'vue'
 
-`vue-modal-route` plans to introduce a `directly open mode` in the future, allowing developers to switch between the two logics depending on their needs.
+export const router = createModalRoute({
+  layout: {
+    default: defineAsyncComponent(() => import('~/modal/layout/default')),
+    other: defineAsyncComponent(() => import('~/modal/layout/other')),
+    // default: LayoutDialog,
+  },
 
-In terms of implementation, it heavily utilizes the underlying APIs of `vue-router` to manage background operations with `History`. After the navigation takes effect, it performs `back`, `push`, and `replace` actions on the history to "fill in" history records that match the logic described above. Additionally, it uses `session-storage` to store the route location to return to when closing the modal.
+  routes: [
+    // ...
+  ]
+})
+```
 
-For example, when opening a modal across pages, if the original URL is `page-a/modal-1` and we open `page-b/modal-2`, the flow would be:
+With this setup, whenever you want to use a modal, you can simply use `<ModalLayout>`. By default, it will use the component registered under `layout.default`.
 
-1. `back()`: `page-a/modal-1` -> `page-a`
-2. `push()`: `page-a` -> `page-b`
-3. `push()`: `page-b` -> `page-b/modal-2`
+```vue
+<script setup lang="ts">
+// ...
+</script>
+<template>
+  <ModalLayout>
+    <!-- ... -->
+  </ModalLayout>
+</template>
+```
 
-In any case, the previous step of a modal route will always be its parent route.
+If you want to use a different modal layout, just pass a different value to the `layout` prop, and it will apply the corresponding modal.
+
+```vue
+<template>
+  <ModalLayout layout="other">
+    <!-- ... -->
+  </ModalLayout>
+</template>
+```
+
+## Opening Multiple Types of Modals at the Same Time
+Modals in `vue-modal-route` are categorized into three types: `path`, `global`, and `query`.
+
+These modals can be opened simultaneously. For example, a path modal might be active, and then a global modal is opened on top of it. Or both a global modal and a query modal are open, and a path modal is triggered afterward. In such cases, `vue-modal-route` will handle the modal layers according to the following rules:
+
+### Priority order: `path > global > query`
+
+1. When a higher-priority modal is opened, all lower-priority modals are automatically closed.
+2. When a lower-priority modal is opened, the URL will be appended, preserving the higher-priority modal.
+3. (Optional, depending on modal implementation) Lower-priority modals are typically visually stacked in front of higher-priority modals.
+
+#### Case 1:
+1. A global modal is opened: URL becomes `/user/_modal/login`
+
+2. Then a query modal is opened: URL updates to `/user/_modal/login?m-confirm=`
+
+3. A path modal is then opened at `/products/:id/edit`: the URL becomes `/products/:id/edit`, and both the global and query modals are closed.
+
+#### Case 2:
+1. A path modal is opened: URL is `/products/:id/edit`
+
+2. A global modal is opened: URL becomes `/products/:id/edit/_modal/login`
+
+3. Then a query modal is opened: URL becomes `/products/:id/edit/_modal/login?m-confirm=`
+
+4. Another global modal is opened with path `/_modal/preference`: URL becomes ``/products/:id/edit/_modal/preference`. The previously opened login and query modals are closed.
+
+## Default Behavior
+By default, `vue-modal-route` behaves similarly to a traditional modal, with the added benefit of being able to close the modal using the browser’s back button or navigation history.
+
+### Opening via Forward Navigation is Not Supported
+While users can go back to close the modal, they cannot navigate forward (e.g., using the "Forward" button) to open it.
+
+This is based on the assumption that users are more likely to exit a modal than to re-enter it through forward navigation. In cases where users do want to re-open a modal, they usually do so via buttons or links. Furthermore, implementing forward navigation would require keeping track of modal state and data, which increases complexity. Given these trade-offs, `vue-modal-route` does not support forward navigation to open a modal.
+
+### Direct Access via URL is Disabled by Default
+By default, modals cannot be accessed directly by URL. To enable direct access, you must explicitly set `meta.direct: true` in the route definition.
+
+Allowing direct access can greatly increase complexity in certain scenarios—especially when API calls or validations are required before opening the modal.
+
+For example, consider a modal that shows detailed form submission results. This modal should only appear after a successful form submission and validation. If this modal could be directly accessed by URL, it would be difficult to ensure the required form data exists, forcing additional logic to handle such cases. In many scenarios, there’s no meaningful reason to allow direct access to such modals.
+
+For these reasons, direct URL access is disabled by default.
 
 ## License
 MIT
