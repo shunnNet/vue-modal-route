@@ -112,6 +112,9 @@ const modalProvider = defineComponent({
           ...toValue(mr.state.value.data), // data has higher priority
         }
       }
+      else if (mr.state.value.data) {
+        result = toValue(mr.state.value.data)
+      }
       return result || {}
     })
     const closeThenReturn = (value: unknown) => {
