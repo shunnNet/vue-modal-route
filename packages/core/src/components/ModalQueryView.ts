@@ -1,8 +1,9 @@
-import { computed, defineComponent, h } from 'vue'
-import ModalRoute from './ModalRouteView'
+import { computed, defineComponent, h, shallowReactive, watch } from 'vue'
+import ModalRoute, { modalProvider } from './ModalRouteView'
 import { modalRouteContext } from '../modalRoute'
 import { useMatchedRoute } from '../utils'
 import { createContext } from '@vue-use-x/common'
+import { TComponent } from '../types'
 
 export const modalQueryContext = createContext<boolean>()
 
@@ -39,11 +40,27 @@ export default defineComponent({
           : [],
         ),
     )
+
+    const componentMap: Record<string, TComponent> = shallowReactive({})
+
+    watch(componentsBeRendered, (value) => {
+      value.forEach(({ modalName, component }) => {
+        componentMap[modalName] = component
+      })
+    }, { immediate: true })
+
     return () => {
-      return h(ModalRoute, {
-        modalType: 'query',
-        components: componentsBeRendered.value,
-      }, slots)
+      return Object.keys(componentMap).map((name) => {
+        return h(
+          modalProvider,
+          { modal: componentMap[name], name },
+          Object.fromEntries(
+            Object.entries(slots).flatMap(([key, value]) => {
+              const [parsedKey, slotName] = key.split('-')
+              return parsedKey === name ? [[slotName, value]] : []
+            }),
+          ))
+      })
     }
   },
 })
