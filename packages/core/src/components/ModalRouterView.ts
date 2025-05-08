@@ -1,15 +1,13 @@
 import { h, resolveComponent, defineComponent } from 'vue'
 import ModalRouteView from './ModalRouteView'
+import { globalModalContext } from './ModalGlobalView'
 import { modalQueryContext } from './ModalQueryView'
 
 /**
- * A component that renders router view in modal route.
- *
- * Children routes of modal route have name prefix `modal-`.
- *
- * This component append the prefix to `RouteView` name prop for convenience.
+ * A component that renders modal route and child path of modal route.
  */
 export default defineComponent({
+  name: 'ModalRouterView',
   components: {
     ModalRouteView,
   },
@@ -26,12 +24,23 @@ export default defineComponent({
       return () => null
     }
 
+    const RouterView = resolveComponent('RouterView')
+    const inGlobalModalRoute = globalModalContext.inject(false)
+
     return () => {
       return h(
-        resolveComponent('RouterView'),
+        RouterView,
         { name: `modal-${props.name}` },
-        slots,
-      )
+        {
+          default: (scope: any) => {
+            return h(ModalRouteView, {
+              modalType: inGlobalModalRoute ? 'global' : 'path',
+              component: scope.Component,
+              viewScope: scope,
+            }, slots)
+          },
+
+        })
     }
   },
 })

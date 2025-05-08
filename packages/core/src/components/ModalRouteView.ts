@@ -1,18 +1,29 @@
-import { defineComponent, h, PropType, watch, computed, toValue, provide, InjectionKey, Ref, shallowReactive } from 'vue'
+import { defineComponent, h, PropType, watch, computed, toValue, provide, InjectionKey, Ref, shallowReactive, Slot } from 'vue'
 import { isPlainObject, useMatchedRoute } from '../utils'
 import { modalRouteContext } from '../modalRoute'
 import { TComponent, TModalType } from '../types'
 
+// From vue-router
+function normalizeSlot(slot: Slot | undefined, data: any) {
+  if (!slot) return null
+  const slotContent = slot(data)
+  return slotContent.length === 1 ? slotContent[0] : slotContent
+}
+
 export default defineComponent({
   name: 'ModalRouteView',
   props: {
-    components: {
-      type: Array as PropType<TComponent[] | { modalName: string, component: TComponent }[]>,
-      default: () => [],
+    component: {
+      type: Object as PropType<TComponent>,
+      default: null,
     },
     modalType: {
       type: String as PropType<TModalType>,
-      required: true,
+      default: 'path',
+    },
+    viewScope: {
+      type: Object as PropType<Record<string, any>>,
+      default: () => ({}),
     },
   },
 
@@ -23,12 +34,14 @@ export default defineComponent({
 
     const componentMap: Record<string, TComponent> = shallowReactive({})
 
-    watch(() => props.components, (val) => {
-      val.filter(Boolean).forEach(cmp => 'modalName' in cmp
-        ? setupModalIfExist(cmp.component, cmp.modalName)
-        : setupModalIfExist(cmp),
-      )
+    watch(() => props.component, (val) => {
+      setupModalIfExist(val)
     }, { immediate: true })
+
+    const _modal = computed(() => {
+      const _name = matchedRoute?.value?.name as string
+      return store.getUnsafe(_name)
+    })
 
     function setupModalIfExist(cmp: TComponent, name?: string) {
       if (!cmp) {
@@ -39,23 +52,33 @@ export default defineComponent({
         throw new Error('modalName not provided')
       }
       const modal = store.getUnsafe(_name)
+
+      // Check type for preventing render path / global at the same time
       if (!(modal && modal.type === props.modalType)) {
         return
       }
+
       componentMap[_name] = cmp
     }
     return () => {
-      return Object.keys(componentMap).map((name) => {
-        return h(
-          modalProvider,
-          { modal: componentMap[name], name },
-          Object.fromEntries(
-            Object.entries(slots).flatMap(([key, value]) => {
-              const [parsedKey, slotName] = key.split('-')
-              return parsedKey === name ? [[slotName, value]] : []
-            }),
-          ))
-      })
+      return [
+        // Check if current component is modal route component to prevent render modal in this part
+        ...(!_modal.value && props.viewScope
+          ? slots.default
+            ? [normalizeSlot(slots.default, props.viewScope)]
+            : [props.viewScope.Component]
+          : []),
+        ...Object.keys(componentMap).map((name) => {
+          return h(
+            modalProvider,
+            { modal: componentMap[name], name },
+            Object.fromEntries(
+              Object.entries(slots).flatMap(([key, value]) => {
+                const [parsedKey, slotName] = key.split('-')
+                return parsedKey === name ? [[slotName, value]] : []
+              }),
+            ))
+        })]
     }
   },
 })
@@ -66,7 +89,7 @@ export const ModalRouteViewKey: InjectionKey<{
   name: string
 }> = Symbol('modal-route-view')
 
-const modalProvider = defineComponent({
+export const modalProvider = defineComponent({
   name: 'ModalRouteProvider',
   props: {
     name: {

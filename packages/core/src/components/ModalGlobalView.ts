@@ -62,7 +62,7 @@ export default defineComponent({
           default: (scope: any) => {
             return h(ModalRoute, {
               modalType: 'global',
-              components: [scope.Component],
+              component: scope.Component,
             }, slots)
           },
         })
