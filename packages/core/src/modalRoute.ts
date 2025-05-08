@@ -23,6 +23,10 @@ import {
   isGlobalModalRootRoute,
   createPathRoutes,
 } from './core'
+import ModalRouterView from './components/ModalRouterView'
+import ModalGlobalView from './components/ModalGlobalView'
+import ModalQueryView from './components/ModalQueryView'
+import ModalLayout from './components/ModalLayout'
 
 type TModalNavigationGuardAfterEach = (context: {
   to: RouteLocationNormalizedGeneric
@@ -381,6 +385,8 @@ export const createModalRoute = (options: TCreateModalRouteOptions) => {
     context.append({ openByOpenModal: true, openingModal: modalNeedOpen })
     switch (modalInfo.type) {
       case 'path':
+        // TODO: https://github.com/vuejs/router/blob/main/packages/router/CHANGELOG.md#414-2022-08-22
+        // don't pass params when no params
         pathRoutes.open(name, {
           query: options?.query,
           hash: options?.hash,
@@ -515,6 +521,11 @@ export const createModalRoute = (options: TCreateModalRouteOptions) => {
     install(app: App) {
       modalRouteContext.provideByApp(app, _ctx)
       app.use(router)
+
+      app.component('ModalRouterView', ModalRouterView)
+      app.component('ModalGlobalView', ModalGlobalView)
+      app.component('ModalQueryView', ModalQueryView)
+      app.component('ModalLayout', ModalLayout)
     },
   } as Router
 }
