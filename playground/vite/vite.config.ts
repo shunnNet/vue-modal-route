@@ -14,7 +14,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      // '@vmrh/core': resolve(__dirname, '../../packages/modal-route/src/index.ts'),
+      '@vmrh/core': resolve(__dirname, '../../packages/core/src/index.ts'),
       '~': resolve(__dirname, './src'),
     },
   },

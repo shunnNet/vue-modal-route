@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ModalRouterView, useModalRoute } from '@vmrh/core'
+import { useModalRoute } from '@vmrh/core'
 import PageTitle from '~/components/PageTitle.vue'
 import PageSection from '~/components/PageSection.vue'
 
@@ -41,7 +41,7 @@ const { openModal } = useModalRoute()
         </ElButton>
       </div>
     </div>
-    <ModalPathView />
+    <ModalRouterView />
   </div>
 </template>
 <style></style>

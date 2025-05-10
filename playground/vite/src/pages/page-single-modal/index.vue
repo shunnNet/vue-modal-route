@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import PageTitle from '../../components/PageTitle.vue'
-import { ElButton, ElDivider } from 'element-plus'
-import { defineComponent, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ElDivider } from 'element-plus'
 import SingleModalSectionA from '~/components/SingleModalSectionA.vue'
 import SingleModalSectionB from '~/components/SingleModalSectionB.vue'
-import { ModalRouterView, ModalPathView } from '@vmrh/core'
+import { ModalRouterView } from '@vmrh/core'
 
-const insertMessage = ref('Message from slot')
 
 </script>
 <template>
@@ -35,11 +32,11 @@ const insertMessage = ref('Message from slot')
         <div>custom message: {{ custom }}</div>
       </template>
     </ModalRouterView> -->
-    <ModalPathView>
+    <ModalRouterView>
       <template #ModalTest-custom="{ custom }">
         <div>custom message: {{ custom }}</div>
       </template>
-    </ModalPathView>
+    </ModalRouterView>
   </div>
 </template>
 <style></style>

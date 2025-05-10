@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ModalRouterView, useCurrentModal, ModalLayout } from '@vmrh/core'
+import { useCurrentModal, ModalLayout } from '@vmrh/core'
 import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 
@@ -37,7 +37,7 @@ onMounted(() => {
       </RouterLink>
       <RouterView name="modal-default"/>
       <ModalRouterView v-slot="{ Component }">
-        <Transition name="fade" mode="out-in">
+        <Transition name="fade" mode="out-in" appear>
             <component :is="Component" />
         </Transition>
       </ModalRouterView>

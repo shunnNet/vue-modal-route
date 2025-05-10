@@ -35,18 +35,29 @@ const onOpenGlobalModal = () => {
 const { open: openQueryModalA } = QueryModalA.use()
 
 const onOpenQueryModal = () => {
-  openQueryModalA({
+  openModal('query-modal-a', {
+    data: {
+      message: 'Message from Data',
+    },
     // Query should be append
     query: { additionQuery: 'query1' },
     // hash: '#hash',
-  }).then((v) => {
-    console.log('ModalQueryA return', v)
   })
+  // openQueryModalA({
+  //   data: {
+  //     message: 'Message from Data',
+  //   },
+  //   // Query should be append
+  //   query: { additionQuery: 'query1' },
+  //   // hash: '#hash',
+  // }).then((v) => {
+  //   console.log('ModalQueryA return', v)
+  // })
 }
 
 QueryModalA.setup({
   props: {
-    message: 'Message from App.vue to ModalQueryA',
+    // message: 'Message from App.vue to ModalQueryA',
   },
 })
 

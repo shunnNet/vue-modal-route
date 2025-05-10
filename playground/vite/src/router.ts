@@ -85,6 +85,15 @@ export const router = createModalRoute({
                   path: 'child',
                   component: () => import('./pages/nested/ModalB/child-path.vue'),
                 },
+                {
+                  name: 'ModalNestedBChildTest',
+                  path: 'test',
+                  component: () => import('./pages/ModalTest.vue'),
+                  meta: {
+                    modal: true,
+                    direct: true
+                  },
+                },
               ],
             },
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton, ElMessage } from 'element-plus'
-import {  ModalRouterView, useCurrentModal, useModalRoute } from '@vmrh/core'
+import { useCurrentModal, useModalRoute } from '@vmrh/core'
 import HighlightText from '~/components/HighlightText.vue'
 import LayoutDialog from '~/components/LayoutDialog'
 
@@ -42,7 +42,14 @@ const onOpenFailedCase = async (name: string) => {
     </RouterLink>
 
     <div class="my-4">
-      <ModalRouterView />
+      <!-- <ModalRouterView /> -->
+      <ModalRouterView >
+        <template #default="{ Component }">
+          <Transition name="fade" mode="out-in" appear>
+            <component :is="Component" />
+          </Transition>
+        </template>
+      </ModalRouterView>
     </div>
 
     <div class="grid gap-4 max-w-200px">
@@ -90,9 +97,19 @@ const onOpenFailedCase = async (name: string) => {
       >
         Close (with Return Value)
       </ElButton>
+      <ElButton
+        class="!ml-0"
+        type="info"
+        icon="Message"
+        @click="openModal('ModalNestedBChildTest')"
+      >
+        Open Child ModalTest
+      </ElButton>
     </div>
 
     <template #footer />
   </LayoutDialog>
 </template>
-<style></style>
+<style>
+
+</style>

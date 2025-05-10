@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useModalRoute, ModalPathView } from '@vmrh/core'
+import { useModalRoute } from '@vmrh/core'
 import PageTitle from '~/components/PageTitle.vue'
 import { ref } from 'vue'
 
@@ -66,7 +66,7 @@ const onClickOpenNestedBChild = async () => {
         The returnValue of "ModalNestedB" will be "null" which is the first result of "ModalNestedB".
       </div>
     </div>
-    <ModalPathView />
+    <ModalRouterView />
   </div>
 </template>
 <style></style>

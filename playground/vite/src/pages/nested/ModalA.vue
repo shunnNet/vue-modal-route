@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ElButton } from 'element-plus'
 import HighlightText from '~/components/HighlightText.vue'
-import { setupModal, ModalPathView, useCurrentModal } from '@vmrh/core'
+import { setupModal, useCurrentModal } from '@vmrh/core'
 import LayoutDialog from '~/components/LayoutDialog'
 
 defineProps({
@@ -22,7 +22,7 @@ const { close, closeThenReturn } = useCurrentModal()
         :message="message"
       />
     </div>
-    <ModalPathView />
+    <ModalRouterView />
 
     <template #footer>
       <ElButton

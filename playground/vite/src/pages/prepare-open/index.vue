@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import PageTitle from '~/components/PageTitle.vue'
 import SingleModalSectionC from '~/components/SingleModalSectionC.vue'
-import { ModalPathView } from '@vmrh/core'
+import { ModalRouterView } from '@vmrh/core'
 
 </script>
 <template>
@@ -11,6 +11,6 @@ import { ModalPathView } from '@vmrh/core'
   />
 
   <SingleModalSectionC />
-  <ModalPathView />
+  <ModalRouterView />
 </template>
 <style></style>
