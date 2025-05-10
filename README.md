@@ -1,5 +1,7 @@
 # vue-modal-route
-[English](./README.md) 
+[![npm version](https://img.shields.io/npm/v/@crazydos/@vmrh/core.svg)](https://www.npmjs.com/package/@crazydos/@vmrh/core)
+[![npm downloads](https://img.shields.io/npm/dm/@crazydos/@vmrh/core.svg)](https://www.npmjs.com/package/@crazydos/@vmrh/core)
+[![License](https://img.shields.io/github/license/shunnNet/vue-modal-route.svg)](https://github.com/shunnNet/vue-modal-route/blob/main/LICENSE)
 
 `vue-modal-route` is a Vue 3 package that integrates modal state management with vue-router. It allows you to control modals via routes and pass complex data effortlessly — making modal handling more declarative, shareable, and router-friendly.
 
@@ -52,8 +54,8 @@ export const router = createModalRoute({
           name: "MyIndexModal", // <-- Modal route's name
           path: 'index-modal',
           component: () => import("./pages/IndexModal.vue"),
-            modal: true, // <-- This makes it modal route.
           meta: {
+            modal: true, // <-- This makes it modal route.
             direct: true, // <-- This enable diretly access from url.
           }
         }
@@ -108,19 +110,14 @@ const { modelValue } = useCurrentModal()
 ```
 
 In `Index.vue`, just like how you use `<RouterView>` to render child routes,
-you'll need to add `<ModalPathView>` in order to render the corresponding modal route.
+you'll need to add `<ModalRouterView>` in order to render the corresponding modal route.
 
 ```vue
 <!-- ./pages/Index.vue -->
-<script setup lang="ts">
-import { ModalPathView } from '@vmrh/core'
-
-</script>
-
 <template>
   <div>
     <h1>Index</h1>
-    <ModalPathView />
+    <ModalRouterView />
   </div>
 </template>
 ```
@@ -259,7 +256,7 @@ open({
 }) 
 </script>
 <template>
-  <ModalPathView />
+  <ModalRouterView />
 </template>
 ```
 
@@ -532,9 +529,6 @@ export const router = createModalRoute({
 Then, place `<ModalGlobalView>` outside of `<RouterView>`, typically at the root of the component tree, such as in `<App>`
 
 ```vue
-<script setup lang="ts">
-import { ModalGlobalView } from '@vmrh/core'
-</script>
 <!-- App.vue -->
 <template>
     <main>
@@ -606,9 +600,6 @@ export const router = createModalRoute({
 Then place `<ModalQueryView>` outside of `<RouterView>`, typically at the root of the component tree, such as in `<App>`.
 
 ```vue
-<script setup lang="ts">
-import { ModalQueryView } from '@vmrh/core'
-</script>
 <!-- App.vue -->
 <template>
     <main>
@@ -721,7 +712,7 @@ const { modelValue } = useCurrentModal()
 </template>
 ```
 
-`<ModalRouterView>` is a simple wrapper around `<RouterView>`, and can be used just like `<RouterView>`
+`<ModalRouterView>` can be used just like `<RouterView>`
 
 ```vue
 <template>
@@ -735,10 +726,12 @@ const { modelValue } = useCurrentModal()
       Go to Photos
     </RouterLink>
       
-    <ModalRouterView v-slot="{ Component }">
+    <ModalRouterView>
+      <template #default="{ Component }">
         <Transition name="fade" mode="out-in">
             <component :is="Component" />
         </Transition>
+      </template>  
     </ModalRouterView>
   </Modal>
 </template>
@@ -781,7 +774,7 @@ const routes = createModalRoute(
 )
 ```
 
-Just like rendering any other modal route, use `<ModalPathView>`.
+Just like rendering any other modal route, use `<ModalRouterView>`, instead of `<RouterView>`.
 
 ```vue
 <!-- ./pages/user.vue -->
@@ -795,7 +788,7 @@ const { modelValue } = useCurrentModal()
   <Modal v-model="modelValue">
     <!-- ... -->
 
-    <ModalPathView />
+    <ModalRouterView />
   </Modal>
 </template>
 ```
