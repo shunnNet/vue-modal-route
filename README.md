@@ -17,6 +17,8 @@ This package is designed for more flexible modal scenarios and comes with severa
 - 👍 Not limited to a specific ModalUI library, you can use any ModalUI.
 
 ---
+## Online example & playground
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/~/github.com/shunnNet/vmrh-vite-playground)
 
 ## Why and How ?
 If you need the motivation and implementation details for vue-modal-route, you can refer to this article.
