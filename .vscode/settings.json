@@ -1,5 +1,6 @@
 {
   "eslint.experimental.useFlatConfig": true,
+  "editor.formatOnSave": false,
   "editor.defaultFormatter": "EditorConfig.EditorConfig",
   "[vue]": {
     "editor.defaultFormatter": "EditorConfig.EditorConfig"
