@@ -54,6 +54,10 @@ export const createGlobalRoutes = (
         console.error('Modal route must have a name', aRoute)
         throw new Error('Modal route must have a name')
       }
+      if (aRoute.path.startsWith('/')) {
+        // global modal route must be relative to global route
+        throw new Error(`Global modal route ("${aRoute.path}") must not start with "/".`)
+      }
       store.register(aRoute.name, 'global', aRoute.meta)
       if (aRoute.children?.length) {
         registerGlobalRoutes(aRoute.children)
