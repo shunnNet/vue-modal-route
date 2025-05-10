@@ -1,7 +1,7 @@
 {
   "name": "@vmrh/core",
   "description": "A Vue 3 package that integrates vue-router with modal state management, enabling modal dialogs to be controlled via routes.",
-  "version": "0.1.0-alpha.1",
+  "version": "0.2.0-alpha",
   "type": "module",
   "main": "dist/index.mjs",
   "types": "dist/index.d.ts",
