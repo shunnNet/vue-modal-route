@@ -1,4 +1,4 @@
-import { useSessionStorage, deepClone, defer } from '../utils'
+import { useSessionStorage, deepClone, defer, runIfWindow, createMemoryStorage } from '../utils'
 import type { TDefer } from '../utils'
 
 type TvmrtTags = Record<string, string>
@@ -22,34 +22,36 @@ type TRewriteItem = {
 export const useTimemachine = (history: His) => {
   const getCurrentPosition = () => history.state.position
 
-  const vmrtStorage = useSessionStorage<TvmrtTags>('vmrt')
+  const vmrtStorage = createStorage('vmrt')
   const { tags, _tags } = initTags()
   saveTags()
 
-  window.addEventListener('beforeunload', () => {
-    tags[`${getCurrentPosition()}`] = 'unload'
-    saveTags()
-  })
-  window.addEventListener('popstate', () => {
-    const pos = getCurrentPosition()
-    console.log('current position', pos)
-    // TODO: make it no need to do this twice
-    let needSave = false
-    Object.keys(_tags).forEach((key) => {
-      if (parseFloat(key) >= pos) {
-        delete _tags[key]
-        needSave = true
-      }
-    })
-    Object.keys(tags).forEach((key) => {
-      if (parseFloat(key) >= pos) {
-        delete tags[key]
-        needSave = true
-      }
-    })
-    if (needSave) {
+  runIfWindow((window) => {
+    window.addEventListener('beforeunload', () => {
+      tags[`${getCurrentPosition()}`] = 'unload'
       saveTags()
-    }
+    })
+    window.addEventListener('popstate', () => {
+      const pos = getCurrentPosition()
+      console.log('current position', pos)
+      // TODO: make it no need to do this twice
+      let needSave = false
+      Object.keys(_tags).forEach((key) => {
+        if (parseFloat(key) >= pos) {
+          delete _tags[key]
+          needSave = true
+        }
+      })
+      Object.keys(tags).forEach((key) => {
+        if (parseFloat(key) >= pos) {
+          delete tags[key]
+          needSave = true
+        }
+      })
+      if (needSave) {
+        saveTags()
+      }
+    })
   })
 
   function initTags() {
@@ -75,7 +77,7 @@ export const useTimemachine = (history: His) => {
   }
 
   function saveTags() {
-    vmrtStorage.set({
+    vmrtStorage.set<TvmrtTags>({
       ..._tags,
       ...tags,
     })
@@ -101,15 +103,6 @@ export const useTimemachine = (history: His) => {
   }
 
   const goAsync = useGoAsync(history)
-
-  let _goPromise: null | TDefer<PopStateEvent['state']> = null
-  window.addEventListener('popstate', (e) => {
-    // console.log('popstate', e.state)
-    if (_goPromise) {
-      _goPromise._resolve(e.state)
-      _goPromise = null
-    }
-  })
 
   function useGoAsync(history: His) {
     return (deltaOrTag: number | string, triggerListener?: boolean) => {
@@ -147,9 +140,13 @@ export const useTimemachine = (history: His) => {
           _goPromise._resolve(e.state)
           _goPromise = null
         }
-        window.removeEventListener('popstate', onPopState)
+        runIfWindow((window) => {
+          window.removeEventListener('popstate', onPopState)
+        })
       }
-      window.addEventListener('popstate', onPopState)
+      runIfWindow((window) => {
+        window.addEventListener('popstate', onPopState)
+      })
 
       history.go(delta, triggerListener)
 
@@ -212,4 +209,11 @@ export const useTimemachine = (history: His) => {
     write,
     rewriteFrom,
   }
+}
+
+export function createStorage(name: string) {
+  if (globalThis.sessionStorage) {
+    return useSessionStorage(name)
+  }
+  return createMemoryStorage(name)
 }

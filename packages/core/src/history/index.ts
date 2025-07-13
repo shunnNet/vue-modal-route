@@ -61,7 +61,8 @@ export const useModalHistory = (options: {
     from: RouteLocationNormalizedGeneric,
   ) => {
     const isInitNavigation = from === START_LOCATION
-    const hasPrevStep = typeof history.state.back === 'string'
+    // const hasPrevStep = typeof history.state.back === 'string' // TODO: check if it's correct
+    const hasPrevStep = typeof routerHistory.state.back === 'string' // TODO: check if it's correct
     const isRefresh = isInitNavigation && hasPrevStep
 
     // direction is correct only when forward or backward by .go() or user action
@@ -85,13 +86,13 @@ export const useModalHistory = (options: {
   return {
     getNavigationInfo,
     goHistory,
-    pushHistory,
-    replaceHistory,
     tagHistory,
-    getCurrentPosition,
     getPositionByTag,
     writeHistory: write,
     rewriteFrom,
+    pushHistory,
+    replaceHistory,
+    getCurrentPosition,
     initPosition: initPosition.value,
   }
 }

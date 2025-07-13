@@ -77,3 +77,17 @@ export function once(fn: CallableFunction) {
 export const noop = () => { }
 
 export const deepClone = (obj: any) => JSON.parse(JSON.stringify(obj))
+
+/**
+ * Executes a function only if window is available (client-side).
+ * Useful for SSR-safe code that needs to access browser APIs.
+ *
+ * @param fn - The function to execute if window is available
+ * @returns The result of the function if executed, undefined otherwise
+ */
+export const runIfWindow = <T>(fn: (window: Window) => T): T | undefined => {
+  if (globalThis.window) {
+    return fn(globalThis.window)
+  }
+  return undefined
+}
