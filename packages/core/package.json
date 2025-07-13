@@ -3,11 +3,11 @@
   "description": "A Vue 3 package that integrates vue-router with modal state management, enabling modal dialogs to be controlled via routes.",
   "version": "0.2.0-alpha",
   "type": "module",
-  "main": "dist/index.mjs",
+  "main": "dist/index.cjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
+      "import": "./dist/index.js",
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     }
@@ -31,21 +31,21 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build": "eslint && unbuild",
-    "stub": "unbuild --stub",
+    "build": "eslint && tsdown",
+    "dev": "tsdown --watch",
     "lint": "eslint"
   },
   "peerDependencies": {
     "vue": "^3",
     "vue-router": "^4"
   },
-  "devDependencies": {
-    "unbuild": "^3.5.0"
-  },
   "files": [
     "dist"
   ],
   "dependencies": {
     "@vue-use-x/common": "^1.0.1"
+  },
+  "devDependencies": {
+    "tsdown": "^0.12.9"
   }
 }
