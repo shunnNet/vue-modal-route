@@ -138,7 +138,7 @@ export const modalProvider = defineComponent({
       else if (mr.state.value.data) {
         result = toValue(mr.state.value.data)
       }
-      return result || {}
+      return { ...result }
     })
     const closeThenReturn = (value: unknown) => {
       modalRoute.value?.setReturnValue(value)

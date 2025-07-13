@@ -8,7 +8,7 @@ import {
   createRouter,
   createWebHistory,
 } from 'vue-router'
-import type { RouterOptions } from 'vue-router'
+import type { RouterHistory, RouterOptions } from 'vue-router'
 import { ensureArray, isPlainObject, noop, traverseRouteRecords, formalizeRouteRecord, createContext, useRouterUtils, isModalRouteRecordRawNormalized } from './utils'
 import { useModalHistory } from './history/index'
 import { createContext as createVueContext } from '@vue-use-x/common'
@@ -42,36 +42,40 @@ export const modalRouteContext = createVueContext<TModalRouteContext>()
 export const modalLayoutContext = createVueContext<Record<string, Component>>()
 
 interface TModalRouteOptionsInner {
-  routes: RouteRecordRaw[]
   global: RouteRecordRaw[]
   query: TModalQueryRouteRecord[]
   direct: boolean
   layout: Record<string, Component>
-  routerOptions: Omit<RouterOptions, 'routes' | 'history'>
-}
-interface TCreateModalRouteOptions extends Partial<TModalRouteOptionsInner> {
-  routes: RouteRecordRaw[]
+  // routerOptions: Omit<RouterOptions, 'routes' | 'history'>
 }
 
-export function formalizeOptions(options: TCreateModalRouteOptions): TModalRouteOptionsInner {
-  if (!options.routes) {
-    throw new Error('routes is required')
-  }
+export function formalizeOptions(options: Partial<TModalRouteOptionsInner>): TModalRouteOptionsInner {
   return {
-    routes: options.routes,
     global: ensureArray(options.global),
     query: ensureArray(options.query),
     direct: options.direct || false,
     layout: options.layout ?? {},
-    routerOptions: options.routerOptions ?? {},
   }
 }
 
-export const createModalRoute = (options: TCreateModalRouteOptions) => {
-  const _options = formalizeOptions(options)
+export const createNuxtModalRoute = (
+  options: Partial<TModalRouteOptionsInner>,
+  router: Router,
+  history: RouterHistory,
+) => {
+  return _createModalRoute(options, router, history)
+}
+
+export const createModalRoute = (
+  options: Partial<TModalRouteOptionsInner> & {
+    routes: RouteRecordRaw[]
+    routerOptions: Omit<RouterOptions, 'routes' | 'history'>
+  },
+) => {
+  const { routes, routerOptions, ..._options } = options
 
   const formalizedRoutes = traverseRouteRecords(
-    _options.routes,
+    routes,
     (route, inModalRoute, parent) => {
       const r = formalizeRouteRecord(route, inModalRoute)
       if (!route.name) {
@@ -95,9 +99,17 @@ export const createModalRoute = (options: TCreateModalRouteOptions) => {
   const router = createRouter({
     routes: formalizedRoutes,
     history: routerHistory,
-    ..._options.routerOptions,
+    ...routerOptions,
   })
+  return _createModalRoute(_options, router, routerHistory)
+}
 
+export const _createModalRoute = (
+  options: Partial<TModalRouteOptionsInner>,
+  router: Router,
+  routerHistory: RouterHistory,
+) => {
+  const _options = formalizeOptions(options)
   const currentRoute = router.currentRoute
   const store = createModalRouteStore()
   const relation = createModalRelation()
@@ -137,8 +149,9 @@ export const createModalRoute = (options: TCreateModalRouteOptions) => {
     _options.global,
     (route, inModalRoute) => formalizeRouteRecord(route, inModalRoute),
   )
+
   pathRoutes.register(router.getRoutes())
-  registerModalRoutesRelation(relation, formalizedRoutes, 'path')
+  registerModalRoutesRelation(relation, router.getRoutes(), 'path')
   globalRoutes.register(globalRoutesFormalized)
   registerModalRoutesRelation(relation, globalRoutesFormalized, 'global')
   queryRoutes.register(_options.query)
@@ -529,295 +542,3 @@ export const createModalRoute = (options: TCreateModalRouteOptions) => {
     },
   } as Router
 }
-
-// export const createNuxtModalRoute = (
-//   options: Partial<{
-//     query: TModalQueryRouteRecord[]
-//     global: TModalRouteRecordRaw[]
-//     direct: boolean
-//   }> & {
-//     router: Router
-//     history: RouterHistory
-//   },
-// ) => {
-//   const { router, history: routerHistory } = options
-
-//   const _options = {
-//     direct: options.direct || false,
-//     query: ensureArray(options.query as TModalQueryRouteRecord[]),
-//     global: formalizeRouteRecords(ensureArray(options.global as TModalRouteRecordRaw[])),
-//   }
-
-//   const store = createModalStore()
-
-//   const {
-//     registerGlobalRoutes,
-//     prepareGlobalRoute,
-//     openModal: openGlobalModal,
-//   } = createGlobalRoutes(store, router)
-
-//   const {
-//     registerQueryRoutes,
-//     routes: queryRoutes,
-//     getQueryModalsFromQuery,
-//     removeModalFromQuery,
-//     mqprefix,
-//     openModal: openQueryModal,
-//   } = createQueryRoutes(store, router)
-
-//   const { registerPathModalRoute, openModal: openPathModal } = createPathRoutes(store, router)
-
-//   registerQueryRoutes(_options.query)
-//   registerGlobalRoutes(_options.global)
-
-//   const modalRouteCollection: Map<string, { type: TModalType, modal: string[] }> = new Map()
-//   const getRelatedModalsByRouteName = (name: string) => modalRouteCollection.get(name)
-
-//   const registChildren = (type: string, parents: string[], children: TModalRouteRecordRaw[] | RouteRecordRaw[]) => {
-//     children.forEach((route) => {
-//       const _parents = [...parents, ...(route.meta?.modal && route.name && route.components?.['modal-default'] ? [route.name as string] : [])]
-//       if (route.name) {
-//         modalRouteCollection.set(route.name as string, { type: 'path', modal: [..._parents] })
-//       }
-//       if (Array.isArray(route.children)) {
-//         registChildren(type, _parents, route.children)
-//       }
-//     })
-//   }
-//   router.getRoutes().forEach((route) => {
-//     if (route.meta?.modal && route.name && route.components?.['modal-default']) {
-//       registerPathModalRoute(route)
-//       registChildren('path', [route.name as string], route.children || [])
-//       modalRouteCollection.set(route.name as string, { type: 'path', modal: [route.name as string] })
-//     }
-//   })
-//   _options.global.forEach((route) => {
-//     if (route.meta?.modal && route.name && route.components?.['modal-default']) {
-//       registChildren('global', [route.name as string], route.children || [])
-//       modalRouteCollection.set(route.name as string, { type: 'global', modal: [route.name as string] })
-//     }
-//   })
-//   _options.query.forEach((route) => {
-//     if (route.name) {
-//       modalRouteCollection.set(route.name as string, { type: 'query', modal: [route.name as string] })
-//     }
-//   })
-
-//   const {
-//     modalMap,
-//     pop,
-//     push,
-//     getModalItem,
-//     getModalItemUnsafe,
-//     _setupModal,
-//     _unsetModal,
-//     unlockModal,
-//     setModalReturnValue,
-//     modalExists,
-//     getModalLocked,
-//     setModalLock,
-//   } = store
-
-//   // const { paramsToPath } = useRouterUtils(router)
-
-//   // NOTE: It's better to bind the context with something like navigation instance for every navigation
-//   // ! the global context will not correct when run "await route.push" in afterEach
-//   // or make a global id by "to" and "from" ?
-//   const context = createContext()
-
-//   router.beforeEach(() => {
-//     context.append({
-//       isInitNavigation: true,
-//     })
-//     let unregister: any = noop
-//     unregister = router.afterEach(() => {
-//       context.reset()
-//       unregister()
-//     })
-//   })
-
-//   // handle direct enter global modal
-//   // Note: seems like vue-router do something like route match when register plugin
-//   // It will report warning if put dynamic route registration when router.beforeEach
-//   // So we need to handle before that
-//   const isGlobalRoute = routerHistory.location.includes('_modal')
-//   if (isGlobalRoute) {
-//     const baseRoute = router.resolve(routerHistory.location.replace(/\/_modal.*/, ''))
-//     prepareGlobalRoute(baseRoute.name as string)
-//   }
-
-//   // Not allow directly enter if modal didn't has "meta.modal.direct: true" or global direct: true
-//   router.beforeEach(async (to) => {
-//     const ctx = context.get()
-//     if (!ctx.isInitNavigation) {
-//       return true
-//     }
-//     const notAllowRoute = to.matched.find(r => r.meta.modal
-//       && (_options.direct
-//         ? r.meta.direct === false
-//         : !r.meta.direct),
-//     )
-//     // when direct: true, undefined means use _options.direct
-//     if (notAllowRoute) {
-//       // TODO: what's purpose of this?
-//       // await goHistory(notAllowRoute.name as string).catch(noop)
-//       const modal = getModalItem(notAllowRoute.name as string)
-//       const base = modal.findBase({ params: to.params })
-//       console.warn(`Not allow open modal ${notAllowRoute.name as string} with directly enter`)
-//       console.log(base, modal)
-//       return base
-//     }
-
-//     return true
-//   })
-//   // not allow open query modal when directly enter and refresh
-//   router.beforeEach((to) => {
-//     const ctx = context.get()
-//     if (!ctx.isInitNavigation) {
-//       return true
-//     }
-//     let _query = { ...to.query }
-//     const queryModals = getQueryModalsFromQuery(to.query)
-//     if (queryModals.length) {
-//       queryModals.forEach((m) => {
-//         _query = removeModalFromQuery(_query, m.name)
-//         console.warn(`Not allow open query modal ${m.name} with directly enter`)
-//       })
-//       return { ...to, query: _query }
-//     }
-//   })
-//   // Not allow open modal by router.push / router.replace
-//   router.beforeEach((to, from) => {
-//     const ctx = context.get()
-//     if (ctx.isInitNavigation || (!ctx.isInitNavigation && ctx.openByOpenModal)) {
-//       return true
-//     }
-//     if (to.matched.find(r => r.meta.modal && !from.matched.some(r2 => r2.name === r.name))) {
-//       console.warn('Not allow open modal by router.push / router.replace')
-//       return false
-//     }
-//   })
-
-//   async function openModal(
-//     name: string,
-//     options?: {
-//       query?: Record<string, any>
-//       global?: string
-//       params?: Record<string, any>
-//       data?: TModalData | [string, TModalData][]
-//     },
-//   ) {
-//     const modalInfo = getRelatedModalsByRouteName(name)
-//     if (!modalInfo) {
-//       throw new Error(`Modal ${name} is not found.`)
-//     }
-//     const modalsNeedActivate = modalInfo.modal.filter(m => !isModalActive(m))
-//     if (!modalsNeedActivate.length) {
-//       throw new Error(`Not allow open modal which is already opened: ${modalInfo.modal.join(',')}.`)
-//     }
-//     if (typeof options?.global === 'string' && options.global.startsWith('#modal')) {
-//       throw new Error('Not allow open modal with global start with "#modal"')
-//     }
-//     if (isPlainObject(options?.query) && Object.keys(options?.query).some(k => k.startsWith(mqprefix))) {
-//       throw new Error(`Not allow open modal with query key start with ${mqprefix}"`)
-//     }
-//     const modalNeedOpen = getModalItem(modalsNeedActivate.at(-1) as string)
-
-//     const _datas = Array.isArray(options?.data)
-//       ? options?.data
-//       : [[modalNeedOpen.name, options?.data]] as [string, TModalData][]
-
-//     const activateResults = modalsNeedActivate.map((m) => {
-//       const data = _datas.find(([name]) => name === m)?.[1]
-//       return getModalItem(m).activate(m, data)
-//     })
-
-//     // TODO: playback if failed
-//     context.append({ openByOpenModal: true, openingModal: modalNeedOpen })
-//     switch (modalInfo.type) {
-//       case 'path':
-//         openPathModal(name, {
-//           query: options?.query,
-//           global: options?.global,
-//           params: options?.params,
-//         }).catch(noop)
-//         break
-//       case 'global':
-//         openGlobalModal(name, {
-//           query: options?.query,
-//           params: options?.params,
-//         }).catch(noop)
-//         break
-//       case 'query':
-//         openQueryModal(name, {
-//           query: options?.query,
-//         }).catch(noop)
-//         break
-//     }
-//     // ISSUE: page index open nested modalA/modalB -> close modalB to modalA -> open modalB -> modalB emit "return" with value
-//     // the openModal resolved promise will get the modalB's result (null)
-//     return Promise.all(activateResults)
-//       .then((results) => {
-//         if (results.length === 1) {
-//           return results[0]
-//         }
-//         return Object.fromEntries(results.map((r, i) => [modalsNeedActivate[i], r]))
-//       })
-//   }
-
-//   async function closeModal(name: string) {
-//     const modal = getModalItem(name)
-//     if (!modal.isActive(name)) {
-//       throw new Error(`Not allow close modal ${name} because it is not opened.`)
-//     }
-//     context.append({ closeByCloseModal: true })
-//     // const basePosition = getPositionByTag(name)
-//     // const hasBasePosition = basePosition !== null
-//     // console.log('closing modal', name, hasBasePosition)
-
-//     // // TODO: This may breaks when leave site, and go back from other site to modal route
-//     // if (hasBasePosition) {
-//     //   // normal close and refresh enter
-//     //   await goHistory(name, true)
-//     // }
-//     // else {
-//     //   await padHistoryWhenInitModal(name)
-//     // }
-//     modal.deactivate()
-//   }
-
-//   function isModalActive(name: string) {
-//     const modal = getModalItem(name)
-//     const locked = getModalLocked(name)
-//     if (modal.options?.manual && locked) {
-//       return false
-//     }
-//     return modal.isActive(name)
-//   }
-
-//   const _ctx = {
-//     store: modalMap,
-//     push,
-//     pop,
-//     _setupModal,
-//     _unsetModal,
-//     openModal,
-//     closeModal,
-//     getModalItem,
-//     modalExists,
-//     isModalActive,
-//     unlockModal,
-//     setModalLock,
-//     getModalItemUnsafe,
-//     setModalReturnValue,
-//     getRelatedModalsByRouteName,
-//     queryRoutes,
-//     layouts: {},
-//   } satisfies TModalRouteContext
-
-//   return {
-//     install(app: App) {
-//       modalRouteContext.provideByApp(app, _ctx)
-//     },
-//   } as Router
-// }

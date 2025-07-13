@@ -1,35 +1,34 @@
 <script setup lang="ts">
-import { useModalRoute } from '@vmrh/core'
+import { useCurrentModal, useModalRoute, ModalLayout } from '@vmrh/core'
 definePageMeta({
   // name: "hello",
   direct: true,
   injectFromComponent: true,
 })
-const visible = defineModel({
-  type: Boolean,
-  default: false,
-})
+
 defineProps({
   message: {
     type: String,
     default: '',
   },
 })
+const { modelValue, closeThenReturn } = useCurrentModal()
 
 const { openModal } = useModalRoute()
 </script>
 
 <template>
-  <Modal v-model="visible">
+  <ModalLayout layout="no-header">
     <template #header>
       <h1>User Modal</h1>
     </template>
-    <template #body>
+    <template >
       <p>{{ message }}</p>
     </template>
     <template #footer>
-      <button @click="visible = false">Close</button>
-      <button @click="openModal('login.modal')">Open Login Modal</button>
+      <button @click="closeThenReturn(null)">Close</button>
+      <button @click="openModal('login')">Open Login Modal</button>
+      <button @click="openModal('alert')">Open Alert Modal</button>
     </template>
-  </Modal>
+  </ModalLayout>
 </template>

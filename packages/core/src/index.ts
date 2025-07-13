@@ -1,4 +1,5 @@
-export { createModalRoute } from './modalRoute'
+export { createModalRoute, createNuxtModalRoute } from './modalRoute'
+export { traverseRouteRecords } from './utils/vmr'
 export * from './composables'
 
 export { default as ModalRouterView } from './components/ModalRouterView'

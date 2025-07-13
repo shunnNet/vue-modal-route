@@ -1,3 +1,9 @@
+<script setup lang="ts">
+const visible = defineModel<boolean>()
+
+</script>
+
+
 <template>
   <!-- <Teleport to="body"></Teleport> -->
     <Transition name="fade">
@@ -8,7 +14,7 @@
               <slot name="header"></slot>
             </header>
             <div class="modal-body">
-              <slot name="body"></slot>
+              <slot ></slot>
             </div>
             <footer class="modal-footer">
               <slot name="footer"></slot>
@@ -19,11 +25,6 @@
     </Transition>
 
 </template>
-
-<script setup lang="ts">
-const visible = defineModel<boolean>()
-
-</script>
 
 <style scoped>
 .modal-overlay {

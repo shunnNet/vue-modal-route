@@ -92,7 +92,7 @@ export const createGlobalRoutes = (
 
   const globalRoute = {
     name: 'modal-root-global',
-    path: '_modal',
+    path: '/_modal',
     meta: {
       [rootMetaName]: true,
     },
