@@ -63,7 +63,12 @@ export const createNuxtModalRoute = (
   router: Router,
   history: RouterHistory,
 ) => {
-  return _createModalRoute(options, router, history)
+  const ctx = _createModalRoute(options, router, history)
+  return {
+    install(app: App) {
+      modalRouteContext.provideByApp(app, ctx)
+    },
+  }
 }
 
 export const createModalRoute = (
@@ -101,7 +106,19 @@ export const createModalRoute = (
     history: routerHistory,
     ...routerOptions,
   })
-  return _createModalRoute(_options, router, routerHistory)
+  const ctx = _createModalRoute(_options, router, routerHistory)
+
+  return {
+    ...router,
+    install(app: App) {
+      modalRouteContext.provideByApp(app, ctx)
+      app.use(router)
+      app.component('ModalRouterView', ModalRouterView)
+      app.component('ModalGlobalView', ModalGlobalView)
+      app.component('ModalQueryView', ModalQueryView)
+      app.component('ModalLayout', ModalLayout)
+    },
+  } as Router
 }
 
 export const _createModalRoute = (
@@ -529,16 +546,17 @@ export const _createModalRoute = (
     findBase,
   } satisfies TModalRouteContext
 
-  return {
-    ...router,
-    install(app: App) {
-      modalRouteContext.provideByApp(app, _ctx)
-      app.use(router)
+  return _ctx
+  // return {
+  //   ...router,
+  //   install(app: App) {
+  //     modalRouteContext.provideByApp(app, _ctx)
+  //     app.use(router)
 
-      app.component('ModalRouterView', ModalRouterView)
-      app.component('ModalGlobalView', ModalGlobalView)
-      app.component('ModalQueryView', ModalQueryView)
-      app.component('ModalLayout', ModalLayout)
-    },
-  } as Router
+  //     app.component('ModalRouterView', ModalRouterView)
+  //     app.component('ModalGlobalView', ModalGlobalView)
+  //     app.component('ModalQueryView', ModalQueryView)
+  //     app.component('ModalLayout', ModalLayout)
+  //   },
+  // } as Router
 }

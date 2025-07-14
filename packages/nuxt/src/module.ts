@@ -1,4 +1,4 @@
-import { defineNuxtModule, addPlugin, createResolver, resolveFiles, addTemplate, updateTemplates } from '@nuxt/kit'
+import { defineNuxtModule, addPlugin, createResolver, resolveFiles, addTemplate, updateTemplates, addComponent } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { relative, resolve } from 'pathe'
 
@@ -76,6 +76,30 @@ export default defineNuxtModule<ModuleOptions>({
           filter: template => template.filename === 'modal-query.mjs',
         })
       }
+    })
+
+    addComponent({
+      name: 'ModalRouterView',
+      export: 'ModalRouterView',
+      filePath: '@vmrh/core',
+    })
+
+    addComponent({
+      name: 'ModalGlobalView',
+      export: 'ModalGlobalView',
+      filePath: '@vmrh/core',
+    })
+
+    addComponent({
+      name: 'ModalQueryView',
+      export: 'ModalQueryView',
+      filePath: '@vmrh/core',
+    })
+
+    addComponent({
+      name: 'ModalLayout',
+      export: 'ModalLayout',
+      filePath: '@vmrh/core',
     })
 
     // const globalMoalDir = resolve(
