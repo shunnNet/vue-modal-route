@@ -57,10 +57,12 @@ export const useModalHistory = (options: {
   )
 
   const getNavigationInfo = (
-    _: RouteLocationNormalizedGeneric,
+    to: RouteLocationNormalizedGeneric,
     from: RouteLocationNormalizedGeneric,
   ) => {
-    const isInitNavigation = from === START_LOCATION
+    const isInitNavigation
+      = from === START_LOCATION
+      || to.fullPath === from.fullPath // Note: in SSR
     // const hasPrevStep = typeof history.state.back === 'string' // TODO: check if it's correct
     const hasPrevStep = typeof routerHistory.state.back === 'string' // TODO: check if it's correct
     const isRefresh = isInitNavigation && hasPrevStep
