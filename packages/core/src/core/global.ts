@@ -31,17 +31,22 @@ export const createGlobalRoutes = (
     })
   }
   function prepareGlobalRoute(target?: RouteRecordNameGeneric) {
-    if (currentRoute.value.matched.find(r => r.name === globalRoute.name)) {
+    // Allow symbol as name because this may not be modal route
+    const _target = target || currentRoute.value.name
+
+    if (
+      _target
+      && _target === currentRoute.value.name
+      && currentRoute.value.matched.find(r => r.name === globalRoute.name)
+    ) {
       // Do nothing if global root route already exists
       return
     }
-    const base = target || currentRoute.value.name
 
-    if (globalRootBaseName !== base) {
-      globalRootBaseName = base
-      // TODO: Actually, all route must has name (even not modal route)
+    if (globalRootBaseName !== _target) {
+      globalRootBaseName = _target
       // Allow symbol as name because this may not be modal route
-      router.addRoute(globalRootBaseName as string, globalRoute)
+      router.addRoute(globalRootBaseName!, globalRoute)
     }
   }
 
@@ -90,9 +95,12 @@ export const createGlobalRoutes = (
     return currentRoute.value.matched.some(route => route.name === name)
   }
 
+  // Note: in vue-router 4, all child path should not start with '/', or it path will not append to parent path
+  // we keep global route as relative path, so they can be access by specific location when some situation
+  // TODO: Location awared "direct" access control
   const globalRoute = {
     name: 'modal-root-global',
-    path: '/_modal',
+    path: '_modal',
     meta: {
       [rootMetaName]: true,
     },

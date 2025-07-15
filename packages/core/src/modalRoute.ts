@@ -223,10 +223,16 @@ export const _createModalRoute = (
   // Note: seems like vue-router do something like route match when register plugin
   // It will report warning if put dynamic route registration when router.beforeEach
   // So we need to handle before that
-  const isGlobalRoute = routerHistory.location.includes('_modal')
-  if (isGlobalRoute) {
-    const baseRoute = router.resolve(routerHistory.location.replace(/\/_modal.*/, ''))
-    globalRoutes.prepare(baseRoute.name as string)
+  const containGlobalPath = routerHistory.location.includes('_modal')
+
+  if (containGlobalPath) {
+    // vue-router resolve treat empty string as current path when .resolve
+    // e.g current path is /user, router.resolve('') will return result of /user
+    const baseRoute = router.resolve(routerHistory.location.replace(/\/_modal.*/, '') || '/')
+    if (baseRoute.name) {
+      // only prepare route if baseRoute exist
+      globalRoutes.prepare(baseRoute.name)
+    }
   }
 
   // Not allow directly enter if modal didn't has "meta.modal.direct: true" or global direct: true
