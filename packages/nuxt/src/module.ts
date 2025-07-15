@@ -1,17 +1,20 @@
-import { defineNuxtModule, addPlugin, createResolver, resolveFiles, addTemplate, updateTemplates, addComponent } from '@nuxt/kit'
+import {
+  defineNuxtModule,
+  addPlugin,
+  createResolver,
+  resolveFiles,
+  addTemplate,
+  updateTemplates,
+  addComponent,
+  addImports,
+} from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { relative, resolve } from 'pathe'
 
-// Module options TypeScript interface definition
-export interface ModuleOptions {
-  // Module option
-  temp?: string
-}
-
-export default defineNuxtModule<ModuleOptions>({
+export default defineNuxtModule({
   meta: {
-    name: 'my-module',
-    configKey: 'myModule',
+    name: '@vmrh/nuxt',
+    configKey: 'vmrh',
   },
   // Default configuration options of the Nuxt module
   defaults: {},
@@ -77,56 +80,25 @@ export default defineNuxtModule<ModuleOptions>({
         })
       }
     })
-
-    addComponent({
-      name: 'ModalRouterView',
-      export: 'ModalRouterView',
-      filePath: '@vmrh/core',
+    ;[
+      'ModalRouterView',
+      'ModalGlobalView',
+      'ModalQueryView',
+      'ModalLayout',
+    ].forEach((name) => {
+      addComponent({ name, export: name, filePath: '@vmrh/core' })
     })
 
-    addComponent({
-      name: 'ModalGlobalView',
-      export: 'ModalGlobalView',
-      filePath: '@vmrh/core',
+    ;[
+      'useModalRoute',
+      'setupModal',
+      'useCurrentModal',
+      'useModal',
+      'useModalReturnValue',
+      'useModalActive',
+    ].forEach((name) => {
+      addImports({ name, from: '@vmrh/core' })
     })
-
-    addComponent({
-      name: 'ModalQueryView',
-      export: 'ModalQueryView',
-      filePath: '@vmrh/core',
-    })
-
-    addComponent({
-      name: 'ModalLayout',
-      export: 'ModalLayout',
-      filePath: '@vmrh/core',
-    })
-
-    // const globalMoalDir = resolve(
-    //   _nuxt.options.rootDir,
-    //   'modals/global',
-    // )
-    // Note: check ignore doc
-    // https://www.npmjs.com/package/ignore
-    // const files = (await resolveFiles(globalModalDir, '**/*.vue')).map((f) => {
-    //   return {
-    //     relativePath: relative(globalModalDir, f),
-    //     absolutePath: f,
-    //   }
-    // })
-
-    // sort scanned files using en-US locale to make the result consistent across different system locales
-    // files.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'en-US'))
-
-    // _nuxt.hooks.hook('pages:resolved', (pages) => {
-    //   console.log('pages:resolved', pages)
-    //   // pages.forEach((page) => {
-    //   //   // page.
-    //   //   if (page.name === 'user@modal') {
-    //   //     console.log('user@modal', page)
-    //   //   }
-    //   // })
-    // })
   },
 })
 
